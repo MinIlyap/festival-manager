@@ -1,6 +1,16 @@
 spring:
   application:
     name: authservice
-
+  liquibase:
+    change-log: classpath:/db/changelog/db.changelog-master.yaml
+  datasource:
+    name: auth_db
+    username: auth_service_user
+    password: auth_service_password
+    driver-class-name: org.postgresql.Driver
+    url: jdbc:postgresql://localhost:5433/auth_db
+  jpa:
+    hibernate:
+      ddl-auto: validate
 server:
   port: 8082

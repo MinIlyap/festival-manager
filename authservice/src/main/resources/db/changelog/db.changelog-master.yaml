@@ -1,0 +1,5 @@
+databaseChangeLog:
+  - include: 
+      file: db/changelog/changes/001-create-auth-credentials.yaml
+  - include:
+      file: db/changelog/changes/002-add-refresh-token.yaml

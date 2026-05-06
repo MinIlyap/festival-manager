@@ -1,0 +1,226 @@
+version: "3.9"
+
+services:
+  auth-postgres:
+    image: postgres:16-alpine
+    container_name: festivalmanager-auth-postgres
+    environment:
+      POSTGRES_DB: auth_db
+      POSTGRES_USER: auth_service_user
+      POSTGRES_PASSWORD: auth_service_password
+    ports:
+      - "5433:5432"
+    volumes:
+      - auth_postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U auth_user -d auth_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  user-postgres:
+    image: postgres:16-alpine
+    container_name: festivalmanager-user-postgres
+    environment:
+      POSTGRES_DB: user_db
+      POSTGRES_USER: user_service_user
+      POSTGRES_PASSWORD: user_service_password
+    ports:
+      - "5434:5432"
+    volumes:
+      - user_postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U user_service_user -d user_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  company-postgres:
+    image: postgres:16-alpine
+    container_name: festivalmanager-company-postgres
+    environment:
+      POSTGRES_DB: company_db
+      POSTGRES_USER: company_service_user
+      POSTGRES_PASSWORD: company_service_password
+    ports:
+      - "5435:5432"
+    volumes:
+      - company_postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U user_service_user -d user_db" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  festival-postgres:
+    image: postgres:16-alpine
+    container_name: festivalmanager-festival-postgres
+    environment:
+      POSTGRES_DB: festival_db
+      POSTGRES_USER: festival_service_user
+      POSTGRES_PASSWORD: festival_service_password
+    ports:
+      - "5436:5432"
+    volumes:
+      - festival_postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U user_service_user -d user_db" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  event-postgres:
+    image: postgres:16-alpine
+    container_name: festivalmanager-event-postgres
+    environment:
+      POSTGRES_DB: event_db
+      POSTGRES_USER: event_service_user
+      POSTGRES_PASSWORD: event_service_password
+    ports:
+      - "5437:5432"
+    volumes:
+      - event_postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U user_service_user -d user_db" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  stand-postgres:
+    image: postgres:16-alpine
+    container_name: festivalmanager-stand-postgres
+    environment:
+      POSTGRES_DB: stand_db
+      POSTGRES_USER: stand_service_user
+      POSTGRES_PASSWORD: stand_service_password
+    ports:
+      - "5438:5432"
+    volumes:
+      - stand_postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U user_service_user -d user_db" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  location-postgres:
+    image: postgres:16-alpine
+    container_name: festivalmanager-location-postgres
+    environment:
+      POSTGRES_DB: location_db
+      POSTGRES_USER: location_service_user
+      POSTGRES_PASSWORD: location_service_password
+    ports:
+      - "5439:5432"
+    volumes:
+      - location_postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U user_service_user -d user_db" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  reward-postgres:
+    image: postgres:16-alpine
+    container_name: festivalmanager-reward-postgres
+    environment:
+      POSTGRES_DB: reward_db
+      POSTGRES_USER: reward_service_user
+      POSTGRES_PASSWORD: reward_service_password
+    ports:
+      - "5440:5432"
+    volumes:
+      - reward_postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U user_service_user -d user_db" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  notification-postgres:
+    image: postgres:16-alpine
+    container_name: festivalmanager-notification-postgres
+    environment:
+      POSTGRES_DB: notification_db
+      POSTGRES_USER: notification_service_user
+      POSTGRES_PASSWORD: notification_service_password
+    ports:
+      - "5441:5432"
+    volumes:
+      - notification_postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U user_service_user -d user_db" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  application-postgres:
+    image: postgres:16-alpine
+    container_name: festivalmanager-application-postgres
+    environment:
+      POSTGRES_DB: application_db
+      POSTGRES_USER: application_service_user
+      POSTGRES_PASSWORD: application_service_password
+    ports:
+      - "5442:5432"
+    volumes:
+      - application_postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U user_service_user -d user_db" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  file-postgres:
+    image: postgres:16-alpine
+    container_name: festivalmanager-file-postgres
+    environment:
+      POSTGRES_DB: file_db
+      POSTGRES_USER: file_service_user
+      POSTGRES_PASSWORD: file_service_password
+    ports:
+      - "5443:5432"
+    volumes:
+      - file_postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U user_service_user -d user_db" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  kafka:
+    image: apache/kafka:3.9.2
+    container_name: festivalmanager-kafka
+    environment:
+      KAFKA_NODE_ID: 1
+      KAFKA_PROCESS_ROLES: broker,controller
+      KAFKA_CONTROLLER_QUORUM_VOTERS: 1@localhost:9093
+      KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:9092,CONTROLLER://0.0.0.0:9093
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://localhost:9092
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT
+      KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_LOG_DIRS: /var/lib/kafka/data
+    ports:
+      - "9092:9092"
+    volumes:
+      - kafka_data:/var/lib/kafka/data
+    healthcheck:
+      test: [ "CMD", "sh", "-c", "/opt/kafka/bin/kafka-broker-api-versions.sh --bootstrap-server localhost:9092 > /dev/null 2>&1" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  auth_postgres_data:
+  user_postgres_data:
+  company_postgres_data:
+  festival_postgres_data:
+  event_postgres_data:
+  stand_postgres_data:
+  location_postgres_data:
+  reward_postgres_data:
+  notification_postgres_data:
+  application_postgres_data:
+  file_postgres_data:
+  kafka_data:

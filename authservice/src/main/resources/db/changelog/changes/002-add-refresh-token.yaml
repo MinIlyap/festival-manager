@@ -1,0 +1,40 @@
+databaseChangeLog:
+  - changeSet:
+      id: 002-add-refresh-token
+      author: ilyap
+      changes:
+        - createTable:
+            tableName: user_sessions
+            columns:
+              - column:
+                  name: refresh_token
+                  type: VARCHAR(255)
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: user_id
+                  type: BIGINT
+                  constraints:
+                    nullable: false
+              - column:
+                  name: expiry_date
+                  type: DATETIME
+                  constraints:
+                    nullable: false
+
+        - createIndex:
+            indexName: idx_user_sessions_user_id
+            tableName: user_sessions
+            columns:
+              - column:
+                  name: user_id
+
+        - addForeignKeyConstraint:
+            constraintName: fk_user_sessions_user_id
+            baseTableName: user_sessions
+            baseColumnNames: user_id
+            referencedTableName: auth_credentials
+            referencedColumnNames: user_id
+            onDelete: CASCADE
+            onUpdate: CASCADE
