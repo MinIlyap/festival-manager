@@ -1,0 +1,67 @@
+databaseChangeLog:
+  - changeSet:
+      id: 001-add-companies
+      author: ilyap
+      changes:
+        - createTable:
+            tableName: companies
+            columns:
+              - column:
+                  name: id
+                  type: BIGINT
+                  autoIncrement: true
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: tin
+                  type: VARCHAR(12)
+                  constraints:
+                    unique: true
+                    nullable: false
+              - column:
+                  name: full_name
+                  type: VARCHAR(255)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: brand_name
+                  type: VARCHAR(255)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: email
+                  type: VARCHAR(255)
+                  constraints:
+                    unique: true
+                    nullable: false
+              - column:
+                  name: website
+                  type: VARCHAR(255)
+                  constraints:
+                    nullable: true
+              - column:
+                  name: is_active
+                  type: BOOLEAN
+                  defaultValue: "false"
+                  constraints:
+                    nullable: false
+
+        - createIndex:
+            indexName: idx_companies_full_name
+            tableName: companies
+            columns:
+              - column:
+                  name: full_name
+        - createIndex:
+            indexName: idx_companies_brand_name
+            tableName: companies
+            columns:
+              - column:
+                  name: brand_name
+        - createIndex:
+            indexName: idx_companies_is_active
+            tableName: companies
+            columns:
+              - column:
+                  name: is_active
