@@ -1,0 +1,6 @@
+spring:
+  application:
+    name: festivalservice
+
+server:
+  port: 8085

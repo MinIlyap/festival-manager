@@ -1,0 +1,6 @@
+spring:
+  application:
+    name: companyservice
+
+server:
+  port: 8083

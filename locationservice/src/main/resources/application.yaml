@@ -1,0 +1,6 @@
+spring:
+  application:
+    name: locationservice
+
+server:
+  port: 8087

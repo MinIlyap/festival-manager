@@ -1,0 +1,6 @@
+spring:
+  application:
+    name: standservice
+
+server:
+  port: 8090

@@ -1,0 +1,6 @@
+spring:
+  application:
+    name: applicationservice
+
+server:
+  port: 8081
