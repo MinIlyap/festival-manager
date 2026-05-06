@@ -1,0 +1,88 @@
+databaseChangeLog:
+  - changeSet:
+      id: 001-create-app-users
+      author: ilyap
+      changes:
+        - createTable:
+            tableName: app_users
+            columns:
+              - column:
+                  name: id
+                  type: BIGINT
+                  autoIncrement: true
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: access_type
+                  type: VARCHAR(7)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: birth_date
+                  type: DATE
+                  constraints:
+                    nullable: false
+              - column:
+                  name: nickname
+                  type: VARCHAR(70)
+                  constraints:
+                    unique: true
+                    nullable: false
+              - column:
+                  name: city_id
+                  type: BIGINT
+                  constraints:
+                    nullable: false
+              - column:
+                  name: phone_number
+                  type: VARCHAR(13)
+                  constraints:
+                    unique: true
+                    nullable: true
+              - column:
+                  name: last_name
+                  type: VARCHAR(50)
+                  constraints:
+                    nullable: true
+              - column:
+                  name: first_name
+                  type: VARCHAR(50)
+                  constraints:
+                    nullable: true
+              - column:
+                  name: middle_name
+                  type: VARCHAR(50)
+                  constraints:
+                    nullable: true
+              - column:
+                  name: passport_seria_hash
+                  type: VARCHAR(255)
+                  constraints:
+                    nullable: true
+              - column:
+                  name: passport_number_hash
+                  type: VARCHAR(255)
+                  constraints:
+                    nullable: true
+
+        - sql:
+            sql: |
+              ALTER TABLE app_users
+                ADD CONSTRAINT chk_access_type
+                CHECK (access_type IN ('USER', 'COMPANY', 'ADMIN', 'CURATOR'));
+
+        - createIndex:
+            indexName: idx_app_users_last_first_names
+            tableName: app_users
+            columns:
+              - column:
+                  name: last_name
+              - column:
+                  name: first_name
+        - createIndex:
+            indexName: idx_app_users_nickname
+            tableName: app_users
+            columns:
+              - column:
+                  name: nickname

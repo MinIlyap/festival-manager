@@ -1,0 +1,69 @@
+databaseChangeLog:
+  - changeSet:
+      id: 002-create-black-lists
+      author: ilyap
+      changes:
+        - createTable:
+            tableName: black_lists
+            columns:
+              - column:
+                  name: user_id
+                  type: BIGINT
+                  constraints:
+                    nullable: false
+              - column:
+                  name: curator_id
+                  type: BIGINT
+                  constraints:
+                    nullable: false
+              - column:
+                  name: reason
+                  type: VARCHAR(255)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: expiry_date
+                  type: DATETIME
+                  constraints:
+                    nullable: false
+              - column:
+                  name: created_at
+                  type: TIMESTAMPTZ
+                  defaultValueComputed: CURRENT_TIMESTAMP
+                  constraints:
+                    nullable: false
+
+        - addPrimaryKey:
+            tableName: black_lists
+            columnNames: user_id, curator_id, created_at
+            constraintName: pk_black_lists
+
+        - addForeignKeyConstraint:
+            constraintName: fk_black_lists_user
+            baseTableName: black_lists
+            baseColumnNames: user_id
+            referencedTableName: app_users
+            referencedColumnNames: id
+            onDelete: CASCADE
+        - addForeignKeyConstraint:
+            constraintName: fk_black_lists_curator
+            baseTableName: black_lists
+            baseColumnNames: curator_id
+            referencedTableName: app_users
+            referencedColumnNames: id
+            onDelete: CASCADE
+
+        - createIndex:
+            indexName: idx_black_lists_user_expiry
+            tableName: black_lists
+            columns:
+              - column:
+                  name: user_id
+              - column:
+                  name: expiry_date
+        - createIndex:
+            indexName: idx_black_lists_curator_id
+            tableName: black_lists
+            columns:
+              - column:
+                  name: curator_id
