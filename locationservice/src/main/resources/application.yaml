@@ -8,7 +8,7 @@ spring:
     username: location_service_user
     password: location_service_password
     driver-class-name: org.postgresql.Driver
-    url: jdbc:postgresql://localhost:5439/location_db
+    url: jdbc:postgresql://localhost:5438/location_db
   jpa:
     hibernate:
       ddl-auto: validate

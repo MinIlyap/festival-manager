@@ -86,23 +86,6 @@ services:
       timeout: 5s
       retries: 5
 
-  stand-postgres:
-    image: postgres:16-alpine
-    container_name: festivalmanager-stand-postgres
-    environment:
-      POSTGRES_DB: stand_db
-      POSTGRES_USER: stand_service_user
-      POSTGRES_PASSWORD: stand_service_password
-    ports:
-      - "5438:5432"
-    volumes:
-      - stand_postgres_data:/var/lib/postgresql/data
-    healthcheck:
-      test: [ "CMD-SHELL", "pg_isready -U user_service_user -d user_db" ]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-
   location-postgres:
     image: postgres:16-alpine
     container_name: festivalmanager-location-postgres
@@ -111,26 +94,9 @@ services:
       POSTGRES_USER: location_service_user
       POSTGRES_PASSWORD: location_service_password
     ports:
-      - "5439:5432"
+      - "5438:5432"
     volumes:
       - location_postgres_data:/var/lib/postgresql/data
-    healthcheck:
-      test: [ "CMD-SHELL", "pg_isready -U user_service_user -d user_db" ]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-
-  reward-postgres:
-    image: postgres:16-alpine
-    container_name: festivalmanager-reward-postgres
-    environment:
-      POSTGRES_DB: reward_db
-      POSTGRES_USER: reward_service_user
-      POSTGRES_PASSWORD: reward_service_password
-    ports:
-      - "5440:5432"
-    volumes:
-      - reward_postgres_data:/var/lib/postgresql/data
     healthcheck:
       test: [ "CMD-SHELL", "pg_isready -U user_service_user -d user_db" ]
       interval: 10s
@@ -145,7 +111,7 @@ services:
       POSTGRES_USER: notification_service_user
       POSTGRES_PASSWORD: notification_service_password
     ports:
-      - "5441:5432"
+      - "5439:5432"
     volumes:
       - notification_postgres_data:/var/lib/postgresql/data
     healthcheck:
@@ -162,7 +128,7 @@ services:
       POSTGRES_USER: application_service_user
       POSTGRES_PASSWORD: application_service_password
     ports:
-      - "5442:5432"
+      - "5440:5432"
     volumes:
       - application_postgres_data:/var/lib/postgresql/data
     healthcheck:
@@ -179,7 +145,7 @@ services:
       POSTGRES_USER: file_service_user
       POSTGRES_PASSWORD: file_service_password
     ports:
-      - "5443:5432"
+      - "5441:5432"
     volumes:
       - file_postgres_data:/var/lib/postgresql/data
     healthcheck:
@@ -217,9 +183,7 @@ volumes:
   company_postgres_data:
   festival_postgres_data:
   event_postgres_data:
-  stand_postgres_data:
   location_postgres_data:
-  reward_postgres_data:
   notification_postgres_data:
   application_postgres_data:
   file_postgres_data:
