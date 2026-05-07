@@ -1,6 +1,16 @@
 spring:
   application:
     name: locationservice
-
+  liquibase:
+    change-log: classpath:/db/changelog/db.changelog-master.yaml
+  datasource:
+    name: location_db
+    username: location_service_user
+    password: location_service_password
+    driver-class-name: org.postgresql.Driver
+    url: jdbc:postgresql://localhost:5439/location_db
+  jpa:
+    hibernate:
+      ddl-auto: validate
 server:
   port: 8087
