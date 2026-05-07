@@ -1,0 +1,138 @@
+databaseChangeLog:
+  - changeSet:
+      id: 001-add-events
+      author: ilyap
+      changes:
+        - createTable:
+            tableName: events
+            columns:
+              - column:
+                  name: id
+                  type: BIGINT
+                  autoIncrement: true
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: name
+                  type: VARCHAR(255)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: type
+                  type: VARCHAR(14)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: description
+                  type: TEXT
+                  constraints:
+                    nullable: false
+              - column:
+                  name: date_start
+                  type: DATE
+                  constraints:
+                    nullable: false
+              - column:
+                  name: time_start
+                  type: TIME
+                  constraints:
+                    nullable: false
+              - column:
+                  name: approximate_duration
+                  type: INTEGER
+                  constraints:
+                    nullable: true
+              - column:
+                  name: company_id
+                  type: BIGINT
+                  constraints:
+                    nullable: false
+              - column:
+                  name: created_at
+                  type: TIMESTAMPTZ
+                  defaultValueComputed: CURRENT_TIMESTAMP
+                  constraints:
+                    nullable: false
+
+        - createIndex:
+            indexName: idx_events_name
+            tableName: events
+            columns:
+              - column:
+                  name: name
+        - createIndex:
+            indexName: idx_events_date_time_start
+            tableName: events
+            columns:
+              - column:
+                  name: date_start
+              - column:
+                  name: time_start
+
+        - sql:
+            sql: |
+              ALTER TABLE events
+                ADD CONSTRAINT chk_type
+                CHECK (type IN ('TOURNAMENT', 'QUEST', 'MASTER_CLASS', 'DEMONSTRATION'));
+
+        - createTable:
+            tableName: event_organizations
+            columns:
+              - column:
+                  name: id
+                  type: BIGINT
+                  autoIncrement: true
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: event_id
+                  type: BIGINT
+                  constraints:
+                    nullable: false
+              - column:
+                  name: festival_location_id
+                  type: BIGINT
+                  constraints:
+                    nullable: false
+              - column:
+                  name: max_number_people
+                  type: INTEGER
+                  constraints:
+                    nullable: false
+              - column:
+                  name: is_command
+                  type: BOOLEAN
+                  constraints:
+                    nullable: false
+              - column:
+                  name: max_people_command
+                  type: INTEGER
+                  constraints:
+                    nullable: true
+
+        - addUniqueConstraint:
+            constraintName: unq_event_organizations_event_location
+            tableName: event_organizations
+            columnNames: event_id, festival_location_id
+
+        - addForeignKeyConstraint:
+            constraintName: fk_event_organizations_event
+            baseTableName: event_organizations
+            baseColumnNames: event_id
+            referencedTableName: events
+            referencedColumnNames: id
+
+        - createIndex:
+            indexName: idx_event_organizations_festival
+            tableName: event_organizations
+            columns:
+              - column:
+                  name: festival_location_id
+        - createIndex:
+            indexName: idx_event_organizations_event
+            tableName: event_organizations
+            columns:
+              - column:
+                  name: event_id

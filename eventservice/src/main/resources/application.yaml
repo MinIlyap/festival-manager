@@ -1,6 +1,16 @@
 spring:
   application:
     name: eventservice
-
+  liquibase:
+    change-log: classpath:/db/changelog/db.changelog-master.yaml
+  datasource:
+    name: event_db
+    username: event_service_user
+    password: event_service_password
+    driver-class-name: org.postgresql.Driver
+    url: jdbc:postgresql://localhost:5437/event_db
+  jpa:
+    hibernate:
+      ddl-auto: validate
 server:
   port: 8084
