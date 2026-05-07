@@ -1,0 +1,212 @@
+databaseChangeLog:
+  - changeSet:
+      id: 001-add-festivals-and-relative-tables
+      author: ilyap
+      changes:
+        - createTable:
+            tableName: age_limits
+            columns:
+              - column:
+                  name: id
+                  type: SMALLINT
+                  autoIncrement: true
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: age_limit_value
+                  type: VARCHAR(3)
+                  constraints:
+                    unique: true
+                    nullable: false
+
+        - createTable:
+            tableName: festivals
+            columns:
+              - column:
+                  name: id
+                  type: BIGINT
+                  autoIncrement: true
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: name
+                  type: VARCHAR(255)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: age_limit_id
+                  type: SMALLINT
+                  constraints:
+                    nullable: false
+              - column:
+                  name: description
+                  type: TEXT
+                  constraints:
+                    nullable: false
+              - column:
+                  name: date_start
+                  type: DATE
+                  constraints:
+                    nullable: false
+              - column:
+                  name: time_start
+                  type: TIME
+                  constraints:
+                    nullable: false
+              - column:
+                  name: date_end
+                  type: DATE
+                  constraints:
+                    nullable: false
+              - column:
+                  name: time_end
+                  type: TIME
+                  constraints:
+                    nullable: false
+              - column:
+                  name: is_visible
+                  type: BOOLEAN
+                  defaultValue: "false"
+                  constraints:
+                    nullable: false
+              - column:
+                  name: created_at
+                  type: TIMESTAMPTZ
+                  defaultValueComputed: CURRENT_TIMESTAMP
+                  constraints:
+                    nullable: false
+        - sql:
+            sql: |
+              ALTER TABLE festivals ADD CONSTRAINT check_end_after_start 
+              CHECK ((date_start + time_start) <= (date_end + time_end));
+
+        - addForeignKeyConstraint:
+            constraintName: fk_festivals_age_limit
+            baseTableName: festivals
+            baseColumnNames: age_limit_id
+            referencedTableName: age_limits
+            referencedColumnNames: id
+
+        - createIndex:
+            indexName: idx_festivals_start_end
+            tableName: festivals
+            columns:
+              - column:
+                  name: date_start
+              - column:
+                  name: date_end
+        - createIndex:
+            indexName: idx_festivals_name
+            tableName: festivals
+            columns:
+              - column:
+                  name: name
+
+        - createTable:
+            tableName: festival_curators
+            columns:
+              - column:
+                  name: festival_id
+                  type: BIGINT
+                  constraints:
+                    nullable: false
+              - column:
+                  name: curator_id
+                  type: BIGINT
+                  constraints:
+                    nullable: false
+
+        - addPrimaryKey:
+            tableName: festival_curators
+            columnNames: festival_id, curator_id
+            constraintName: pk_festival_curators
+
+        - addForeignKeyConstraint:
+            constraintName: fk_festival_curators_festival
+            baseTableName: festival_curators
+            baseColumnNames: festival_id
+            referencedTableName: festivals
+            referencedColumnNames: id
+
+        - createIndex:
+            indexName: idx_festival_curators_festival
+            tableName: festival_curators
+            columns:
+              - column:
+                  name: festival_id
+
+        - createTable:
+            tableName: festival_companies
+            columns:
+              - column:
+                  name: festival_id
+                  type: BIGINT
+                  constraints:
+                    nullable: false
+              - column:
+                  name: company_id
+                  type: BIGINT
+                  constraints:
+                    nullable: false
+
+        - addPrimaryKey:
+            tableName: festival_companies
+            columnNames: festival_id, company_id
+            constraintName: pk_festival_companies
+
+        - addForeignKeyConstraint:
+            constraintName: fk_festival_companies_festival
+            baseTableName: festival_companies
+            baseColumnNames: festival_id
+            referencedTableName: festivals
+            referencedColumnNames: id
+
+        - createIndex:
+            indexName: idx_festival_companies_festival
+            tableName: festival_companies
+            columns:
+              - column:
+                  name: festival_id
+
+        - createTable:
+            tableName: festival_locations
+            columns:
+              - column:
+                  name: festival_id
+                  type: BIGINT
+                  constraints:
+                    nullable: false
+              - column:
+                  name: platform_id
+                  type: BIGINT
+                  constraints:
+                    nullable: false
+              - column:
+                  name: city_id
+                  type: BIGINT
+                  constraints:
+                    nullable: false
+              - column:
+                  name: max_people_number
+                  type: INTEGER
+                  constraints:
+                    nullable: false
+
+        - addPrimaryKey:
+            tableName: festival_locations
+            columnNames: festival_id, platform_id, city_id
+            constraintName: pk_festival_locations
+
+        - addForeignKeyConstraint:
+            constraintName: fk_festival_locations_festival
+            baseTableName: festival_locations
+            baseColumnNames: festival_id
+            referencedTableName: festivals
+            referencedColumnNames: id
+
+        - sql:
+            sql: |
+              ALTER TABLE festival_locations ADD CONSTRAINT check_max_people_number 
+              CHECK (max_people_number > 10);

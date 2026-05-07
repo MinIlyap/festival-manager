@@ -1,6 +1,16 @@
 spring:
   application:
     name: festivalservice
-
+  liquibase:
+    change-log: classpath:/db/changelog/db.changelog-master.yaml
+  datasource:
+    name: festival_db
+    username: festival_service_user
+    password: festival_service_password
+    driver-class-name: org.postgresql.Driver
+    url: jdbc:postgresql://localhost:5436/festival_db
+  jpa:
+    hibernate:
+      ddl-auto: validate
 server:
   port: 8085
