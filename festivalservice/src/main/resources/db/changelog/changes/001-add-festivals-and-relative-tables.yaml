@@ -105,74 +105,15 @@ databaseChangeLog:
                   name: name
 
         - createTable:
-            tableName: festival_curators
-            columns:
-              - column:
-                  name: festival_id
-                  type: BIGINT
-                  constraints:
-                    nullable: false
-              - column:
-                  name: curator_id
-                  type: BIGINT
-                  constraints:
-                    nullable: false
-
-        - addPrimaryKey:
-            tableName: festival_curators
-            columnNames: festival_id, curator_id
-            constraintName: pk_festival_curators
-
-        - addForeignKeyConstraint:
-            constraintName: fk_festival_curators_festival
-            baseTableName: festival_curators
-            baseColumnNames: festival_id
-            referencedTableName: festivals
-            referencedColumnNames: id
-
-        - createIndex:
-            indexName: idx_festival_curators_festival
-            tableName: festival_curators
-            columns:
-              - column:
-                  name: festival_id
-
-        - createTable:
-            tableName: festival_companies
-            columns:
-              - column:
-                  name: festival_id
-                  type: BIGINT
-                  constraints:
-                    nullable: false
-              - column:
-                  name: company_id
-                  type: BIGINT
-                  constraints:
-                    nullable: false
-
-        - addPrimaryKey:
-            tableName: festival_companies
-            columnNames: festival_id, company_id
-            constraintName: pk_festival_companies
-
-        - addForeignKeyConstraint:
-            constraintName: fk_festival_companies_festival
-            baseTableName: festival_companies
-            baseColumnNames: festival_id
-            referencedTableName: festivals
-            referencedColumnNames: id
-
-        - createIndex:
-            indexName: idx_festival_companies_festival
-            tableName: festival_companies
-            columns:
-              - column:
-                  name: festival_id
-
-        - createTable:
             tableName: festival_locations
             columns:
+              - column:
+                  name: id
+                  type: BIGINT
+                  autoIncrement: true
+                  constraints:
+                    primaryKey: true
+                    nullable: false
               - column:
                   name: festival_id
                   type: BIGINT
@@ -194,10 +135,10 @@ databaseChangeLog:
                   constraints:
                     nullable: false
 
-        - addPrimaryKey:
+        - addUniqueConstraint:
+            constraintName: unq_festival_locations_festival_platform_city
             tableName: festival_locations
             columnNames: festival_id, platform_id, city_id
-            constraintName: pk_festival_locations
 
         - addForeignKeyConstraint:
             constraintName: fk_festival_locations_festival
@@ -210,3 +151,69 @@ databaseChangeLog:
             sql: |
               ALTER TABLE festival_locations ADD CONSTRAINT check_max_people_number 
               CHECK (max_people_number > 10);
+
+        - createTable:
+            tableName: festival_curators
+            columns:
+              - column:
+                  name: festival_location_id
+                  type: BIGINT
+                  constraints:
+                    nullable: false
+              - column:
+                  name: curator_id
+                  type: BIGINT
+                  constraints:
+                    nullable: false
+
+        - addPrimaryKey:
+            tableName: festival_curators
+            columnNames: festival_location_id, curator_id
+            constraintName: pk_festival_curators
+
+        - addForeignKeyConstraint:
+            constraintName: fk_festival_curators_festival_location
+            baseTableName: festival_curators
+            baseColumnNames: festival_location_id
+            referencedTableName: festival_locations
+            referencedColumnNames: id
+
+        - createIndex:
+            indexName: idx_festival_curators_festival
+            tableName: festival_curators
+            columns:
+              - column:
+                  name: festival_location_id
+
+        - createTable:
+            tableName: festival_companies
+            columns:
+              - column:
+                  name: festival_location_id
+                  type: BIGINT
+                  constraints:
+                    nullable: false
+              - column:
+                  name: company_id
+                  type: BIGINT
+                  constraints:
+                    nullable: false
+
+        - addPrimaryKey:
+            tableName: festival_companies
+            columnNames: festival_location_id, company_id
+            constraintName: pk_festival_companies
+
+        - addForeignKeyConstraint:
+            constraintName: fk_festival_companies_festival_location
+            baseTableName: festival_companies
+            baseColumnNames: festival_location_id
+            referencedTableName: festival_locations
+            referencedColumnNames: id
+
+        - createIndex:
+            indexName: idx_festival_companies_festival_location
+            tableName: festival_companies
+            columns:
+              - column:
+                  name: festival_location_id

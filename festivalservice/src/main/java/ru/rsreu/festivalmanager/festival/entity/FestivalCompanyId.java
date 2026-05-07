@@ -16,8 +16,8 @@ import java.io.Serializable;
 @AllArgsConstructor
 public class FestivalCompanyId implements Serializable {
     @ManyToOne
-    @JoinColumn(name = "festival_id", nullable = false)
-    private Festival festival;
+    @JoinColumn(name = "festival_location_id", nullable = false)
+    private FestivalLocation festivalLocation;
 
     @Column(name = "company_id", nullable = false)
     private Long companyId;

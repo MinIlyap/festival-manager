@@ -1,9 +1,6 @@
 package ru.rsreu.festivalmanager.festival.entity;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.EmbeddedId;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -16,8 +13,19 @@ import lombok.Setter;
 @NoArgsConstructor
 @AllArgsConstructor
 public class FestivalLocation {
-    @EmbeddedId
-    private FestivalLocationId festivalLocationId;
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    @ManyToOne
+    @JoinColumn(name = "festival_id", nullable = false)
+    private Festival festival;
+
+    @Column(name = "platform_id", nullable = false)
+    private Long platformId;
+
+    @Column(name = "city_id", nullable = false)
+    private Long cityId;
 
     @Column(name = "max_people_number", nullable = false)
     private Integer maxPeopleNumber;

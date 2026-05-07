@@ -29,6 +29,6 @@ public class TicketType {
     private BigDecimal price;
 
     @ManyToOne
-    @JoinColumn(name = "festival_id", nullable = false)
-    private Festival festival;
+    @JoinColumn(name = "festival_location_id", nullable = false)
+    private FestivalLocation festivalLocation;
 }
