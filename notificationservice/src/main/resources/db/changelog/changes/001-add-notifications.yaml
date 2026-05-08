@@ -1,0 +1,118 @@
+databaseChangeLog:
+  - changeSet:
+      id: 001-add-notifications
+      author: ilyap
+      changes:
+        - createTable:
+            tableName: notifications
+            columns:
+              - column:
+                  name: id
+                  type: BIGINT
+                  autoIncrement: true
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: type
+                  type: VARCHAR(20)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: target_user_id
+                  type: BIGINT
+                  constraints:
+                    nullable: false
+              - column:
+                  name: created_at
+                  type: TIMESTAMPTZ
+                  defaultValueComputed: CURRENT_TIMESTAMP
+                  constraints:
+                    nullable: false
+
+        - createIndex:
+            indexName: idx_notifications_target_user
+            tableName: notifications
+            columns:
+              - column:
+                  name: target_user_id
+
+        - sql:
+            sql: |
+              ALTER TABLE notifications
+                ADD CONSTRAINT chk_type
+                CHECK (type IN ('CREATING_COMPANY', 'CREATING_FESTIVAL', 'INVITING_TEAM', 'APPROVING_COMPANY', 
+                'REJECTING_COMPANY', 'APPROVING_FESTIVAL', 'REJECTING_FESTIVAL'));
+
+        - createTable:
+            tableName: notification_data
+            columns:
+              - column:
+                  name: id
+                  type: BIGINT
+                  autoIncrement: true
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: company_id
+                  type: BIGINT
+                  constraints:
+                    nullable: true
+              - column:
+                  name: company_name
+                  type: VARCHAR(255)
+                  constraints:
+                    nullable: true
+              - column:
+                  name: festival_location_id
+                  type: BIGINT
+                  constraints:
+                    nullable: true
+              - column:
+                  name: festival_name
+                  type: VARCHAR(255)
+                  constraints:
+                    nullable: true
+              - column:
+                  name: comment
+                  type: TEXT
+                  constraints:
+                    nullable: true
+              - column:
+                  name: event_id
+                  type: BIGINT
+                  constraints:
+                    nullable: true
+              - column:
+                  name: event_name
+                  type: VARCHAR(255)
+                  constraints:
+                    nullable: true
+              - column:
+                  name: command_id
+                  type: BIGINT
+                  constraints:
+                    nullable: true
+              - column:
+                  name: command_name
+                  type: VARCHAR(255)
+                  constraints:
+                    nullable: true
+              - column:
+                  name: related_user_id
+                  type: BIGINT
+                  constraints:
+                    nullable: true
+              - column:
+                  name: notification_id
+                  type: BIGINT
+                  constraints:
+                    nullable: false
+
+        - addForeignKeyConstraint:
+            constraintName: fk_notification_data_notification
+            baseTableName: notification_data
+            baseColumnNames: notification_id
+            referencedTableName: notifications
+            referencedColumnNames: id
