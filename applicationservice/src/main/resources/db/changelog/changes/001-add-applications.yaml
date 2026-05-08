@@ -1,0 +1,124 @@
+databaseChangeLog:
+  - changeSet:
+      id: 001-add-applications
+      author: ilyap
+      changes:
+        - createTable:
+            tableName: applications
+            columns:
+              - column:
+                  name: id
+                  type: BIGINT
+                  autoIncrement: true
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: type
+                  type: VARCHAR(20)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: status
+                  type: VARCHAR(8)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: sender_id
+                  type: BIGINT
+                  constraints:
+                    nullable: true
+              - column:
+                  name: agent_id
+                  type: BIGINT
+                  constraints:
+                    nullable: true
+              - column:
+                  name: created_at
+                  type: TIMESTAMPTZ
+                  defaultValueComputed: CURRENT_DATETIME
+                  constraints:
+                    nullable: false
+              - column:
+                  name: updated_at
+                  type: TIMESTAMPTZ
+                  constraints:
+                    nullable: false
+        - sql:
+            sql: |
+              ALTER TABLE applications
+                ADD CONSTRAINT chk_type
+                CHECK (type IN ('COMPANY_APPLICATION', 'FESTIVAL_APPLICATION'));
+              ALTER TABLE applications
+                ADD CONSTRAINT chk_status
+                CHECK (status IN ('PENDING', 'APPROVED', 'REJECTED'));
+
+        - createIndex:
+            indexName: idx_applications_type
+            tableName: applications
+            columns:
+              - column:
+                  name: type
+        - createIndex:
+            indexName: idx_applications_status
+            tableName: applications
+            columns:
+              - column:
+                  name: status
+        - createIndex:
+            indexName: idx_applications_sender
+            tableName: applications
+            columns:
+              - column:
+                  name: sender_id
+        - createIndex:
+            indexName: idx_applications_agent
+            tableName: applications
+            columns:
+              - column:
+                  name: agent_id
+
+        - createTable:
+            tableName: application_data
+            columns:
+              - column:
+                  name: id
+                  type: BIGINT
+                  autoIncrement: true
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: comment
+                  type: TEXT
+                  constraints:
+                    nullable: true
+              - column:
+                  name: company_id
+                  type: BIGINT
+                  constraints:
+                    nullable: true
+              - column:
+                  name: festival_location_id
+                  type: BIGINT
+                  constraints:
+                    nullable: true
+              - column:
+                  name: application_id
+                  type: BIGINT
+                  constraints:
+                    nullable: false
+
+        - addForeignKeyConstraint:
+            constraintName: fk_application_data_application
+            baseTableName: application_data
+            baseColumnNames: application_id
+            referencedTableName: applications
+            referencedColumnNames: id
+
+        - createIndex:
+            indexName: idx_application_data_application
+            tableName: application_data
+            columns:
+              - column:
+                  name: application_id

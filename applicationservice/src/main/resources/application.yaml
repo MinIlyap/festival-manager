@@ -1,6 +1,16 @@
 spring:
   application:
     name: applicationservice
-
+  liquibase:
+    change-log: classpath:/db/changelog/db.changelog-master.yaml
+  datasource:
+    name: application_db
+    username: application_service_user
+    password: application_service_password
+    driver-class-name: org.postgresql.Driver
+    url: jdbc:postgresql://localhost:5440/application_db
+  jpa:
+    hibernate:
+      ddl-auto: validate
 server:
   port: 8081
