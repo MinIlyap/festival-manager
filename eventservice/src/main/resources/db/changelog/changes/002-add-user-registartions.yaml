@@ -19,7 +19,7 @@ databaseChangeLog:
                   constraints:
                     nullable: false
               - column:
-                  name: event_organization_id
+                  name: festival_event_id
                   type: BIGINT
                   constraints:
                     nullable: false
@@ -30,10 +30,10 @@ databaseChangeLog:
                     nullable: false
 
         - addForeignKeyConstraint:
-            constraintName: fk_commands_event_organization
+            constraintName: fk_commands_festival_event
             baseTableName: commands
-            baseColumnNames: event_organization_id
-            referencedTableName: event_organizations
+            baseColumnNames: festival_event_id
+            referencedTableName: festival_events
             referencedColumnNames: id
 
         - createIndex:
@@ -41,15 +41,15 @@ databaseChangeLog:
             tableName: commands
             columns:
               - column:
-                  name: event_organization_id
+                  name: festival_event_id
               - column:
                   name: name
 
         - createTable:
-            tableName: user_event_registrations
+            tableName: command_members
             columns:
               - column:
-                  name: event_organization_id
+                  name: command_id
                   type: BIGINT
                   constraints:
                     nullable: false
@@ -58,28 +58,36 @@ databaseChangeLog:
                   type: BIGINT
                   constraints:
                     nullable: false
+
+        - addPrimaryKey:
+            tableName: command_members
+            columnNames: command_id, user_id
+            constraintName: pk_command_members
+
+        - createTable:
+            tableName: user_event_registrations
+            columns:
               - column:
-                  name: command_id
+                  name: festival_event_id
                   type: BIGINT
                   constraints:
-                    nullable: true
+                    nullable: false
+              - column:
+                  name: user_id
+                  type: BIGINT
+                  constraints:
+                    nullable: false
 
         - addPrimaryKey:
             tableName: user_event_registrations
-            columnNames: event_organization_id, user_id
+            columnNames: festival_event_id, user_id
             constraintName: pk_user_event_registrations
 
         - addForeignKeyConstraint:
-            constraintName: fk_user_event_registrations_event_organization
+            constraintName: fk_user_event_registrations_festival_event
             baseTableName: user_event_registrations
-            baseColumnNames: event_organization_id
-            referencedTableName: event_organizations
-            referencedColumnNames: id
-        - addForeignKeyConstraint:
-            constraintName: fk_user_event_registrations_command
-            baseTableName: user_event_registrations
-            baseColumnNames: command_id
-            referencedTableName: commands
+            baseColumnNames: festival_event_id
+            referencedTableName: festival_events
             referencedColumnNames: id
 
         - createIndex:
@@ -87,4 +95,4 @@ databaseChangeLog:
             tableName: user_event_registrations
             columns:
               - column:
-                  name: event_organization_id
+                  name: festival_event_id

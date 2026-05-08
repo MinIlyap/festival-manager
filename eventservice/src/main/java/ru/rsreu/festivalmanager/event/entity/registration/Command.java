@@ -1,10 +1,11 @@
-package ru.rsreu.festivalmanager.event.entity;
+package ru.rsreu.festivalmanager.event.entity.registration;
 
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import ru.rsreu.festivalmanager.event.entity.event.FestivalEvent;
 
 @Entity
 @Table(name = "commands")
@@ -21,8 +22,8 @@ public class Command {
     private String name;
 
     @ManyToOne
-    @JoinColumn(name = "event_organization_id", nullable = false)
-    private EventOrganization eventOrganization;
+    @JoinColumn(name = "festival_event_id", nullable = false)
+    private FestivalEvent festivalEvent;
 
     @Column(name = "creator_id")
     private Long creatorId;

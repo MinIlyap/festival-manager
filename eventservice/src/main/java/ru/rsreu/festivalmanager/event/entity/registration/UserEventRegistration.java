@@ -1,4 +1,4 @@
-package ru.rsreu.festivalmanager.event.entity;
+package ru.rsreu.festivalmanager.event.entity.registration;
 
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -15,8 +15,4 @@ import lombok.Setter;
 public class UserEventRegistration {
     @EmbeddedId
     private UserEventRegistrationId userEventRegistrationId;
-
-    @ManyToOne
-    @JoinColumn(name = "command_id", nullable = false)
-    private Command command;
 }

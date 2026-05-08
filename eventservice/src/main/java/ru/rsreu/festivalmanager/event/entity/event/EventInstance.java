@@ -1,4 +1,4 @@
-package ru.rsreu.festivalmanager.event.entity;
+package ru.rsreu.festivalmanager.event.entity.event;
 
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -8,21 +8,17 @@ import lombok.Setter;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
-import java.time.OffsetDateTime;
 
 @Entity
-@Table(name = "events")
+@Table(name = "event_instances")
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class Event {
+public class EventInstance {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-
-    @Column(name = "name", nullable = false)
-    private String name;
 
     @Column(name = "type")
     @Enumerated(value = EnumType.STRING)
@@ -37,17 +33,22 @@ public class Event {
     @Column(name = "time_start", nullable = false)
     private LocalTime timeStart;
 
-    @Column(name = "approximate_duration", nullable = false)
+    @Column(name = "approximate_duration")
     private Integer approximateDuration;
+
+    @Column(name = "max_number_people", nullable = false)
+    private Integer maxNumberPeople;
+
+    @Column(name = "is_command", nullable = false)
+    private Boolean isCommand;
+
+    @Column(name = "max_people_command")
+    private Integer maxPeopleCommand;
 
     @Column(name = "company_id", nullable = false)
     private Long companyId;
 
-    @Column(name = "created_at", nullable = false, updatable = false)
-    private OffsetDateTime createdAt;
-
-    @PrePersist
-    protected void onCreate() {
-        createdAt = OffsetDateTime.now();
-    }
+    @ManyToOne
+    @JoinColumn(name = "event_id", nullable = false)
+    private Event event;
 }

@@ -1,4 +1,4 @@
-package ru.rsreu.festivalmanager.event.entity;
+package ru.rsreu.festivalmanager.event.entity.event;
 
 public enum EventType {
     TOURNAMENT,

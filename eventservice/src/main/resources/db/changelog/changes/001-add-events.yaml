@@ -17,6 +17,18 @@ databaseChangeLog:
                   name: name
                   type: VARCHAR(255)
                   constraints:
+                    unique: true
+                    nullable: false
+
+        - createTable:
+            tableName: event_instances
+            columns:
+              - column:
+                  name: id
+                  type: BIGINT
+                  autoIncrement: true
+                  constraints:
+                    primaryKey: true
                     nullable: false
               - column:
                   name: type
@@ -44,59 +56,6 @@ databaseChangeLog:
                   constraints:
                     nullable: true
               - column:
-                  name: company_id
-                  type: BIGINT
-                  constraints:
-                    nullable: false
-              - column:
-                  name: created_at
-                  type: TIMESTAMPTZ
-                  defaultValueComputed: CURRENT_TIMESTAMP
-                  constraints:
-                    nullable: false
-
-        - createIndex:
-            indexName: idx_events_name
-            tableName: events
-            columns:
-              - column:
-                  name: name
-        - createIndex:
-            indexName: idx_events_date_time_start
-            tableName: events
-            columns:
-              - column:
-                  name: date_start
-              - column:
-                  name: time_start
-
-        - sql:
-            sql: |
-              ALTER TABLE events
-                ADD CONSTRAINT chk_type
-                CHECK (type IN ('TOURNAMENT', 'QUEST', 'MASTER_CLASS', 'DEMONSTRATION'));
-
-        - createTable:
-            tableName: event_organizations
-            columns:
-              - column:
-                  name: id
-                  type: BIGINT
-                  autoIncrement: true
-                  constraints:
-                    primaryKey: true
-                    nullable: false
-              - column:
-                  name: event_id
-                  type: BIGINT
-                  constraints:
-                    nullable: false
-              - column:
-                  name: festival_location_id
-                  type: BIGINT
-                  constraints:
-                    nullable: false
-              - column:
                   name: max_number_people
                   type: INTEGER
                   constraints:
@@ -111,28 +70,99 @@ databaseChangeLog:
                   type: INTEGER
                   constraints:
                     nullable: true
-
-        - addUniqueConstraint:
-            constraintName: unq_event_organizations_event_location
-            tableName: event_organizations
-            columnNames: event_id, festival_location_id
+              - column:
+                  name: company_id
+                  type: BIGINT
+                  constraints:
+                    nullable: false
+              - column:
+                  name: event_id
+                  type: BIGINT
+                  constraints:
+                    nullable: false
 
         - addForeignKeyConstraint:
-            constraintName: fk_event_organizations_event
-            baseTableName: event_organizations
+            constraintName: fk_event_instances_event
+            baseTableName: event_instances
             baseColumnNames: event_id
             referencedTableName: events
             referencedColumnNames: id
 
         - createIndex:
-            indexName: idx_event_organizations_festival
-            tableName: event_organizations
+            indexName: idx_event_instances_date_time_start
+            tableName: event_instances
+            columns:
+              - column:
+                  name: date_start
+              - column:
+                  name: time_start
+        - createIndex:
+            indexName: idx_event_instances_company
+            tableName: event_instances
+            columns:
+              - column:
+                  name: company_id
+        - createIndex:
+            indexName: idx_event_instances_event
+            tableName: event_instances
+            columns:
+              - column:
+                  name: event_id
+
+        - sql:
+            sql: |
+              ALTER TABLE event_instances
+                ADD CONSTRAINT chk_type
+                CHECK (type IN ('TOURNAMENT', 'QUEST', 'MASTER_CLASS', 'DEMONSTRATION'));
+
+        - createTable:
+            tableName: festival_events
+            columns:
+              - column:
+                  name: id
+                  type: BIGINT
+                  autoIncrement: true
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: festival_location_id
+                  type: BIGINT
+                  constraints:
+                    nullable: false
+              - column:
+                  name: event_instance_id
+                  type: BIGINT
+                  constraints:
+                    nullable: false
+              - column:
+                  name: created_at
+                  type: TIMESTAMPTZ
+                  defaultValueComputed: CURRENT_TIMESTAMP
+                  constraints:
+                    nullable: false
+
+        - addUniqueConstraint:
+            constraintName: unq_festival_events_event_location
+            tableName: festival_events
+            columnNames: festival_location_id, event_instance_id
+
+        - addForeignKeyConstraint:
+            constraintName: fk_festival_events_event_instance
+            baseTableName: festival_events
+            baseColumnNames: event_instance_id
+            referencedTableName: event_instances
+            referencedColumnNames: id
+
+        - createIndex:
+            indexName: idx_festival_events_festival
+            tableName: festival_events
             columns:
               - column:
                   name: festival_location_id
         - createIndex:
-            indexName: idx_event_organizations_event
-            tableName: event_organizations
+            indexName: idx_festival_events_event
+            tableName: festival_events
             columns:
               - column:
-                  name: event_id
+                  name: event_instance_id

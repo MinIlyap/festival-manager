@@ -1,0 +1,193 @@
+databaseChangeLog:
+  - changeSet:
+      id: 004-add-stands
+      author: ilyap
+      changes:
+        - createTable:
+            tableName: stands
+            columns:
+              - column:
+                  name: id
+                  type: BIGINT
+                  autoIncrement: true
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: name
+                  type: VARCHAR(255)
+                  constraints:
+                    unique: true
+                    nullable: false
+
+        - createTable:
+            tableName: stand_instances
+            columns:
+              - column:
+                  name: id
+                  type: BIGINT
+                  autoIncrement: true
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: type
+                  type: VARCHAR(14)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: description
+                  type: TEXT
+                  constraints:
+                    nullable: false
+              - column:
+                  name: company_id
+                  type: BIGINT
+                  constraints:
+                    nullable: false
+              - column:
+                  name: date_start
+                  type: DATE
+                  constraints:
+                    nullable: false
+              - column:
+                  name: stand_id
+                  type: BIGINT
+                  constraints:
+                    nullable: false
+
+        - addForeignKeyConstraint:
+            constraintName: fk_stand_instances_stand
+            baseTableName: stand_instances
+            baseColumnNames: stand_id
+            referencedTableName: stands
+            referencedColumnNames: id
+
+        - sql:
+            sql: |
+              ALTER TABLE stand_instances
+                ADD CONSTRAINT chk_type
+                CHECK (type IN ('DEMONSTRATION', 'COMMERCIAL'));
+
+        - createIndex:
+            indexName: idx_stand_instances_company
+            tableName: stand_instances
+            columns:
+              - column:
+                  name: company_id
+        - createIndex:
+            indexName: idx_stand_instances_type
+            tableName: stand_instances
+            columns:
+              - column:
+                  name: type
+
+        - createTable:
+            tableName: festival_stands
+            columns:
+              - column:
+                  name: id
+                  type: BIGINT
+                  autoIncrement: true
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: festival_location_id
+                  type: BIGINT
+                  constraints:
+                    nullable: false
+              - column:
+                  name: stand_instance_id
+                  type: BIGINT
+                  constraints:
+                    nullable: false
+
+        - addUniqueConstraint:
+            constraintName: unq_festival_stands_festival_location_stand
+            tableName: festival_stands
+            columnNames: festival_location_id, stand_instance_id
+
+        - addForeignKeyConstraint:
+            constraintName: fk_festival_stands_stand
+            baseTableName: festival_stands
+            baseColumnNames: stand_instance_id
+            referencedTableName: stand_instances
+            referencedColumnNames: id
+
+        - createIndex:
+            indexName: idx_festival_stands_festival_location
+            tableName: festival_stands
+            columns:
+              - column:
+                  name: festival_location_id
+
+        - createTable:
+            tableName: products
+            columns:
+              - column:
+                  name: id
+                  type: BIGINT
+                  autoIncrement: true
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: name
+                  type: VARCHAR(255)
+                  constraints:
+                    unique: true
+                    nullable: false
+
+        - createTable:
+            tableName: stand_products
+            columns:
+              - column:
+                  name: festival_stand_id
+                  type: BIGINT
+                  constraints:
+                    nullable: false
+              - column:
+                  name: product_id
+                  type: BIGINT
+                  constraints:
+                    nullable: false
+              - column:
+                  name: description
+                  type: TEXT
+                  constraints:
+                    nullable: false
+              - column:
+                  name: quantity
+                  type: INTEGER
+                  constraints:
+                    nullable: false
+              - column:
+                  name: price
+                  type: DECIMAL(8,2)
+                  constraints:
+                    nullable: false
+
+        - addPrimaryKey:
+            tableName: stand_products
+            columnNames: festival_stand_id, product_id
+            constraintName: pk_stand_products
+
+        - addForeignKeyConstraint:
+            constraintName: fk_stand_products_festival_stand
+            baseTableName: stand_products
+            baseColumnNames: festival_stand_id
+            referencedTableName: festival_stands
+            referencedColumnNames: id
+        - addForeignKeyConstraint:
+            constraintName: fk_stand_products_product
+            baseTableName: stand_products
+            baseColumnNames: product_id
+            referencedTableName: products
+            referencedColumnNames: id
+
+        - sql:
+            sql: |
+              ALTER TABLE stand_products ADD CONSTRAINT chk_stand_products_quantity_positive CHECK (quantity > 0);
+              ALTER TABLE stand_products ADD CONSTRAINT chk_stand_products_price_positive CHECK (price >= 0);
+

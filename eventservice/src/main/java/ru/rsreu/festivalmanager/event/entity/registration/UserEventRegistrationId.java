@@ -1,4 +1,4 @@
-package ru.rsreu.festivalmanager.event.entity;
+package ru.rsreu.festivalmanager.event.entity.registration;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Embeddable;
@@ -7,6 +7,7 @@ import jakarta.persistence.ManyToOne;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import ru.rsreu.festivalmanager.event.entity.event.FestivalEvent;
 
 import java.io.Serializable;
 
@@ -16,8 +17,8 @@ import java.io.Serializable;
 @AllArgsConstructor
 public class UserEventRegistrationId implements Serializable {
     @ManyToOne
-    @JoinColumn(name = "event_organization_id", nullable = false)
-    private EventOrganization eventOrganization;
+    @JoinColumn(name = "festival_event_id", nullable = false)
+    private FestivalEvent festivalEvent;
 
     @Column(name = "user_id", nullable = false)
     private Long userId;
