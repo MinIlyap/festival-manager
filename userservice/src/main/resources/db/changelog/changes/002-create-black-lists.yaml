@@ -18,7 +18,7 @@ databaseChangeLog:
                     nullable: false
               - column:
                   name: reason
-                  type: VARCHAR(255)
+                  type: TEXT
                   constraints:
                     nullable: false
               - column:

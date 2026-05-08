@@ -1,10 +1,7 @@
-package ru.rsreu.festivalmanager.festival.entity;
+package ru.rsreu.festivalmanager.festival.entity.ticket;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -12,8 +9,7 @@ import java.time.OffsetDateTime;
 
 @Entity
 @Table(name = "tickets")
-@Getter
-@Setter
+@Data
 @NoArgsConstructor
 @AllArgsConstructor
 public class Ticket {
@@ -25,8 +21,8 @@ public class Ticket {
     private Long userId;
 
     @ManyToOne
-    @JoinColumn(name = "ticket_type_id", nullable = false)
-    private TicketType ticketType;
+    @JoinColumn(name = "ticket_type_instance_id", nullable = false)
+    private TicketTypeInstance ticketTypeInstance;
 
     @Column(name = "expiry_date", nullable = false)
     private LocalDateTime expiryDate;

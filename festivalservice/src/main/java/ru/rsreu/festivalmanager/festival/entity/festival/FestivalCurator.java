@@ -1,17 +1,13 @@
-package ru.rsreu.festivalmanager.festival.entity;
+package ru.rsreu.festivalmanager.festival.entity.festival;
 
 import jakarta.persistence.EmbeddedId;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Table;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
 @Entity
 @Table(name = "festival_curators")
-@Getter
-@Setter
+@Data
 @NoArgsConstructor
 @AllArgsConstructor
 public class FestivalCurator {

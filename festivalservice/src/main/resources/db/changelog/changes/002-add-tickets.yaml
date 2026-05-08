@@ -17,6 +17,18 @@ databaseChangeLog:
                   name: name
                   type: VARCHAR(150)
                   constraints:
+                    unique: true
+                    nullable: false
+
+        - createTable:
+            tableName: ticket_type_instances
+            columns:
+              - column:
+                  name: id
+                  type: BIGINT
+                  autoIncrement: true
+                  constraints:
+                    primaryKey: true
                     nullable: false
               - column:
                   name: description
@@ -25,26 +37,49 @@ databaseChangeLog:
                     nullable: false
               - column:
                   name: price
-                  type: DECIMAL(5,2)
+                  type: DECIMAL(7,2)
+                  constraints:
+                    nullable: false
               - column:
                   name: festival_location_id
                   type: BIGINT
                   constraints:
                     nullable: false
+              - column:
+                  name: ticket_type_id
+                  type: BIGINT
+                  constraints:
+                    nullable: false
+
+        - sql:
+            sql: |
+              ALTER TABLE ticket_type_instances ADD CONSTRAINT chk_ticket_type_instances_price_positive CHECK (price >= 0);
 
         - addForeignKeyConstraint:
-            constraintName: fk_ticket_types_festival_location
-            baseTableName: ticket_types
+            constraintName: fk_ticket_type_instances_festival_location
+            baseTableName: ticket_type_instances
             baseColumnNames: festival_location_id
             referencedTableName: festival_locations
             referencedColumnNames: id
+        - addForeignKeyConstraint:
+            constraintName: fk_ticket_type_instances_ticket_type
+            baseTableName: ticket_type_instances
+            baseColumnNames: ticket_type_id
+            referencedTableName: ticket_types
+            referencedColumnNames: id
 
         - createIndex:
-            indexName: idx_ticket_types_festival_location
-            tableName: ticket_types
+            indexName: idx_ticket_type_instances_festival_location
+            tableName: ticket_type_instances
             columns:
               - column:
                   name: festival_location_id
+        - createIndex:
+            indexName: idx_ticket_type_instances_ticket_type
+            tableName: ticket_type_instances
+            columns:
+              - column:
+                  name: ticket_type_id
 
         - createTable:
             tableName: tickets
@@ -62,7 +97,7 @@ databaseChangeLog:
                   constraints:
                     nullable: false
               - column:
-                  name: ticket_type_id
+                  name: ticket_type_instance_id
                   type: BIGINT
                   constraints:
                     nullable: false
@@ -78,7 +113,7 @@ databaseChangeLog:
                     nullable: false
               - column:
                   name: final_price
-                  type: DECIMAL(6,2)
+                  type: DECIMAL(8,2)
                   constraints:
                     nullable: false
               - column:
@@ -88,11 +123,16 @@ databaseChangeLog:
                   constraints:
                     nullable: false
 
+        - sql:
+            sql: |
+              ALTER TABLE tickets ADD CONSTRAINT chk_tickets_quantity_positive CHECK (quantity > 0);
+              ALTER TABLE tickets ADD CONSTRAINT chk_tickets_final_price_positive CHECK (final_price >= 0);
+
         - addForeignKeyConstraint:
-            constraintName: fk_tickets_type
+            constraintName: fk_tickets_type_instance
             baseTableName: tickets
-            baseColumnNames: ticket_type_id
-            referencedTableName: ticket_types
+            baseColumnNames: ticket_type_instance_id
+            referencedTableName: ticket_type_instances
             referencedColumnNames: id
 
         - createIndex:

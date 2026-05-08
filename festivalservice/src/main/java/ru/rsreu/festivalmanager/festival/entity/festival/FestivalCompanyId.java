@@ -1,4 +1,4 @@
-package ru.rsreu.festivalmanager.festival.entity;
+package ru.rsreu.festivalmanager.festival.entity.festival;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Embeddable;
@@ -14,11 +14,11 @@ import java.io.Serializable;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class FestivalCuratorId implements Serializable {
+public class FestivalCompanyId implements Serializable {
     @ManyToOne
     @JoinColumn(name = "festival_location_id", nullable = false)
     private FestivalLocation festivalLocation;
 
-    @Column(name = "curator_id", nullable = false)
-    private Long curatorId;
+    @Column(name = "company_id", nullable = false)
+    private Long companyId;
 }

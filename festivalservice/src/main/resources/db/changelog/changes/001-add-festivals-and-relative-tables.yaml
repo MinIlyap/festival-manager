@@ -8,7 +8,7 @@ databaseChangeLog:
             columns:
               - column:
                   name: id
-                  type: SMALLINT
+                  type: INTEGER
                   autoIncrement: true
                   constraints:
                     primaryKey: true
@@ -34,10 +34,22 @@ databaseChangeLog:
                   name: name
                   type: VARCHAR(255)
                   constraints:
+                    unique: true
+                    nullable: false
+
+        - createTable:
+            tableName: festival_instances
+            columns:
+              - column:
+                  name: id
+                  type: BIGINT
+                  autoIncrement: true
+                  constraints:
+                    primaryKey: true
                     nullable: false
               - column:
                   name: age_limit_id
-                  type: SMALLINT
+                  type: INTEGER
                   constraints:
                     nullable: false
               - column:
@@ -72,37 +84,50 @@ databaseChangeLog:
                   constraints:
                     nullable: false
               - column:
-                  name: created_at
-                  type: TIMESTAMPTZ
-                  defaultValueComputed: CURRENT_TIMESTAMP
+                  name: max_people_number
+                  type: INTEGER
                   constraints:
                     nullable: false
+              - column:
+                  name: festival_id
+                  type: BIGINT
+                  constraints:
+                    nullable: false
+
         - sql:
             sql: |
-              ALTER TABLE festivals ADD CONSTRAINT check_end_after_start 
+              ALTER TABLE festival_instances ADD CONSTRAINT check_end_after_start 
               CHECK ((date_start + time_start) <= (date_end + time_end));
+              ALTER TABLE festival_instances ADD CONSTRAINT check_max_people_number 
+              CHECK (max_people_number > 10);
 
         - addForeignKeyConstraint:
-            constraintName: fk_festivals_age_limit
-            baseTableName: festivals
+            constraintName: fk_festival_instances_age_limit
+            baseTableName: festival_instances
             baseColumnNames: age_limit_id
             referencedTableName: age_limits
             referencedColumnNames: id
+        - addForeignKeyConstraint:
+            constraintName: fk_festival_instances_festival
+            baseTableName: festival_instances
+            baseColumnNames: festival_id
+            referencedTableName: festivals
+            referencedColumnNames: id
 
         - createIndex:
-            indexName: idx_festivals_start_end
-            tableName: festivals
+            indexName: idx_festival_instances_start_end
+            tableName: festival_instances
             columns:
               - column:
                   name: date_start
               - column:
                   name: date_end
         - createIndex:
-            indexName: idx_festivals_name
-            tableName: festivals
+            indexName: idx_festival_instances_festival
+            tableName: festival_instances
             columns:
               - column:
-                  name: name
+                  name: festival_id
 
         - createTable:
             tableName: festival_locations
@@ -115,7 +140,7 @@ databaseChangeLog:
                     primaryKey: true
                     nullable: false
               - column:
-                  name: festival_id
+                  name: festival_instance_id
                   type: BIGINT
                   constraints:
                     nullable: false
@@ -130,27 +155,23 @@ databaseChangeLog:
                   constraints:
                     nullable: false
               - column:
-                  name: max_people_number
-                  type: INTEGER
+                  name: created_at
+                  type: TIMESTAMPTZ
+                  defaultValueComputed: CURRENT_TIMESTAMP
                   constraints:
                     nullable: false
 
         - addUniqueConstraint:
             constraintName: unq_festival_locations_festival_platform_city
             tableName: festival_locations
-            columnNames: festival_id, platform_id, city_id
+            columnNames: festival_instance_id, platform_id, city_id
 
         - addForeignKeyConstraint:
-            constraintName: fk_festival_locations_festival
+            constraintName: fk_festival_locations_festival_instance
             baseTableName: festival_locations
-            baseColumnNames: festival_id
-            referencedTableName: festivals
+            baseColumnNames: festival_instance_id
+            referencedTableName: festival_instances
             referencedColumnNames: id
-
-        - sql:
-            sql: |
-              ALTER TABLE festival_locations ADD CONSTRAINT check_max_people_number 
-              CHECK (max_people_number > 10);
 
         - createTable:
             tableName: festival_curators

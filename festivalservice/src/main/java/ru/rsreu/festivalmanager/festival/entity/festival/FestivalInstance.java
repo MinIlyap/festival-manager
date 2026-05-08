@@ -1,34 +1,28 @@
-package ru.rsreu.festivalmanager.festival.entity;
+package ru.rsreu.festivalmanager.festival.entity.festival;
 
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
-import lombok.Getter;
+import lombok.Data;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
-import java.time.OffsetDateTime;
 
 @Entity
-@Table(name = "festivals")
-@Getter
-@Setter
+@Table(name = "festival_instances")
+@Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class Festival {
+public class FestivalInstance {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-
-    @Column(name = "name", nullable = false)
-    private String name;
 
     @ManyToOne
     @JoinColumn(name = "age_limit_id", nullable = false)
     private AgeLimit ageLimit;
 
-    @Column(name = "description")
+    @Column(name = "description", nullable = false)
     private String description;
 
     @Column(name = "date_start", nullable = false)
@@ -46,11 +40,10 @@ public class Festival {
     @Column(name = "is_visible", nullable = false)
     private boolean isVisible;
 
-    @Column(name = "created_at", nullable = false, updatable = false)
-    private OffsetDateTime createdAt;
+    @Column(name = "max_people_number", nullable = false)
+    private Integer maxPeopleNumber;
 
-    @PrePersist
-    protected void onCreate() {
-        createdAt = OffsetDateTime.now();
-    }
+    @ManyToOne
+    @JoinColumn(name = "festival_id", nullable = false)
+    private Festival festival;
 }
