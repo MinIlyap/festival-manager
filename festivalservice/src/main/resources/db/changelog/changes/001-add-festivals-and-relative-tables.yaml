@@ -145,12 +145,7 @@ databaseChangeLog:
                   constraints:
                     nullable: false
               - column:
-                  name: platform_id
-                  type: BIGINT
-                  constraints:
-                    nullable: false
-              - column:
-                  name: city_id
+                  name: platform_instance_id
                   type: BIGINT
                   constraints:
                     nullable: false
@@ -162,9 +157,9 @@ databaseChangeLog:
                     nullable: false
 
         - addUniqueConstraint:
-            constraintName: unq_festival_locations_festival_platform_city
+            constraintName: unq_festival_locations_festival_platform
             tableName: festival_locations
-            columnNames: festival_instance_id, platform_id, city_id
+            columnNames: festival_instance_id, platform_instance_id
 
         - addForeignKeyConstraint:
             constraintName: fk_festival_locations_festival_instance

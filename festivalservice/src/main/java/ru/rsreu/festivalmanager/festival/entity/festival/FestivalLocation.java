@@ -19,11 +19,8 @@ public class FestivalLocation {
     @JoinColumn(name = "festival_instance_id", nullable = false)
     private FestivalInstance festivalInstance;
 
-    @Column(name = "platform_id", nullable = false)
-    private Long platformId;
-
-    @Column(name = "city_id", nullable = false)
-    private Long cityId;
+    @Column(name = "platform_instance_id", nullable = false)
+    private Long platformInstanceId;
 
     @Column(name = "created_at", nullable = false, updatable = false)
     private OffsetDateTime createdAt;
