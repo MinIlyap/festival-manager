@@ -19,6 +19,6 @@ public class StandProductId implements Serializable {
     private FestivalStand festivalStand;
 
     @ManyToOne
-    @JoinColumn(name = "product_id", nullable = false)
-    private Product product;
+    @JoinColumn(name = "product_instance_id", nullable = false)
+    private ProductInstance productInstance;
 }

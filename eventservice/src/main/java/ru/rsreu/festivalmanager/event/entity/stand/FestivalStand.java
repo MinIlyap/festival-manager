@@ -5,6 +5,8 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.time.OffsetDateTime;
+
 @Entity
 @Table(name = "festival_stands")
 @Data
@@ -21,4 +23,12 @@ public class FestivalStand {
     @ManyToOne
     @JoinColumn(name = "stand_instance_id")
     private StandInstance standInstance;
+
+    @Column(name = "created_at", updatable = false, nullable = false)
+    private OffsetDateTime createdAt;
+
+    @PrePersist
+    protected void onCreate() {
+        createdAt = OffsetDateTime.now();
+    }
 }

@@ -102,6 +102,12 @@ databaseChangeLog:
                   type: BIGINT
                   constraints:
                     nullable: false
+              - column:
+                  name: created_at
+                  type: TIMESTAMPTZ
+                  defaultValueComputed: CURRENT_TIMESTAMP
+                  constraints:
+                    nullable: false
 
         - addUniqueConstraint:
             constraintName: unq_festival_stands_festival_location_stand
@@ -140,17 +146,14 @@ databaseChangeLog:
                     nullable: false
 
         - createTable:
-            tableName: stand_products
+            tableName: product_instances
             columns:
               - column:
-                  name: festival_stand_id
+                  name: id
                   type: BIGINT
+                  autoIncrement: true
                   constraints:
-                    nullable: false
-              - column:
-                  name: product_id
-                  type: BIGINT
-                  constraints:
+                    primaryKey: true
                     nullable: false
               - column:
                   name: description
@@ -167,10 +170,48 @@ databaseChangeLog:
                   type: DECIMAL(8,2)
                   constraints:
                     nullable: false
+              - column:
+                  name: product_id
+                  type: BIGINT
+                  constraints:
+                    nullable: false
+
+        - createIndex:
+            indexName: idx_product_instances_product
+            tableName: product_instances
+            columns:
+              - column:
+                  name: product_id
+
+        - addForeignKeyConstraint:
+            constraintName: fk_product_instances_product
+            baseTableName: product_instances
+            baseColumnNames: product_id
+            referencedTableName: products
+            referencedColumnNames: id
+
+        - sql:
+            sql: |
+              ALTER TABLE product_instances ADD CONSTRAINT chk_product_instances_quantity_positive CHECK (quantity > 0);
+              ALTER TABLE product_instances ADD CONSTRAINT chk_product_instances_price_positive CHECK (price >= 0);
+
+        - createTable:
+            tableName: stand_products
+            columns:
+              - column:
+                  name: festival_stand_id
+                  type: BIGINT
+                  constraints:
+                    nullable: false
+              - column:
+                  name: product_instance_id
+                  type: BIGINT
+                  constraints:
+                    nullable: false
 
         - addPrimaryKey:
             tableName: stand_products
-            columnNames: festival_stand_id, product_id
+            columnNames: festival_stand_id, product_instance_id
             constraintName: pk_stand_products
 
         - addForeignKeyConstraint:
@@ -182,12 +223,6 @@ databaseChangeLog:
         - addForeignKeyConstraint:
             constraintName: fk_stand_products_product
             baseTableName: stand_products
-            baseColumnNames: product_id
-            referencedTableName: products
+            baseColumnNames: product_instance_id
+            referencedTableName: product_instances
             referencedColumnNames: id
-
-        - sql:
-            sql: |
-              ALTER TABLE stand_products ADD CONSTRAINT chk_stand_products_quantity_positive CHECK (quantity > 0);
-              ALTER TABLE stand_products ADD CONSTRAINT chk_stand_products_price_positive CHECK (price >= 0);
-
