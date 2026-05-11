@@ -15,4 +15,5 @@ public class UserCreationDto {
     private String nickname;
     private LocalDate birthDate;
     private Long cityId;
+    private String accessType;
 }

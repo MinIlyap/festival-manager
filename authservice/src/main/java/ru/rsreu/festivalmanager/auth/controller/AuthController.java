@@ -39,8 +39,15 @@ public class AuthController {
         return ResponseEntity.ok(authService.refreshToken(request.getRefreshToken()));
     }
 
+    @GetMapping("/search")
+    @PreAuthorize("hasRole('INTERNAL')")
+    public ResponseEntity<AuthCredential> getUserByEmail(@RequestParam("email") String email) {
+        AuthCredential credential = authService.getUserByEmail(email);
+        return ResponseEntity.ok(credential);
+    }
+
     @GetMapping("/me")
-    @PreAuthorize("hasRole('USER') or hasRole('COMPANY') or hasRole('ADMIN') or hasRole('CURATOR')")
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<AuthCredential> getMe(
             @AuthenticationPrincipal Long id,
             Authentication authentication) {
@@ -50,7 +57,7 @@ public class AuthController {
     }
 
     @PutMapping("/email")
-    @PreAuthorize("hasRole('USER') or hasRole('COMPANY') or hasRole('ADMIN') or hasRole('CURATOR')")
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<String> changeEmail(
             @Valid @RequestBody ChangeEmailRequest request,
             @AuthenticationPrincipal Long id,
@@ -61,7 +68,7 @@ public class AuthController {
     }
 
     @PutMapping("/password")
-    @PreAuthorize("hasRole('USER') or hasRole('COMPANY') or hasRole('ADMIN') or hasRole('CURATOR')")
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<String> changePassword(
             @Valid @RequestBody ChangePasswordRequest request,
             @AuthenticationPrincipal Long id,

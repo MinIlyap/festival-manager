@@ -44,7 +44,8 @@ public class AuthService {
             throw new IllegalArgumentException("Email уже используется");
         }
 
-        UserCreationDto userDto = new UserCreationDto(request.getNickname(), request.getBirthDate(), request.getCityId());
+        UserCreationDto userDto = new UserCreationDto(request.getNickname(), request.getBirthDate(),
+                request.getCityId(), "USER");
         Long userId = userServiceClient.createUser(getBearerSystemToken(), userDto);
 
         AuthCredential credential = new AuthCredential();
@@ -102,6 +103,12 @@ public class AuthService {
             return credentialRepository.findByUserId(id)
                     .orElseThrow(() -> new IllegalArgumentException("Пользователь не найден"));
         }
+    }
+
+    public AuthCredential getUserByEmail(String email) {
+
+        return credentialRepository.findByEmail(email)
+                .orElseThrow(() -> new IllegalArgumentException("Пользователь не найден"));
     }
 
     @Transactional

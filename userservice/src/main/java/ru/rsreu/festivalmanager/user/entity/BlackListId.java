@@ -2,6 +2,8 @@ package ru.rsreu.festivalmanager.user.entity;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Embeddable;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.Getter;
@@ -16,11 +18,13 @@ import java.time.OffsetDateTime;
 @AllArgsConstructor
 @Getter
 public class BlackListId implements Serializable {
-    @Column(name = "user_id", nullable = false)
-    private Long userId;
+    @ManyToOne
+    @JoinColumn(name = "user_id", nullable = false)
+    private AppUser user;
 
-    @Column(name = "curator_id", nullable = false)
-    private Long curatorId;
+    @ManyToOne
+    @JoinColumn(name = "curator_id", nullable = false)
+    private AppUser curator;
 
     @Column(name = "created_at", nullable = false)
     private OffsetDateTime createdAt;
