@@ -14,6 +14,7 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 public class UserSession {
     @Id
+    @Column(name = "refresh_token")
     private String refreshToken;
 
     @OneToOne(fetch = FetchType.LAZY)

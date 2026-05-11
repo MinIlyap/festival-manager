@@ -12,7 +12,7 @@ import lombok.*;
 @AllArgsConstructor
 public class AuthCredential {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "user_id")
     private Long userId;
 
     @Column(name = "email", unique = true, nullable = false)
