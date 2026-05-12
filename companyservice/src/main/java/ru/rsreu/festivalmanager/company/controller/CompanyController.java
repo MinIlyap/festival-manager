@@ -36,6 +36,12 @@ public class CompanyController {
         return ResponseEntity.ok(companyService.getCompanyById(id));
     }
 
+    @GetMapping("/search")
+    @PreAuthorize("hasAnyRole('INTERNAL', 'ADMIN')")
+    public ResponseEntity<CompanyResponse> getCompanyByTin(@RequestParam("tin") String tin) {
+        return ResponseEntity.ok(companyService.getCompanyByTin(tin));
+    }
+
     @GetMapping("/me")
     @PreAuthorize("hasRole('COMPANY')")
     public ResponseEntity<CompanyResponse> getMe(@AuthenticationPrincipal Long companyId) {

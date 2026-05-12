@@ -44,6 +44,12 @@ public class CompanyService {
         return companyId;
     }
 
+    public CompanyResponse getCompanyByTin(String tin) {
+        Company company = companyRepository.findByTin(tin)
+                .orElseThrow(() -> new IllegalArgumentException("Компания с ИНН " + tin + " не найдена"));
+        return mapToResponse(company);
+    }
+
     @Transactional
     public void activateCompany(Long id) {
         Company company = companyRepository.findById(id)
@@ -52,6 +58,7 @@ public class CompanyService {
         companyRepository.save(company);
     }
 
+    @Transactional(readOnly = true)
     public CompanyResponse getCompanyById(Long id) {
         Company company = companyRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Компания не найдена"));

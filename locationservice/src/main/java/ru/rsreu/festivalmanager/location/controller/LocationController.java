@@ -34,6 +34,18 @@ public class LocationController {
         return ResponseEntity.ok(locationService.addCity(request));
     }
 
+    @GetMapping("/platform-instance/check/{id}")
+    @PreAuthorize("hasRole('INTERNAL')")
+    public ResponseEntity<Boolean> checkPlatformExists(@PathVariable Long id) {
+        return ResponseEntity.ok(locationService.isPlatformInstanceExistsById(id));
+    }
+
+    @GetMapping("/platform-instance/city/{cityId}")
+    @PreAuthorize("hasRole('INTERNAL')")
+    public ResponseEntity<List<Long>> getPlatformIdsByCity(@PathVariable Long cityId) {
+        return ResponseEntity.ok(locationService.getPlatformIdsByCity(cityId));
+    }
+
     @GetMapping("/platform-instance/search")
     @PreAuthorize("hasAnyRole('USER', 'COMPANY', 'ADMIN')")
     public ResponseEntity<List<PlatformInstanceResponse>> searchPlatformInstances(

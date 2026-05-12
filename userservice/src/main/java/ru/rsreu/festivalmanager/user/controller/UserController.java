@@ -9,6 +9,8 @@ import org.springframework.web.bind.annotation.*;
 import ru.rsreu.festivalmanager.user.dto.*;
 import ru.rsreu.festivalmanager.user.service.UserService;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("/user")
 @RequiredArgsConstructor
@@ -28,10 +30,23 @@ public class UserController {
         return ResponseEntity.ok(userService.getUserRole(id));
     }
 
+    @GetMapping("/profile/{id}")
+    @PreAuthorize("hasRole('INTERNAL')")
+    public ResponseEntity<UserProfileDto> getUserProfile(@PathVariable Long id) {
+        return ResponseEntity.ok(userService.getUserProfile(id));
+    }
+
     @GetMapping("/nickname-exists")
     @PreAuthorize("hasRole('INTERNAL')")
     public ResponseEntity<Boolean> checkNickname(@RequestParam("nickname") String nickname) {
         return ResponseEntity.ok(userService.isNicknameTaken(nickname));
+    }
+
+    @PutMapping("/roles/curator")
+    @PreAuthorize("hasRole('INTERNAL')")
+    public ResponseEntity<Void> assignCuratorRoles(@RequestBody List<Long> userIds) {
+        userService.assignCuratorRoles(userIds);
+        return ResponseEntity.ok().build();
     }
 
     @GetMapping("/me")

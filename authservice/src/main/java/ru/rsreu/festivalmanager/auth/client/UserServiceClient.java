@@ -15,5 +15,5 @@ public interface UserServiceClient {
     boolean existsByNickname(@RequestHeader("Authorization") String token, @RequestParam String nickname);
 
     @GetMapping("/role/{id}")
-    String getUserRole(@RequestHeader("Authorization") String token, @PathVariable("id") Long id);
+    String getUserRole(@RequestHeader("Authorization") String token, @PathVariable Long id);
 }

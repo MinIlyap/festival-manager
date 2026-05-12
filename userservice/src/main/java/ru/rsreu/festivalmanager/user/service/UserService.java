@@ -16,6 +16,7 @@ import ru.rsreu.festivalmanager.user.repository.BlackListRepository;
 import ru.rsreu.festivalmanager.user.util.CryptoUtil;
 import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -76,6 +77,19 @@ public class UserService {
                 .build();
     }
 
+    @Transactional(readOnly = true)
+    public UserProfileDto getUserProfile(Long id) {
+        AppUser user = userRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Пользователь не найден"));
+
+        return UserProfileDto.builder()
+                .id(user.getId())
+                .phone(user.getPhoneNumber())
+                .passportData(user.getPassportNumberHash())
+                .dateOfBirth(user.getBirthDate())
+                .build();
+    }
+
     @Transactional
     public void updateUser(Long id, UserInfoUpdateRequest request) {
         AppUser user = userRepository.findById(id)
@@ -94,6 +108,17 @@ public class UserService {
         }
 
         userRepository.save(user);
+    }
+
+    @Transactional
+    public void assignCuratorRoles(List<Long> userIds) {
+        List<AppUser> users = userRepository.findAllById(userIds);
+        for (AppUser user : users) {
+            if (user.getAccessType() == AccessType.USER) {
+                user.setAccessType(AccessType.CURATOR);
+            }
+        }
+        userRepository.saveAll(users);
     }
 
     @Transactional

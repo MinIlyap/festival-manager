@@ -24,4 +24,7 @@ public interface PlatformInstanceRepository extends JpaRepository<PlatformInstan
             @Param("cityId") Long cityId,
             @Param("platformName") String platformName
     );
+
+    @Query("SELECT pi.id FROM PlatformInstance pi WHERE pi.platform.city.id = :cityId")
+    List<Long> findPlatformInstanceIdsByCityId(@Param("cityId") Long cityId);
 }

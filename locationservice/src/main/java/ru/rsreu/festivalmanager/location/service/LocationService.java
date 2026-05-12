@@ -86,6 +86,16 @@ public class LocationService {
         return mapToInstanceResponse(instanceRepository.save(instance));
     }
 
+    @Transactional(readOnly = true)
+    public boolean isPlatformInstanceExistsById(Long id) {
+        return instanceRepository.existsById(id);
+    }
+
+    @Transactional(readOnly = true)
+    public List<Long> getPlatformIdsByCity(Long cityId) {
+        return instanceRepository.findPlatformInstanceIdsByCityId(cityId);
+    }
+
     private CityResponse mapToCityResponse(City city) {
         return CityResponse.builder()
                 .id(city.getId())
