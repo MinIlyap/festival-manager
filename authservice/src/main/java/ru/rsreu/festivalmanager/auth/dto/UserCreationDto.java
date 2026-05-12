@@ -1,5 +1,6 @@
 package ru.rsreu.festivalmanager.auth.dto;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -12,8 +13,15 @@ import java.time.LocalDate;
 @NoArgsConstructor
 @AllArgsConstructor
 public class UserCreationDto {
+    @JsonProperty("nickname")
     private String nickname;
+
+    @JsonProperty("birth_date")
     private LocalDate birthDate;
+
+    @JsonProperty("city_id")
     private Long cityId;
+
+    @JsonProperty("access_type")
     private String accessType;
 }

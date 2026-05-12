@@ -1,4 +1,4 @@
-package ru.rsreu.festivalmanager.user;
+package ru.rsreu.festivalmanager.user.controller;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;

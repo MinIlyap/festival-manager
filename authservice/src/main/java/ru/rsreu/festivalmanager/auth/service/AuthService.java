@@ -3,20 +3,22 @@ package ru.rsreu.festivalmanager.auth.service;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.rsreu.festivalmanager.auth.client.CompanyServiceClient;
 import ru.rsreu.festivalmanager.auth.client.UserServiceClient;
+import ru.rsreu.festivalmanager.auth.data.AuthEvents;
 import ru.rsreu.festivalmanager.auth.dto.*;
 import ru.rsreu.festivalmanager.auth.entity.AuthCredential;
 import ru.rsreu.festivalmanager.auth.entity.UserSession;
-import ru.rsreu.festivalmanager.auth.kafka.AuthKafkaProducer;
 import ru.rsreu.festivalmanager.auth.repository.AuthCredentialRepository;
 import ru.rsreu.festivalmanager.auth.repository.UserSessionRepository;
 import ru.rsreu.festivalmanager.jwt.security.JwtProvider;
 
 import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 import java.util.UUID;
 
 @Service
@@ -29,7 +31,7 @@ public class AuthService {
     private final CompanyServiceClient companyServiceClient;
     private final PasswordEncoder passwordEncoder;
     private final JwtProvider jwtProvider;
-    private final AuthKafkaProducer kafkaProducer;
+    private final ApplicationEventPublisher eventPublisher;
 
     @Value("${internal.system-token}")
     private String systemToken;
@@ -69,16 +71,17 @@ public class AuthService {
         );
         Long companyId = companyServiceClient.createInactiveCompany(getBearerSystemToken(), companyDto);
 
-        kafkaProducer.sendCompanyApplicationRequest(companyId, request.getFullName());
+        eventPublisher.publishEvent(new AuthEvents.CompanyAppRequestEvent(companyId,
+                request.getFullName(), OffsetDateTime.now()));
     }
 
     @Transactional
     public void processCompanyApplicationResponse(Long companyId, String status, String comment) {
+        CompanyInfoDto companyInfo = companyServiceClient.getCompanyById(getBearerSystemToken(), companyId);
+        String email = companyInfo.getEmail();
+
         if ("APPROVED".equalsIgnoreCase(status)) {
             companyServiceClient.activateCompany(getBearerSystemToken(), companyId);
-
-            CompanyInfoDto companyInfo = companyServiceClient.getCompanyById(getBearerSystemToken(), companyId);
-            String email = companyInfo.getEmail();
 
             String rawPassword = RandomStringUtils.random(8, true, true);
 
@@ -89,9 +92,15 @@ public class AuthService {
             credential.setPasswordHash(encodedPassword);
             credentialRepository.save(credential);
 
-            kafkaProducer.sendCompanyAuthData(companyId, email, encodedPassword, comment);
+            eventPublisher.publishEvent(
+                    new AuthEvents.CompanyAuthDataEvent(companyId, email, encodedPassword,
+                            comment, OffsetDateTime.now())
+            );
         } else {
-            kafkaProducer.sendCompanyAuthData(companyId, null, null, comment);
+            eventPublisher.publishEvent(
+                    new AuthEvents.CompanyAuthDataEvent(companyId, email, null,
+                            comment, OffsetDateTime.now())
+            );
         }
     }
 

@@ -27,6 +27,9 @@ public class SecurityConfig {
     @Value("${internal.system-token:}")
     private String systemToken;
 
+    @Value("${app.security.public-endpoints:}")
+    private String[] publicEndpoints;
+
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
 
@@ -34,15 +37,18 @@ public class SecurityConfig {
             http.addFilterBefore(new InternalAuthFilter(systemToken), UsernamePasswordAuthenticationFilter.class);
         }
 
-        return http
+        http
                 .csrf(AbstractHttpConfigurer::disable)
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-                .authorizeHttpRequests(authz -> authz
-                        .requestMatchers("/auth/register/**", "/auth/login", "/auth/refresh").permitAll()
-                        .anyRequest().authenticated()
-                )
-                .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class)
-                .build();
+                .authorizeHttpRequests(auth -> {
+                    if (publicEndpoints != null && publicEndpoints.length > 0) {
+                        auth.requestMatchers(publicEndpoints).permitAll();
+                    }
+                    auth.anyRequest().authenticated();
+                })
+                .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
+
+        return http.build();
     }
 
     @Bean

@@ -1,0 +1,23 @@
+databaseChangeLog:
+  - changeSet:
+      id: 003-fill-cities
+      author: ilyap
+      context: init-data
+      changes:
+        - loadData:
+            tableName: cities
+            file: db/changelog/data/cleaned_cities.csv
+            separator: ","
+            columns:
+              - column:
+                  name: id
+                  type: BIGINT
+              - column:
+                  name: name
+                  type: VARCHAR(255)
+  - changeSet:
+      id: update-cities-sequence
+      author: ilyap
+      changes:
+        - sql:
+            sql: "SELECT setval('cities_id_seq', (SELECT MAX(id) FROM cities));"

@@ -3,3 +3,5 @@ databaseChangeLog:
       file: db/changelog/changes/001-add-cities.yaml
   - include:
       file: db/changelog/changes/002-add-platforms.yaml
+  - include:
+      file: db/changelog/changes/003-fill-cities.yaml

@@ -12,6 +12,10 @@ spring:
   jpa:
     hibernate:
       ddl-auto: validate
+jwt:
+  secret:
+    access: "my_super_secret_access_key_that_must_be_long_enough_for_hs256"
+
 internal:
   system-token: "my_super_secret_system_token_123"
 crypto:

@@ -7,7 +7,6 @@ import ru.rsreu.festivalmanager.auth.dto.CompanyInfoDto;
 import ru.rsreu.festivalmanager.auth.dto.CompanyRegistrationRequest;
 
 @FeignClient(name = "company-service", url = "http://localhost:8083/company")
-@Component
 public interface CompanyServiceClient {
 
     @PostMapping

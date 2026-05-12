@@ -6,7 +6,6 @@ import org.springframework.web.bind.annotation.*;
 import ru.rsreu.festivalmanager.auth.dto.UserCreationDto;
 
 @FeignClient(name = "user-service", url = "http://localhost:8089/user")
-@Component
 public interface UserServiceClient {
 
     @PostMapping
