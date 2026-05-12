@@ -1,4 +1,4 @@
-package ru.rsreu.festivalmanager.auth.kafka;
+package ru.rsreu.festivalmanager.company.dto;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Builder;

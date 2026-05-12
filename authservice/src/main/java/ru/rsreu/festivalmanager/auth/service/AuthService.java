@@ -70,9 +70,6 @@ public class AuthService {
                 request.getTin(), request.getFullName(), request.getBrandName(), request.getEmail(), request.getWebSite()
         );
         Long companyId = companyServiceClient.createInactiveCompany(getBearerSystemToken(), companyDto);
-
-        eventPublisher.publishEvent(new AuthEvents.CompanyAppRequestEvent(companyId,
-                request.getFullName(), OffsetDateTime.now()));
     }
 
     @Transactional
