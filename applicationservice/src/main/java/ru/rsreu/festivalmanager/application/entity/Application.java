@@ -31,9 +31,12 @@ public class Application {
     @Column(name = "agent_id")
     private Long agentId;
 
-    @Column(name = "created_at", nullable = false)
+    @Column(name = "created_at", updatable = false, nullable = false)
     private OffsetDateTime createdAt;
 
     @Column(name = "updated_at", nullable = false)
     private OffsetDateTime updatedAt;
+
+    @OneToOne(cascade = CascadeType.ALL, orphanRemoval = true)
+    private ApplicationData data;
 }

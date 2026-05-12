@@ -23,8 +23,4 @@ public class ApplicationData {
 
     @Column(name = "festival_location_id")
     private Long festivalLocationId;
-
-    @ManyToOne
-    @JoinColumn(name = "application_id", nullable = false)
-    private Application application;
 }
