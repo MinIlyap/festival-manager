@@ -9,6 +9,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 import ru.rsreu.festivalmanager.auth.client.UserServiceClient;
 import ru.rsreu.festivalmanager.auth.dto.UserCreationDto;
+import ru.rsreu.festivalmanager.auth.entity.AccessType;
 import ru.rsreu.festivalmanager.auth.entity.AuthCredential;
 import ru.rsreu.festivalmanager.auth.repository.AuthCredentialRepository;
 
@@ -42,7 +43,6 @@ public class AdminSeeder implements CommandLineRunner {
                         .nickname(nickname)
                         .birthDate(LocalDate.of(1990, 1, 1))
                         .cityId(1L)
-                        .accessType("ADMIN")
                         .build();
 
                 Long userId = userServiceClient.createUser("Bearer " + systemToken, userDto);
@@ -50,6 +50,7 @@ public class AdminSeeder implements CommandLineRunner {
                 AuthCredential credential = new AuthCredential();
                 credential.setUserId(userId);
                 credential.setEmail(email);
+                credential.setAccessType(AccessType.ADMIN);
                 credential.setPasswordHash(passwordEncoder.encode(password));
 
                 credentialRepository.save(credential);

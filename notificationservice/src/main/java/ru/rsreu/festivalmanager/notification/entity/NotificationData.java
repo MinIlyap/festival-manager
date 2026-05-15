@@ -18,14 +18,14 @@ public class NotificationData {
     @Column(name = "company_id")
     private Long companyId;
 
-    @Column(name = "company_name")
-    private String companyName;
+    @Column(name = "company_email")
+    private String companyEmail;
 
     @Column(name = "festival_location_id")
     private Long festivalLocationId;
 
-    @Column(name = "festival_name")
-    private String festivalName;
+    @Column(name = "application_id")
+    private Long applicationId;
 
     @Column(name = "comment")
     private String comment;
@@ -44,8 +44,4 @@ public class NotificationData {
 
     @Column(name = "related_user_id")
     private Long relatedUserId;
-
-    @ManyToOne
-    @JoinColumn(name = "notification_id", nullable = false)
-    private Notification notification;
 }

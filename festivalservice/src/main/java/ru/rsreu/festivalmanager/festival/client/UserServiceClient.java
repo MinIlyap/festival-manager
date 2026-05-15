@@ -8,9 +8,6 @@ import java.util.List;
 
 @FeignClient(name = "user-service", url = "http://localhost:8089/user")
 public interface UserServiceClient {
-    @PutMapping("/roles/curator")
-    void assignCuratorRoles(@RequestHeader("Authorization") String token, @RequestBody List<Long> userIds);
-
     @GetMapping("/blacklist/check/{userId}")
     boolean checkBlackListStatus(@RequestHeader("Authorization") String token, @PathVariable Long userId);
 

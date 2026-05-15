@@ -11,14 +11,17 @@ import ru.rsreu.festivalmanager.auth.client.CompanyServiceClient;
 import ru.rsreu.festivalmanager.auth.client.UserServiceClient;
 import ru.rsreu.festivalmanager.auth.data.AuthEvents;
 import ru.rsreu.festivalmanager.auth.dto.*;
+import ru.rsreu.festivalmanager.auth.entity.AccessType;
 import ru.rsreu.festivalmanager.auth.entity.AuthCredential;
 import ru.rsreu.festivalmanager.auth.entity.UserSession;
 import ru.rsreu.festivalmanager.auth.repository.AuthCredentialRepository;
 import ru.rsreu.festivalmanager.auth.repository.UserSessionRepository;
 import ru.rsreu.festivalmanager.jwt.security.JwtProvider;
+import ru.rsreu.festivalmanager.common.util.CryptoUtil;
 
 import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
+import java.util.List;
 import java.util.UUID;
 
 @Service
@@ -32,6 +35,7 @@ public class AuthService {
     private final PasswordEncoder passwordEncoder;
     private final JwtProvider jwtProvider;
     private final ApplicationEventPublisher eventPublisher;
+    private final CryptoUtil cryptoUtil;
 
     @Value("${internal.system-token}")
     private String systemToken;
@@ -46,18 +50,18 @@ public class AuthService {
             throw new IllegalArgumentException("Email уже используется");
         }
 
-        UserCreationDto userDto = new UserCreationDto(request.getNickname(), request.getBirthDate(),
-                request.getCityId(), "USER");
+        UserCreationDto userDto = new UserCreationDto(request.getNickname(), request.getBirthDate(), request.getCityId());
         Long userId = userServiceClient.createUser(getBearerSystemToken(), userDto);
 
         AuthCredential credential = new AuthCredential();
         credential.setUserId(userId);
         credential.setEmail(request.getEmail());
         credential.setPasswordHash(passwordEncoder.encode(request.getPassword()));
+        credential.setAccessType(AccessType.USER);
 
         AuthCredential savedCredential = credentialRepository.save(credential);
 
-        return generateTokens(savedCredential, "USER");
+        return generateTokens(savedCredential);
     }
 
     @Transactional
@@ -67,8 +71,9 @@ public class AuthService {
         }
 
         CompanyRegistrationRequest companyDto = new CompanyRegistrationRequest(
-                request.getTin(), request.getFullName(), request.getBrandName(), request.getEmail(), request.getWebSite()
+                request.getTin(), request.getFullName(), request.getBrandName(), request.getWebSite(), request.getEmail()
         );
+
         Long companyId = companyServiceClient.createInactiveCompany(getBearerSystemToken(), companyDto);
     }
 
@@ -85,12 +90,17 @@ public class AuthService {
             AuthCredential credential = new AuthCredential();
             credential.setCompanyId(companyId);
             credential.setEmail(email);
+            credential.setAccessType(AccessType.COMPANY);
+
             String encodedPassword = passwordEncoder.encode(rawPassword);
             credential.setPasswordHash(encodedPassword);
+
             credentialRepository.save(credential);
 
+            String encryptedPasswordForKafka = cryptoUtil.encrypt(rawPassword);
+
             eventPublisher.publishEvent(
-                    new AuthEvents.CompanyAuthDataEvent(companyId, email, encodedPassword,
+                    new AuthEvents.CompanyAuthDataEvent(companyId, email, encryptedPasswordForKafka,
                             comment, OffsetDateTime.now())
             );
         } else {
@@ -99,6 +109,30 @@ public class AuthService {
                             comment, OffsetDateTime.now())
             );
         }
+    }
+
+    @Transactional
+    public void assignCuratorRoles(List<Long> userIds) {
+        if (userIds == null || userIds.isEmpty()) {
+            return;
+        }
+
+        List<AuthCredential> credentials = credentialRepository.findByUserIdIn(userIds);
+
+        if (credentials.isEmpty()) {
+            throw new IllegalArgumentException("Пользователи из списка не найдены");
+        }
+
+        for (AuthCredential credential : credentials) {
+            if (AccessType.COMPANY.equals(credential.getAccessType())) {
+                continue;
+            }
+
+            credential.setAccessType(AccessType.CURATOR);
+            sessionRepository.deleteAllByUser(credential);
+        }
+
+        credentialRepository.saveAll(credentials);
     }
 
     public AuthCredential getCurrentUserInfo(Long id, String role) {
@@ -112,7 +146,6 @@ public class AuthService {
     }
 
     public AuthCredential getUserByEmail(String email) {
-
         return credentialRepository.findByEmail(email)
                 .orElseThrow(() -> new IllegalArgumentException("Пользователь не найден"));
     }
@@ -122,9 +155,14 @@ public class AuthService {
         if (credentialRepository.existsByEmail(newEmail)) {
             throw new IllegalArgumentException("Данный Email уже занят");
         }
+
         AuthCredential credential = getCurrentUserInfo(id, role);
         credential.setEmail(newEmail);
         credentialRepository.save(credential);
+
+        if (AccessType.COMPANY.equals(credential.getAccessType())) {
+            companyServiceClient.updateCompanyEmail(getBearerSystemToken(), credential.getCompanyId(), newEmail);
+        }
     }
 
     @Transactional
@@ -138,7 +176,7 @@ public class AuthService {
         credential.setPasswordHash(passwordEncoder.encode(request.getNewPassword()));
         credentialRepository.save(credential);
 
-        sessionRepository.deleteByUser_UserId(credential.getUserId());
+        sessionRepository.deleteAllByUser(credential);
     }
 
     @Transactional
@@ -151,11 +189,11 @@ public class AuthService {
             throw new IllegalArgumentException("Refresh token истек");
         }
 
-        AuthCredential credential = credentialRepository.findByUserId(session.getUser().getUserId())
-                .orElseThrow(() -> new IllegalArgumentException("Пользователь не найден"));
+        AuthCredential credential = credentialRepository.findById(session.getUser().getId())
+                .orElseThrow(() -> new IllegalArgumentException("Учетная запись не найдена"));
 
         sessionRepository.delete(session);
-        return generateTokens(credential, extractRole(credential));
+        return generateTokens(credential);
     }
 
     @Transactional
@@ -167,11 +205,15 @@ public class AuthService {
             throw new IllegalArgumentException("Неверный email или пароль");
         }
 
-        return generateTokens(credential, extractRole(credential));
+        return generateTokens(credential);
     }
 
-    private AuthResponse generateTokens(AuthCredential credential, String role) {
-        Long subjectId = credential.getUserId();
+    private AuthResponse generateTokens(AuthCredential credential) {
+        Long subjectId = credential.getAccessType() == AccessType.COMPANY
+                ? credential.getCompanyId()
+                : credential.getUserId();
+
+        String role = credential.getAccessType().name();
 
         String accessToken = jwtProvider.generateAccessToken(subjectId, credential.getEmail(), role);
         String refreshToken = UUID.randomUUID().toString();
@@ -183,13 +225,5 @@ public class AuthService {
         sessionRepository.save(session);
 
         return new AuthResponse(accessToken, refreshToken);
-    }
-
-    private String extractRole(AuthCredential credential) {
-        if (credential.getCompanyId() != null) {
-            return "COMPANY";
-        }
-
-        return userServiceClient.getUserRole(getBearerSystemToken(), credential.getUserId());
     }
 }

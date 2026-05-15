@@ -168,7 +168,7 @@ public class FestivalService {
                     .collect(Collectors.toList());
 
             if (!curatorIds.isEmpty()) {
-                userClient.assignCuratorRoles(getSystemToken(), curatorIds);
+                authClient.assignCuratorRoles(getSystemToken(), curatorIds);
             }
         }
     }

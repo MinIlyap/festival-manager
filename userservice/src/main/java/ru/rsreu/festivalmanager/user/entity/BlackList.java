@@ -15,7 +15,6 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @NoArgsConstructor
 public class BlackList {
-
     @EmbeddedId
     private BlackListId blackListId;
 

@@ -1,6 +1,7 @@
 package ru.rsreu.festivalmanager.company.service;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -12,36 +13,75 @@ import ru.rsreu.festivalmanager.company.event.CompanyEvents;
 import ru.rsreu.festivalmanager.company.repository.CompanyRepository;
 
 import java.time.OffsetDateTime;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class CompanyService {
     private final CompanyRepository companyRepository;
     private final ApplicationEventPublisher eventPublisher;
 
     @Transactional
     public Long createInactiveCompany(CompanyCreateRequest request) {
-        if (companyRepository.existsByTin(request.getTin())) {
-            throw new IllegalArgumentException("Компания с таким ИНН уже существует");
+        Optional<Company> existingByTin = companyRepository.findByTin(request.getTin());
+        Optional<Company> existingByEmail = companyRepository.findByEmail(request.getEmail());
+
+        Company company;
+
+        if (existingByTin.isPresent() || existingByEmail.isPresent()) {
+            company = existingByTin.orElseGet(existingByEmail::get);
+
+            // Если она уже одобрена (active/visible == true) — запрещаем
+            if (company.isActive()) {
+                throw new IllegalArgumentException("Компания с такими данными уже существует и активна");
+            }
+
+            // Если она неактивна — обновляем данные (вдруг исправили опечатку перед переподачей)
+            company.setFullName(request.getFullName());
+            company.setBrandName(request.getBrandName());
+            company.setTin(request.getTin());
+            company.setEmail(request.getEmail());
+            company.setWebsite(request.getWebsite());
+            log.info("Обновление данных неактивной компании ID: {} перед повторной подачей", company.getId());
+
+        } else {
+            // Если не нашли — создаем абсолютно новую
+            company = new Company();
+            company.setTin(request.getTin());
+            company.setFullName(request.getFullName());
+            company.setBrandName(request.getBrandName());
+            company.setEmail(request.getEmail());
+            company.setWebsite(request.getWebsite());
+            company.setActive(false);
+            log.info("Создание новой неактивной компании");
         }
-        if (companyRepository.existsByEmail(request.getEmail())) {
-            throw new IllegalArgumentException("Компания с таким Email уже существует");
-        }
 
-        Company company = new Company();
-        company.setTin(request.getTin());
-        company.setFullName(request.getFullName());
-        company.setBrandName(request.getBrandName());
-        company.setEmail(request.getEmail());
-        company.setWebsite(request.getWebsite());
-        company.setActive(false);
+        // Сохраняем в БД (либо insert, либо update)
+        company = companyRepository.save(company);
 
-        Long companyId = companyRepository.save(company).getId();
+        // Отправляем событие в Kafka
+        // ВАЖНО: Мы добавляли email в DTO для Notification Service, не забудь его передать!
+        eventPublisher.publishEvent(new CompanyEvents.CompanyAppRequestEvent(
+                company.getId(),
+                company.getFullName(),
+                OffsetDateTime.now()
+        ));
 
-        eventPublisher.publishEvent(new CompanyEvents.CompanyAppRequestEvent(companyId,
-                company.getFullName(), OffsetDateTime.now()));
+        return company.getId();
+    }
 
-        return companyId;
+    @Transactional
+    public void updateEmail(Long id, String newEmail) {
+        // Находим компанию
+        Company company = companyRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Компания не найдена"));
+
+        // Обновляем email
+        company.setEmail(newEmail);
+
+        // Сохраняем (Hibernate может сделать это автоматически при @Transactional, но save() надежнее для чтения)
+        companyRepository.save(company);
     }
 
     public CompanyResponse getCompanyByTin(String tin) {

@@ -1,6 +1,10 @@
 package ru.rsreu.festivalmanager.festival.dto;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.fasterxml.jackson.datatype.jsr310.deser.OffsetTimeDeserializer;
+import com.fasterxml.jackson.datatype.jsr310.ser.OffsetDateTimeSerializer;
 import lombok.Data;
 
 import java.time.OffsetDateTime;
@@ -17,6 +21,8 @@ public class FestivalAppResponseMsg {
     private String comment;
 
     @JsonProperty("updated_at")
+    @JsonSerialize(using = OffsetDateTimeSerializer.class)
+    @JsonDeserialize(using = OffsetTimeDeserializer.class)
     private OffsetDateTime updatedAt;
 
     @JsonProperty("target_user")

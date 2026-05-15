@@ -8,8 +8,6 @@ import java.util.Optional;
 
 @Repository
 public interface CompanyRepository extends JpaRepository<Company, Long> {
-    boolean existsByTin(String tin);
-    boolean existsByEmail(String email);
-
     Optional<Company> findByTin(String tin);
+    Optional<Company> findByEmail(String email);
 }

@@ -11,7 +11,6 @@ import java.time.LocalDateTime;
 
 @Repository
 public interface BlackListRepository extends JpaRepository<BlackList, BlackListId> {
-
     @Query("SELECT CASE WHEN COUNT(b) > 0 THEN true ELSE false END FROM BlackList b WHERE b.blackListId.user.id = :userId AND b.expiryDate > :now")
     boolean isUserBlacklistedNow(@Param("userId") Long userId, @Param("now") LocalDateTime now);
 

@@ -7,16 +7,14 @@ import org.springframework.transaction.annotation.Transactional;
 import ru.rsreu.festivalmanager.user.client.FestivalServiceClient;
 import ru.rsreu.festivalmanager.user.client.LocationServiceClient;
 import ru.rsreu.festivalmanager.user.dto.*;
-import ru.rsreu.festivalmanager.user.entity.AccessType;
 import ru.rsreu.festivalmanager.user.entity.AppUser;
 import ru.rsreu.festivalmanager.user.entity.BlackList;
 import ru.rsreu.festivalmanager.user.entity.BlackListId;
 import ru.rsreu.festivalmanager.user.repository.AppUserRepository;
 import ru.rsreu.festivalmanager.user.repository.BlackListRepository;
-import ru.rsreu.festivalmanager.user.util.CryptoUtil;
+import ru.rsreu.festivalmanager.common.util.CryptoUtil;
 import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
-import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -46,16 +44,7 @@ public class UserService {
         user.setBirthDate(dto.getBirthDate());
         user.setCity_id(dto.getCityId());
 
-        AccessType role = dto.getAccessType() != null ? AccessType.valueOf(dto.getAccessType()) : AccessType.USER;
-        user.setAccessType(role);
-
         return userRepository.save(user).getId();
-    }
-
-    public String getUserRole(Long id) {
-        return userRepository.findById(id)
-                .map(user -> user.getAccessType().name())
-                .orElseThrow(() -> new IllegalArgumentException("Пользователь не найден"));
     }
 
     public UserResponse getMe(Long id) {
@@ -64,7 +53,6 @@ public class UserService {
 
         return UserResponse.builder()
                 .id(user.getId())
-                .accessType(user.getAccessType().name())
                 .birthDate(user.getBirthDate())
                 .nickname(user.getNickname())
                 .cityId(user.getCity_id())
@@ -108,17 +96,6 @@ public class UserService {
         }
 
         userRepository.save(user);
-    }
-
-    @Transactional
-    public void assignCuratorRoles(List<Long> userIds) {
-        List<AppUser> users = userRepository.findAllById(userIds);
-        for (AppUser user : users) {
-            if (user.getAccessType() == AccessType.USER) {
-                user.setAccessType(AccessType.CURATOR);
-            }
-        }
-        userRepository.saveAll(users);
     }
 
     @Transactional

@@ -24,11 +24,13 @@ public class Notification {
     @Column(name = "target_user_id", nullable = false)
     private Long targetUserId;
 
-    @Column(name = "created_at", updatable = false, nullable = false)
-    private OffsetDateTime createdAt;
+    @Column(name = "is_read", nullable = false)
+    private boolean isRead;
 
-    @PrePersist
-    protected void onCreate() {
-        createdAt = OffsetDateTime.now();
-    }
+    @OneToOne(cascade = CascadeType.ALL, orphanRemoval = true)
+    @JoinColumn(name = "notification_data_id")
+    private NotificationData data;
+
+    @Column(name = "created_at", nullable = false)
+    private OffsetDateTime createdAt;
 }

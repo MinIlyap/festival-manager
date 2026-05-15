@@ -21,7 +21,4 @@ public class UserCreationDto {
 
     @JsonProperty("city_id")
     private Long cityId;
-
-    @JsonProperty("access_type")
-    private String accessType;
 }

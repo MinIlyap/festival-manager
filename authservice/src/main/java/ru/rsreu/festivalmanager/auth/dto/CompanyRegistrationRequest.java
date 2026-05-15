@@ -28,12 +28,12 @@ public class CompanyRegistrationRequest {
     @JsonProperty("brand_name")
     private String brandName;
 
-    @NotBlank(message = "Email обязателен")
-    @Email(message = "Некорректный формат email")
+    @URL
     @JsonProperty("website")
     private String webSite;
 
-    @URL
+    @NotBlank(message = "Email обязателен")
+    @Email(message = "Некорректный формат email")
     @JsonProperty("email")
     private String email;
 }

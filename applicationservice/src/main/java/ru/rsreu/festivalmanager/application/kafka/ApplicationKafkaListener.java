@@ -1,5 +1,7 @@
 package ru.rsreu.festivalmanager.application.kafka;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.kafka.annotation.BackOff;
@@ -20,13 +22,19 @@ import ru.rsreu.festivalmanager.application.service.ApplicationService;
 public class ApplicationKafkaListener {
 
     private final ApplicationService applicationService;
+    private final ObjectMapper objectMapper;
 
     @RetryableTopic(
             dltStrategy = DltStrategy.FAIL_ON_ERROR,
             backOff = @BackOff(delay = 1000, multiplier = 2.0)
     )
     @KafkaListener(topics = "COMPANY_APPLICATION_REQUEST_TOPIC", groupId = "application-service-group")
-    public void listenCompanyRequest(CompanyRequestMsg msg) {
+    public void listenCompanyRequest(String jsonMessage) throws JsonProcessingException {
+        if (jsonMessage.startsWith("\"") && jsonMessage.endsWith("\"")) {
+            jsonMessage = objectMapper.readValue(jsonMessage, String.class);
+        }
+
+        CompanyRequestMsg msg = objectMapper.readValue(jsonMessage, CompanyRequestMsg.class);
         log.info("Получена заявка на компанию ID: {}", msg.getCompanyId());
         applicationService.processCompanyApplication(msg.getCompanyId(), msg.getCreatedAt());
     }
@@ -36,13 +44,18 @@ public class ApplicationKafkaListener {
             backOff = @BackOff(delay = 1000, multiplier = 2.0)
     )
     @KafkaListener(topics = "FESTIVAL_APPLICATION_REQUEST_TOPIC", groupId = "application-service-group")
-    public void listenFestivalRequest(FestivalRequestMsg msg) {
+    public void listenFestivalRequest(String jsonMessage) throws JsonProcessingException {
+        if (jsonMessage.startsWith("\"") && jsonMessage.endsWith("\"")) {
+            jsonMessage = objectMapper.readValue(jsonMessage, String.class);
+        }
+
+        FestivalRequestMsg msg = objectMapper.readValue(jsonMessage, FestivalRequestMsg.class);
         log.info("Получена заявка на фестиваль ID: {}", msg.getFestivalLocationId());
         applicationService.processFestivalApplication(msg.getFestivalLocationId(), msg.getSenderId(), msg.getCreatedAt());
     }
 
     @DltHandler
-    public void handleDlt(Object msg, @Header(KafkaHeaders.RECEIVED_TOPIC) String topic) {
-        log.error("СООБЩЕНИЕ ПОПАЛО В DLT! Топик: {}. Сообщение: {}", topic, msg);
+    public void handleDlt(String jsonMessage, @Header(KafkaHeaders.RECEIVED_TOPIC) String topic) {
+        log.error("СООБЩЕНИЕ ПОПАЛО В DLT! Топик: {}. Сообщение: {}", topic, jsonMessage);
     }
 }

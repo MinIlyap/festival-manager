@@ -1,6 +1,8 @@
 package ru.rsreu.festivalmanager.location.service;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.rsreu.festivalmanager.location.dto.*;
@@ -33,11 +35,9 @@ public class LocationService {
         return mapToCityResponse(city);
     }
 
-    public List<CityResponse> searchCities(String namePart) {
-        return cityRepository.findByNameContainingIgnoreCase(namePart)
-                .stream()
-                .map(this::mapToCityResponse)
-                .collect(Collectors.toList());
+    public Page<CityResponse> searchCities(String namePart, Pageable pageable) {
+        return cityRepository.findByNameContainingIgnoreCase(namePart, pageable)
+                .map(this::mapToCityResponse);
     }
 
     public boolean checkCityExists(Long id) {
@@ -68,11 +68,9 @@ public class LocationService {
                 });
     }
 
-    public List<PlatformInstanceResponse> searchPlatformInstances(Long cityId, String platformNamePart) {
-        return instanceRepository.searchInstancesByCityAndPlatformName(cityId, platformNamePart)
-                .stream()
-                .map(this::mapToInstanceResponse)
-                .collect(Collectors.toList());
+    public Page<PlatformInstanceResponse> searchPlatformInstances(Long cityId, String platformNamePart, Pageable pageable) {
+        return instanceRepository.searchInstancesByCityAndPlatformName(cityId, platformNamePart, pageable)
+                .map(this::mapToInstanceResponse);
     }
 
     @Transactional

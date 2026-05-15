@@ -4,6 +4,32 @@ databaseChangeLog:
       author: ilyap
       changes:
         - createTable:
+            tableName: application_data
+            columns:
+              - column:
+                  name: id
+                  type: BIGINT
+                  autoIncrement: true
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: comment
+                  type: TEXT
+                  constraints:
+                    nullable: true
+              - column:
+                  name: company_id
+                  type: BIGINT
+                  constraints:
+                    nullable: true
+              - column:
+                  name: festival_location_id
+                  type: BIGINT
+                  constraints:
+                    nullable: true
+
+        - createTable:
             tableName: applications
             columns:
               - column:
@@ -90,29 +116,3 @@ databaseChangeLog:
             columns:
               - column:
                   name: agent_id
-
-        - createTable:
-            tableName: application_data
-            columns:
-              - column:
-                  name: id
-                  type: BIGINT
-                  autoIncrement: true
-                  constraints:
-                    primaryKey: true
-                    nullable: false
-              - column:
-                  name: comment
-                  type: TEXT
-                  constraints:
-                    nullable: true
-              - column:
-                  name: company_id
-                  type: BIGINT
-                  constraints:
-                    nullable: true
-              - column:
-                  name: festival_location_id
-                  type: BIGINT
-                  constraints:
-                    nullable: true

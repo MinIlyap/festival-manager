@@ -12,8 +12,11 @@ public interface CompanyServiceClient {
     @PostMapping
     Long createInactiveCompany(@RequestHeader("Authorization") String token, @RequestBody CompanyRegistrationRequest request);
 
-    @PatchMapping("/activate/{id}")
+    @PutMapping("/activate/{id}")
     void activateCompany(@RequestHeader("Authorization") String token, @PathVariable Long id);
+
+    @PutMapping("/email/{id}")
+    void updateCompanyEmail(@RequestHeader("Authorization") String token, @PathVariable Long id, @RequestParam("newEmail") String newEmail);
 
     @GetMapping("/{id}")
     CompanyInfoDto getCompanyById(@RequestHeader("Authorization") String token, @PathVariable Long id);

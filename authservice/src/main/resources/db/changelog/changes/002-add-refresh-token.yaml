@@ -35,6 +35,6 @@ databaseChangeLog:
             baseTableName: user_sessions
             baseColumnNames: user_id
             referencedTableName: auth_credentials
-            referencedColumnNames: user_id
+            referencedColumnNames: id
             onDelete: CASCADE
             onUpdate: CASCADE

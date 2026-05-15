@@ -3,45 +3,49 @@ package ru.rsreu.festivalmanager.application.service;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.rsreu.festivalmanager.application.dto.ReviewRequestDto;
 import ru.rsreu.festivalmanager.application.entity.*;
-import ru.rsreu.festivalmanager.application.repository.ApplicationRepository;
+import ru.rsreu.festivalmanager.application.event.ApplicationEvents;
 import ru.rsreu.festivalmanager.application.event.ApplicationEvents.AppResponseEvent;
+import ru.rsreu.festivalmanager.application.repository.ApplicationRepository;
 
 import java.time.OffsetDateTime;
-import java.util.List;
 
 @Slf4j
 @Service
 @RequiredArgsConstructor
 public class ApplicationService {
+
     private final ApplicationRepository applicationRepository;
     private final ApplicationEventPublisher eventPublisher;
 
     @Transactional
-    public void processCompanyApplication(Long companyId, OffsetDateTime createdAt) {
+    public void processCompanyApplication(Long companyId, OffsetDateTime eventTimestamp) {
         Application application = applicationRepository.findByCompanyId(companyId)
-                .orElseGet(() -> createNewApplication(ApplicationType.COMPANY_APPLICATION, null, companyId, null, createdAt));
+                .orElseGet(() -> createNewApplication(ApplicationType.COMPANY_APPLICATION, null, companyId, null, eventTimestamp));
 
-        handleIncomingApplication(application, createdAt);
+        handleIncomingApplication(application, eventTimestamp);
     }
 
     @Transactional
-    public void processFestivalApplication(Long festivalLocationId, Long senderId, OffsetDateTime createdAt) {
+    public void processFestivalApplication(Long festivalLocationId, Long senderId, OffsetDateTime eventTimestamp) {
         Application application = applicationRepository.findByFestivalLocationId(festivalLocationId)
-                .orElseGet(() -> createNewApplication(ApplicationType.FESTIVAL_APPLICATION, senderId, null, festivalLocationId, createdAt));
+                .orElseGet(() -> createNewApplication(ApplicationType.FESTIVAL_APPLICATION, senderId, null, festivalLocationId, eventTimestamp));
 
-        handleIncomingApplication(application, createdAt);
+        handleIncomingApplication(application, eventTimestamp);
     }
 
-    private Application createNewApplication(ApplicationType type, Long senderId, Long companyId, Long festivalLocationId, OffsetDateTime createdAt) {
+    private Application createNewApplication(ApplicationType type, Long senderId, Long companyId, Long festivalLocationId, OffsetDateTime eventTimestamp) {
         Application app = new Application();
         app.setApplicationType(type);
+        app.setApplicationStatus(ApplicationStatus.PENDING);
         app.setSenderId(senderId);
 
-        OffsetDateTime now = createdAt != null ? createdAt : OffsetDateTime.now();
+        OffsetDateTime now = eventTimestamp != null ? eventTimestamp : OffsetDateTime.now();
         app.setCreatedAt(now);
         app.setUpdatedAt(now);
 
@@ -53,7 +57,13 @@ public class ApplicationService {
         return app;
     }
 
-    private void handleIncomingApplication(Application application, OffsetDateTime timestamp) {
+    private void handleIncomingApplication(Application application, OffsetDateTime eventTimestamp) {
+        if (application.getId() == null) {
+            applicationRepository.save(application);
+            log.info("Создана новая заявка типа {}", application.getApplicationType());
+            return;
+        }
+
         if (application.getApplicationStatus() == ApplicationStatus.APPROVED) {
             log.warn("Попытка переподачи одобренной заявки ID {}", application.getId());
             return;
@@ -61,14 +71,25 @@ public class ApplicationService {
 
         if (application.getApplicationStatus() == ApplicationStatus.REJECTED) {
             application.setApplicationStatus(ApplicationStatus.PENDING);
-            application.setUpdatedAt(timestamp != null ? timestamp : OffsetDateTime.now());
+            application.setUpdatedAt(eventTimestamp != null ? eventTimestamp : OffsetDateTime.now());
+
             applicationRepository.save(application);
             log.info("Отклоненная заявка ID {} переведена в PENDING. Старый комментарий сохранен для контекста админа.", application.getId());
+
+            Long entityId = application.getApplicationType() == ApplicationType.COMPANY_APPLICATION ?
+                    application.getData().getCompanyId() : application.getData().getFestivalLocationId();
+
+            eventPublisher.publishEvent(new ApplicationEvents.AppResubmittedEvent(
+                    application.getAgentId(),
+                    application.getApplicationType().name(),
+                    entityId,
+                    application.getUpdatedAt()
+            ));
             return;
         }
 
         if (application.getApplicationStatus() == ApplicationStatus.PENDING) {
-            application.setUpdatedAt(timestamp != null ? timestamp : OffsetDateTime.now());
+            application.setUpdatedAt(eventTimestamp != null ? eventTimestamp : OffsetDateTime.now());
             applicationRepository.save(application);
         }
     }
@@ -87,13 +108,7 @@ public class ApplicationService {
         }
 
         application.setApplicationStatus(dto.getStatus());
-
-        if (dto.getStatus() == ApplicationStatus.APPROVED) {
-            application.getData().setComment(null);
-        } else if (dto.getStatus() == ApplicationStatus.REJECTED) {
-            application.getData().setComment(dto.getComment());
-        }
-
+        application.getData().setComment(dto.getComment());
         application.setAgentId(adminId);
         application.setUpdatedAt(OffsetDateTime.now());
 
@@ -109,15 +124,15 @@ public class ApplicationService {
         ));
     }
 
-    public List<Application> getMyApplications(Long companyId, ApplicationStatus status) {
-        return applicationRepository.findAllBySenderIdWithFilters(companyId, status);
+    public Page<Application> getMyApplications(Long companyId, ApplicationStatus status, Pageable pageable) {
+        return applicationRepository.findAllBySenderIdWithFilters(companyId, status, pageable);
     }
 
-    public List<Application> getAllApplicationsForAdmin(ApplicationType type, ApplicationStatus status) {
-        return applicationRepository.findAllWithFilters(type, status);
+    public Page<Application> getAllApplicationsForAdmin(ApplicationType type, ApplicationStatus status, Pageable pageable) {
+        return applicationRepository.findAllWithFilters(type, status, pageable);
     }
 
-    public List<Application> getAdminPersonalHistory(Long agentId, ApplicationType type, ApplicationStatus status) {
-        return applicationRepository.findAdminHistory(agentId, type, status);
+    public Page<Application> getAdminPersonalHistory(Long agentId, ApplicationType type, ApplicationStatus status, Pageable pageable) {
+        return applicationRepository.findAdminHistory(agentId, type, status, pageable);
     }
 }

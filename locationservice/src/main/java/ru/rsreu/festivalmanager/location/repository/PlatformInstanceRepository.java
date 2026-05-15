@@ -1,5 +1,7 @@
 package ru.rsreu.festivalmanager.location.repository;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -20,11 +22,12 @@ public interface PlatformInstanceRepository extends JpaRepository<PlatformInstan
     );
 
     @Query("SELECT p FROM PlatformInstance p WHERE p.city.id = :cityId AND LOWER(p.platform.name) LIKE LOWER(CONCAT('%', :platformName, '%'))")
-    List<PlatformInstance> searchInstancesByCityAndPlatformName(
+    Page<PlatformInstance> searchInstancesByCityAndPlatformName(
             @Param("cityId") Long cityId,
-            @Param("platformName") String platformName
+            @Param("platformName") String platformName,
+            Pageable pageable
     );
 
-    @Query("SELECT pi.id FROM PlatformInstance pi WHERE pi.platform.city.id = :cityId")
+    @Query("SELECT pi.id FROM PlatformInstance pi WHERE pi.city.id = :cityId")
     List<Long> findPlatformInstanceIdsByCityId(@Param("cityId") Long cityId);
 }

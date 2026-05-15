@@ -17,10 +17,6 @@ public class AppUser {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Enumerated(value = EnumType.STRING)
-    @Column(name = "access_type", nullable = false)
-    private AccessType accessType;
-
     @Column(name = "birth_date", nullable = false)
     private LocalDate birthDate;
 

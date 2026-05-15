@@ -14,11 +14,6 @@ databaseChangeLog:
                     primaryKey: true
                     nullable: false
               - column:
-                  name: access_type
-                  type: VARCHAR(7)
-                  constraints:
-                    nullable: false
-              - column:
                   name: birth_date
                   type: DATE
                   constraints:
@@ -65,12 +60,6 @@ databaseChangeLog:
                   type: VARCHAR(255)
                   constraints:
                     nullable: true
-
-        - sql:
-            sql: |
-              ALTER TABLE app_users
-                ADD CONSTRAINT chk_access_type
-                CHECK (access_type IN ('USER', 'COMPANY', 'ADMIN', 'CURATOR'));
 
         - createIndex:
             indexName: idx_app_users_last_first_names

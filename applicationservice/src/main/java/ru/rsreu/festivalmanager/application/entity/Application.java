@@ -38,5 +38,6 @@ public class Application {
     private OffsetDateTime updatedAt;
 
     @OneToOne(cascade = CascadeType.ALL, orphanRemoval = true)
+    @JoinColumn(name = "application_data_id")
     private ApplicationData data;
 }

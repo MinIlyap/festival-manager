@@ -11,9 +11,6 @@ public class UserResponse {
     @JsonProperty("id")
     private Long id;
 
-    @JsonProperty("access_type")
-    private String accessType;
-
     @JsonProperty("birth_date")
     private LocalDate birthDate;
 

@@ -2,6 +2,8 @@ package ru.rsreu.festivalmanager.application.controller;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -12,8 +14,6 @@ import ru.rsreu.festivalmanager.application.entity.ApplicationStatus;
 import ru.rsreu.festivalmanager.application.entity.ApplicationType;
 import ru.rsreu.festivalmanager.application.service.ApplicationService;
 
-import java.util.List;
-
 @RestController
 @RequestMapping("/application/admin")
 @RequiredArgsConstructor
@@ -23,27 +23,33 @@ public class ApplicationAdminController {
 
     @GetMapping("/all")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<List<Application>> getAllApplications(
+    public ResponseEntity<Page<Application>> getAllApplications(
             @RequestParam(required = false) ApplicationType type,
-            @RequestParam(required = false) ApplicationStatus status) {
+            @RequestParam(required = false) ApplicationStatus status,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size) {
 
-        return ResponseEntity.ok(applicationService.getAllApplicationsForAdmin(type, status));
+        return ResponseEntity.ok(applicationService.getAllApplicationsForAdmin(type, status,
+                PageRequest.of(page, size)));
     }
 
     @GetMapping("/my-history")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<List<Application>> getMyHistory(
+    public ResponseEntity<Page<Application>> getMyHistory(
             @AuthenticationPrincipal Long adminId,
             @RequestParam(required = false) ApplicationType type,
-            @RequestParam(required = false) ApplicationStatus status) {
+            @RequestParam(required = false) ApplicationStatus status,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size) {
 
-        return ResponseEntity.ok(applicationService.getAdminPersonalHistory(adminId, type, status));
+        return ResponseEntity.ok(applicationService.getAdminPersonalHistory(adminId, type, status,
+                PageRequest.of(page, size)));
     }
 
     @PostMapping("/{id}/review")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Void> reviewApplication(
-            @PathVariable("id") Long id,
+            @PathVariable Long id,
             @Valid @RequestBody ReviewRequestDto dto,
             @AuthenticationPrincipal Long adminId) {
 

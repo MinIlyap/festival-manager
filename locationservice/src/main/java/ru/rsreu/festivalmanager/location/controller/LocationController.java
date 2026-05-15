@@ -2,6 +2,8 @@ package ru.rsreu.festivalmanager.location.controller;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -24,8 +26,11 @@ public class LocationController {
 
     @GetMapping("/city/search")
     @PreAuthorize("hasAnyRole('USER', 'COMPANY', 'ADMIN')")
-    public ResponseEntity<List<CityResponse>> searchCities(@RequestParam("name") String name) {
-        return ResponseEntity.ok(locationService.searchCities(name));
+    public ResponseEntity<Page<CityResponse>> searchCities(
+            @RequestParam("name") String name,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size) {
+        return ResponseEntity.ok(locationService.searchCities(name, PageRequest.of(page, size)));
     }
 
     @PostMapping("/city")
@@ -48,10 +53,13 @@ public class LocationController {
 
     @GetMapping("/platform-instance/search")
     @PreAuthorize("hasAnyRole('USER', 'COMPANY', 'ADMIN')")
-    public ResponseEntity<List<PlatformInstanceResponse>> searchPlatformInstances(
+    public ResponseEntity<Page<PlatformInstanceResponse>> searchPlatformInstances(
             @RequestParam("cityId") Long cityId,
-            @RequestParam("platformName") String platformName) {
-        return ResponseEntity.ok(locationService.searchPlatformInstances(cityId, platformName));
+            @RequestParam("platformName") String platformName,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size) {
+        return ResponseEntity.ok(locationService.searchPlatformInstances(cityId, platformName,
+                PageRequest.of(page, size)));
     }
 
     @PostMapping("/platform-instance")

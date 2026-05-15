@@ -8,8 +8,11 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import ru.rsreu.festivalmanager.auth.dto.*;
+import ru.rsreu.festivalmanager.auth.entity.AccessType;
 import ru.rsreu.festivalmanager.auth.entity.AuthCredential;
 import ru.rsreu.festivalmanager.auth.service.AuthService;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/auth")
@@ -44,6 +47,14 @@ public class AuthController {
     public ResponseEntity<AuthCredential> getUserByEmail(@RequestParam("email") String email) {
         AuthCredential credential = authService.getUserByEmail(email);
         return ResponseEntity.ok(credential);
+    }
+
+    @PutMapping("/roles/curator")
+    @PreAuthorize("hasRole('INTERNAL')")
+    public void assignCuratorRoles(
+            @RequestBody List<Long> userIds) {
+
+        authService.assignCuratorRoles(userIds);
     }
 
     @GetMapping("/me")

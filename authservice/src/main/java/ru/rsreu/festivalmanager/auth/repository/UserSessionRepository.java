@@ -2,6 +2,7 @@ package ru.rsreu.festivalmanager.auth.repository;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
+import ru.rsreu.festivalmanager.auth.entity.AuthCredential;
 import ru.rsreu.festivalmanager.auth.entity.UserSession;
 
 import java.util.Optional;
@@ -10,5 +11,5 @@ import java.util.Optional;
 public interface UserSessionRepository extends JpaRepository<UserSession, String> {
     Optional<UserSession> findByRefreshToken(String refreshToken);
 
-    void deleteByUser_UserId(Long userId);
+    void deleteAllByUser(AuthCredential authCredential);
 }

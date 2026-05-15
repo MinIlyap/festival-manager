@@ -13,4 +13,11 @@ public class ApplicationEvents {
             Long festivalLocationId,
             OffsetDateTime updatedAt
     ) {}
+
+    public record AppResubmittedEvent(
+            Long agentId,
+            String type,
+            Long entityId,
+            OffsetDateTime updatedAt
+    ) {}
 }

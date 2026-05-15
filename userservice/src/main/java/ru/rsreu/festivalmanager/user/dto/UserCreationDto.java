@@ -19,7 +19,4 @@ public class UserCreationDto {
     @NotNull(message = "ID города обязателен")
     @JsonProperty("city_id")
     private Long cityId;
-
-    @JsonProperty("access_type")
-    private String accessType;
 }

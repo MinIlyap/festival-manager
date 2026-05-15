@@ -23,11 +23,20 @@ public class CompanyController {
         return ResponseEntity.ok(companyService.createInactiveCompany(request));
     }
 
-    @PatchMapping("/activate/{id}")
+    @PutMapping("/activate/{id}")
     @PreAuthorize("hasRole('INTERNAL')")
     public ResponseEntity<Void> activateCompany(@PathVariable Long id) {
         companyService.activateCompany(id);
         return ResponseEntity.ok().build();
+    }
+
+    @PutMapping("/email/{id}")
+    @PreAuthorize("hasRole('INTERNAL')")
+    public void updateCompanyEmail(
+            @PathVariable Long id,
+            @RequestParam("newEmail") String newEmail) {
+
+        companyService.updateEmail(id, newEmail);
     }
 
     @GetMapping("/{id}")
