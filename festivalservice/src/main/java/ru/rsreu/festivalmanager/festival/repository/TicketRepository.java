@@ -6,6 +6,7 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 import ru.rsreu.festivalmanager.festival.entity.ticket.Ticket;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Repository
@@ -14,4 +15,10 @@ public interface TicketRepository extends JpaRepository<Ticket, Long> {
     Integer sumSoldTicketsByFestivalInstanceId(@Param("instanceId") Long instanceId);
 
     List<Ticket> findAllByUserId(Long userId);
+
+    boolean existsByUserIdAndTicketTypeInstance_FestivalLocation_IdAndExpiryDateAfter(
+            Long userId,
+            Long festivalLocationId,
+            LocalDateTime date
+    );
 }

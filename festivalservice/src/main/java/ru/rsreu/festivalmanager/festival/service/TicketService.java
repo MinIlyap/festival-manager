@@ -111,6 +111,17 @@ public class TicketService {
     }
 
     @Transactional(readOnly = true)
+    public Boolean hasValidTicket(Long festivalLocationId, Long userId) {
+        LocalDateTime now = LocalDateTime.now();
+        // Тебе нужно будет добавить этот метод в TicketRepository:
+        // Он должен проверять билеты, где user_id совпадает, дата окончания > now,
+        // и цепочка связей ведет к нужному festivalLocationId
+        return ticketRepository.existsByUserIdAndTicketTypeInstance_FestivalLocation_IdAndExpiryDateAfter(
+                userId, festivalLocationId, now
+        );
+    }
+
+    @Transactional(readOnly = true)
     public UserTicketsResponse getUserTickets(Long userId) {
         List<Ticket> allTickets = ticketRepository.findAllByUserId(userId);
         LocalDateTime now = LocalDateTime.now();

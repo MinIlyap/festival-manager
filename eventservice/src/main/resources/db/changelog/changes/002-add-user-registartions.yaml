@@ -77,6 +77,12 @@ databaseChangeLog:
                   type: BIGINT
                   constraints:
                     nullable: false
+              - column:
+                  name: created_at
+                  type: TIMESTAMPTZ
+                  defaultValue: CURRENT_TIMESTAMP
+                  constraints:
+                    nullable: false
 
         - addPrimaryKey:
             tableName: user_event_registrations

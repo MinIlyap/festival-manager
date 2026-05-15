@@ -20,5 +20,5 @@ public class CommandMemberId implements Serializable {
     private Command command;
 
     @Column(name = "user_id", nullable = false)
-    private Long user_id;
+    private Long userId;
 }

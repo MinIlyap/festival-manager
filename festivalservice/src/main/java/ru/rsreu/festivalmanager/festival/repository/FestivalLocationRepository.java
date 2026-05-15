@@ -22,4 +22,6 @@ public interface FestivalLocationRepository extends JpaRepository<FestivalLocati
             @Param("name") String name,
             @Param("startDate") LocalDate startDate,
             @Param("endDate") LocalDate endDate);
+
+    List<FestivalLocation> findAllByPlatformInstanceIdIn(List<Long> platformInstanceIds);
 }

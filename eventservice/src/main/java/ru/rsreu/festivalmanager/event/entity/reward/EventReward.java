@@ -2,6 +2,7 @@ package ru.rsreu.festivalmanager.event.entity.reward;
 
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import ru.rsreu.festivalmanager.event.entity.event.FestivalEvent;
@@ -11,6 +12,7 @@ import ru.rsreu.festivalmanager.event.entity.event.FestivalEvent;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
+@Builder
 public class EventReward {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

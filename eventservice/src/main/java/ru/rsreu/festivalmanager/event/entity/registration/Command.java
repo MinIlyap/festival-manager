@@ -1,11 +1,11 @@
 package ru.rsreu.festivalmanager.event.entity.registration;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 import ru.rsreu.festivalmanager.event.entity.event.FestivalEvent;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Table(name = "commands")
@@ -13,6 +13,7 @@ import ru.rsreu.festivalmanager.event.entity.event.FestivalEvent;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
+@Builder
 public class Command {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -27,4 +28,7 @@ public class Command {
 
     @Column(name = "creator_id")
     private Long creatorId;
+
+    @OneToMany(mappedBy = "commandMemberId.command", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<CommandMember> members = new ArrayList<>();
 }

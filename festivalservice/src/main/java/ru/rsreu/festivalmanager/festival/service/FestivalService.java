@@ -20,6 +20,7 @@ import ru.rsreu.festivalmanager.festival.repository.*;
 import java.time.LocalDate;
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -249,6 +250,30 @@ public class FestivalService {
         template.setTicketTypes(oldTickets);
 
         return template;
+    }
+
+    @Transactional(readOnly = true)
+    public List<Long> getFestivalLocationIdsByCity(Long cityId) {
+        // Идем в Location Service за площадками
+        List<Long> platformIdsInCity = locationClient.getPlatformIdsByCity(getSystemToken(), cityId);
+
+        if (platformIdsInCity.isEmpty()) {
+            return Collections.emptyList();
+        }
+
+        // Ищем все фестивали, которые проходят на этих площадках
+        return locationRepository.findAllByPlatformInstanceIdIn(platformIdsInCity)
+                .stream()
+                .map(FestivalLocation::getId)
+                .collect(Collectors.toList());
+    }
+
+    @Transactional(readOnly = true)
+    public Boolean isFestivalVisible(Long festivalLocationId) {
+        FestivalLocation location = locationRepository.findById(festivalLocationId)
+                .orElseThrow(() -> new IllegalArgumentException("Фестиваль не найден"));
+
+        return location.getFestivalInstance().isVisible();
     }
 
     private FestivalResponse mapToResponse(FestivalLocation location) {
