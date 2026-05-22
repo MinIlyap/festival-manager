@@ -14,8 +14,10 @@ import ru.rsreu.festivalmanager.auth.dto.*;
 import ru.rsreu.festivalmanager.auth.entity.AccessType;
 import ru.rsreu.festivalmanager.auth.entity.AuthCredential;
 import ru.rsreu.festivalmanager.auth.entity.UserSession;
+import ru.rsreu.festivalmanager.auth.entity.UserSocialAccount;
 import ru.rsreu.festivalmanager.auth.repository.AuthCredentialRepository;
 import ru.rsreu.festivalmanager.auth.repository.UserSessionRepository;
+import ru.rsreu.festivalmanager.auth.repository.UserSocialAccountRepository;
 import ru.rsreu.festivalmanager.jwt.security.JwtProvider;
 import ru.rsreu.festivalmanager.common.util.CryptoUtil;
 
@@ -30,6 +32,7 @@ public class AuthService {
 
     private final AuthCredentialRepository credentialRepository;
     private final UserSessionRepository sessionRepository;
+    private final UserSocialAccountRepository userSocialAccountRepository;
     private final UserServiceClient userServiceClient;
     private final CompanyServiceClient companyServiceClient;
     private final PasswordEncoder passwordEncoder;
@@ -194,6 +197,49 @@ public class AuthService {
 
         sessionRepository.delete(session);
         return generateTokens(credential);
+    }
+
+    @Transactional
+    public Long registerExternalUser(String email, String displayName) {
+        // Формируем базовые данные для микросервиса пользователей
+        // Город и дату рождения придется запросить у пользователя позже при заполнении профиля
+        UserCreationDto userDto = new UserCreationDto(displayName, null, null);
+        Long userId = userServiceClient.createUser(getBearerSystemToken(), userDto);
+
+        AuthCredential credential = new AuthCredential();
+        credential.setUserId(userId);
+        credential.setEmail(email);
+        credential.setAccessType(AccessType.USER);
+        // Пароль остается null
+
+        credentialRepository.save(credential);
+        return userId;
+    }
+
+    @Transactional
+    public AuthResponse generateTokensForOAuth(Long userId) {
+        AuthCredential credential = credentialRepository.findByUserId(userId)
+                .orElseThrow(() -> new IllegalArgumentException("Учетная запись не найдена"));
+
+        return generateTokens(credential);
+    }
+
+    @Transactional
+    public void unlinkSocialAccount(Long userId, String provider) {
+        AuthCredential credential = credentialRepository.findByUserId(userId)
+                .orElseThrow(() -> new IllegalArgumentException("Пользователь не найден"));
+
+        UserSocialAccount socialAccount = userSocialAccountRepository.findByUserIdAndProvider(userId, provider)
+                .orElseThrow(() -> new IllegalArgumentException("Привязка не найдена"));
+
+        if (credential.getPasswordHash() == null) {
+            long socialAccountsCount = userSocialAccountRepository.countByUserId(userId);
+            if (socialAccountsCount <= 1) {
+                throw new IllegalArgumentException("Невозможно отвязать единственный способ входа. Установите пароль.");
+            }
+        }
+
+        userSocialAccountRepository.delete(socialAccount);
     }
 
     @Transactional

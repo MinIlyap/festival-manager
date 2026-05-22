@@ -3,6 +3,7 @@ package ru.rsreu.festivalmanager.jwt.security;
 import io.jsonwebtoken.Claims;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
+import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
@@ -22,25 +23,42 @@ public class JwtFilter extends OncePerRequestFilter {
     private final JwtProvider jwtProvider;
 
     @Override
-    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
+    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response,
+                                    FilterChain filterChain) throws ServletException, IOException {
+        String token = extractToken(request);
+
+        if (token != null && jwtProvider.validateAccessToken(token)) {
+            Claims claims = jwtProvider.getAccessClaims(token);
+            String role = claims.get("role", String.class);
+
+            Number idClaim = claims.get("id", Number.class);
+            Long subjectId = idClaim != null ? idClaim.longValue() : null;
+
+            UsernamePasswordAuthenticationToken auth = new UsernamePasswordAuthenticationToken(
+                    subjectId,
+                    null,
+                    Collections.singletonList(new SimpleGrantedAuthority("ROLE_" + role))
+            );
+            SecurityContextHolder.getContext().setAuthentication(auth);
+        }
+
+        filterChain.doFilter(request, response);
+    }
+
+    private String extractToken(HttpServletRequest request) {
         String authHeader = request.getHeader("Authorization");
         if (authHeader != null && authHeader.startsWith("Bearer ")) {
-            String token = authHeader.substring(7);
-            if (jwtProvider.validateAccessToken(token)) {
-                Claims claims = jwtProvider.getAccessClaims(token);
-                String role = claims.get("role", String.class);
+            return authHeader.substring(7);
+        }
 
-                Number idClaim = claims.get("id", Number.class);
-                Long subjectId = idClaim != null ? idClaim.longValue() : null;
-
-                UsernamePasswordAuthenticationToken auth = new UsernamePasswordAuthenticationToken(
-                        subjectId,
-                        null,
-                        Collections.singletonList(new SimpleGrantedAuthority("ROLE_" + role))
-                );
-                SecurityContextHolder.getContext().setAuthentication(auth);
+        Cookie[] cookies = request.getCookies();
+        if (cookies != null) {
+            for (Cookie cookie : cookies) {
+                if ("link_token".equals(cookie.getName())) {
+                    return cookie.getValue();
+                }
             }
         }
-        filterChain.doFilter(request, response);
+        return null;
     }
 }

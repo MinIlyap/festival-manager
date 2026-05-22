@@ -11,4 +11,6 @@ import java.util.List;
 @Repository
 public interface FestivalCuratorRepository extends JpaRepository<FestivalCurator, FestivalCuratorId> {
     List<FestivalCurator> findAllByFestivalCuratorId_FestivalLocation(FestivalLocation festivalLocation);
+
+    boolean existsByFestivalCuratorId_FestivalLocationIdAndFestivalCuratorId_CuratorId(Long festivalLocationId, Long curatorId);
 }

@@ -8,7 +8,6 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import ru.rsreu.festivalmanager.auth.dto.*;
-import ru.rsreu.festivalmanager.auth.entity.AccessType;
 import ru.rsreu.festivalmanager.auth.entity.AuthCredential;
 import ru.rsreu.festivalmanager.auth.service.AuthService;
 
@@ -87,6 +86,16 @@ public class AuthController {
 
         authService.changePassword(id, extractRole(authentication), request);
         return ResponseEntity.ok("Пароль успешно изменен");
+    }
+
+    @DeleteMapping("/{provider}")
+    @PreAuthorize("hasAuthority('USER')")
+    public ResponseEntity<Void> unlinkSocialAccount(
+            @AuthenticationPrincipal Long userId,
+            @PathVariable String provider) {
+
+        authService.unlinkSocialAccount(userId, provider);
+        return ResponseEntity.ok().build();
     }
 
     private String extractRole(Authentication authentication) {

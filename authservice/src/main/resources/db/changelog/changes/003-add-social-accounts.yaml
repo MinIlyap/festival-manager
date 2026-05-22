@@ -1,0 +1,46 @@
+databaseChangeLog:
+  - changeSet:
+      id: 003-add-social-accounts
+      author: ilyap
+      changes:
+        - dropNotNullConstraint:
+            tableName: auth_credentials
+            columnName: password_hash
+            columnDataType: VARCHAR(255)
+
+        - createTable:
+            tableName: user_social_accounts
+            columns:
+              - column:
+                  name: id
+                  type: BIGINT
+                  autoIncrement: true
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: user_id
+                  type: BIGINT
+                  constraints:
+                    nullable: false
+                    foreignKeyName: fk_social_auth_user
+                    referencedTableName: auth_credentials
+                    referencedColumnNames: id
+              - column:
+                  name: provider
+                  type: VARCHAR(50)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: external_id
+                  type: VARCHAR(255)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: email
+                  type: VARCHAR(255)
+
+        - addUniqueConstraint:
+            tableName: user_social_accounts
+            columnNames: provider, external_id
+            constraintName: uq_social_provider_id

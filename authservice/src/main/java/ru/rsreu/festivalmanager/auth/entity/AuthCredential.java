@@ -18,7 +18,7 @@ public class AuthCredential {
     @Column(name = "email", unique = true, nullable = false)
     private String email;
 
-    @Column(name = "password_hash", nullable = false)
+    @Column(name = "password_hash")
     private String passwordHash;
 
     @Enumerated(value = EnumType.STRING)
