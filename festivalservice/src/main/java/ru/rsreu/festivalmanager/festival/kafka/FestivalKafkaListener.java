@@ -20,8 +20,7 @@ public class FestivalKafkaListener {
 
         festivalService.processApplicationResponse(
                 message.getFestivalLocationId(),
-                message.getStatus(),
-                message.getComment()
+                message.getStatus()
         );
     }
 }

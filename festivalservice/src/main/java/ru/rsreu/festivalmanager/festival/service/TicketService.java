@@ -7,6 +7,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.rsreu.festivalmanager.festival.client.UserServiceClient;
 import ru.rsreu.festivalmanager.festival.dto.*;
+import ru.rsreu.festivalmanager.festival.entity.festival.FestivalLocation;
 import ru.rsreu.festivalmanager.festival.entity.ticket.*;
 import ru.rsreu.festivalmanager.festival.entity.festival.FestivalInstance;
 import ru.rsreu.festivalmanager.festival.entity.ticket.Ticket;
@@ -14,8 +15,10 @@ import ru.rsreu.festivalmanager.festival.entity.ticket.TicketTypeInstance;
 import ru.rsreu.festivalmanager.festival.repository.*;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
+import java.time.Period;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -25,14 +28,96 @@ import java.util.List;
 public class TicketService {
 
     private final TicketRepository ticketRepository;
+    private final TicketTypeRepository ticketTypeRepository;
     private final TicketTypeInstanceRepository ticketTypeInstanceRepository;
+    private final FestivalCompanyRepository festivalCompanyRepository;
     private final FestivalInstanceRepository festivalInstanceRepository;
+    private final FestivalLocationRepository festivalLocationRepository;
     private final UserServiceClient userClient;
 
     @Value("${internal.system-token}")
     private String systemToken;
 
     private String getSystemToken() { return "Bearer " + systemToken; }
+
+    @Transactional
+    public TicketType createTicketType(String name) {
+        if (ticketTypeRepository.existsByNameIgnoreCase(name)) {
+            throw new IllegalArgumentException("Тип билета с таким названием уже существует");
+        }
+
+        TicketType ticketType = new TicketType();
+        ticketType.setName(name);
+
+        return ticketTypeRepository.save(ticketType);
+    }
+
+    @Transactional
+    public Long createTicketTypeInstance(TicketTypeInstanceCreateRequest request, Long companyId) {
+        // 1. Проверяем, есть ли права у компании на этот фестиваль
+        if (!festivalCompanyRepository.existsByFestivalCompanyId_FestivalLocationIdAndFestivalCompanyId_CompanyId(
+                request.getFestivalLocationId(), companyId)) {
+            throw new SecurityException("У вашей компании нет прав на управление билетами этого фестиваля");
+        }
+
+        // 2. Достаем глобальный тип билета
+        TicketType ticketType = ticketTypeRepository.findById(request.getTicketTypeId())
+                .orElseThrow(() -> new IllegalArgumentException("Глобальный тип билета не найден"));
+
+        // 3. Достаем локацию фестиваля
+        FestivalLocation location = festivalLocationRepository.findById(request.getFestivalLocationId())
+                .orElseThrow(() -> new IllegalArgumentException("Фестиваль не найден"));
+
+        // 4. Защита от дублей: проверяем, не добавлен ли уже этот тип билета на этот фестиваль
+        boolean alreadyExists = ticketTypeInstanceRepository.existsByFestivalLocationAndTicketType(location, ticketType);
+        if (alreadyExists) {
+            throw new IllegalArgumentException("Этот тип билета уже добавлен на данный фестиваль");
+        }
+
+        // 5. Создаем инстанс
+        TicketTypeInstance instance = new TicketTypeInstance();
+        instance.setTicketType(ticketType);
+        instance.setFestivalLocation(location);
+        instance.setDescription(request.getDescription());
+        instance.setPrice(request.getPrice());
+
+        instance = ticketTypeInstanceRepository.save(instance);
+        return instance.getId();
+    }
+
+    @Transactional
+    public void updateTicketTypeInstance(Long instanceId, String description, BigDecimal price, Long companyId) {
+        TicketTypeInstance instance = ticketTypeInstanceRepository.findById(instanceId)
+                .orElseThrow(() -> new IllegalArgumentException("Экземпляр билета не найден"));
+
+        // Проверка прав компании на этот фестиваль
+        Long festivalLocationId = instance.getFestivalLocation().getId();
+        if (!festivalCompanyRepository.existsByFestivalCompanyId_FestivalLocationIdAndFestivalCompanyId_CompanyId(festivalLocationId, companyId)) {
+            throw new SecurityException("У вашей компании нет прав на редактирование билетов этого фестиваля");
+        }
+
+        instance.setDescription(description);
+        instance.setPrice(price);
+        ticketTypeInstanceRepository.save(instance);
+    }
+
+    @Transactional
+    public void deleteTicketTypeInstance(Long instanceId, Long companyId) {
+        TicketTypeInstance instance = ticketTypeInstanceRepository.findById(instanceId)
+                .orElseThrow(() -> new IllegalArgumentException("Экземпляр билета не найден"));
+
+        Long festivalLocationId = instance.getFestivalLocation().getId();
+        if (!festivalCompanyRepository.existsByFestivalCompanyId_FestivalLocationIdAndFestivalCompanyId_CompanyId(festivalLocationId, companyId)) {
+            throw new SecurityException("У вашей компании нет прав на удаление билетов этого фестиваля");
+        }
+
+        // КРИТИЧЕСКАЯ ПРОВЕРКА: Если билеты уже куплены, удалять нельзя
+        if (ticketRepository.existsByTicketTypeInstanceId(instanceId)) {
+            throw new IllegalArgumentException("Невозможно удалить тип билета: по нему уже есть проданные билеты");
+        }
+
+        ticketTypeInstanceRepository.delete(instance);
+    }
 
     @Transactional
     public Long purchaseTicket(Long userId, TicketPurchaseRequest request) {
@@ -51,7 +136,7 @@ public class TicketService {
             throw new IllegalArgumentException("Для покупки билета необходимо указать дату рождения в профиле");
         }
 
-        int userAge = java.time.Period.between(userProfile.getDateOfBirth(), java.time.LocalDate.now()).getYears();
+        int userAge = Period.between(userProfile.getDateOfBirth(), LocalDate.now()).getYears();
         int requiredAge = 0;
 
         try {
@@ -113,9 +198,6 @@ public class TicketService {
     @Transactional(readOnly = true)
     public Boolean hasValidTicket(Long festivalLocationId, Long userId) {
         LocalDateTime now = LocalDateTime.now();
-        // Тебе нужно будет добавить этот метод в TicketRepository:
-        // Он должен проверять билеты, где user_id совпадает, дата окончания > now,
-        // и цепочка связей ведет к нужному festivalLocationId
         return ticketRepository.existsByUserIdAndTicketTypeInstance_FestivalLocation_IdAndExpiryDateAfter(
                 userId, festivalLocationId, now
         );

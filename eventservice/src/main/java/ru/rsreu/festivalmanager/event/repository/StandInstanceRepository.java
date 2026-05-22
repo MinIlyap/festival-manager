@@ -15,7 +15,7 @@ public interface StandInstanceRepository extends JpaRepository<StandInstance, Lo
     @Query("SELECT si FROM StandInstance si " +
             "WHERE si.stand.id = :standId " +
             "AND si.companyId = :companyId " +
-            "AND si.type = :type " +
+            "AND si.standType = :type " +
             "AND si.dateStart = :dateStart " +
             "AND (si.description = :description OR (si.description IS NULL AND :description IS NULL))")
     Optional<StandInstance> findIdenticalInstance(

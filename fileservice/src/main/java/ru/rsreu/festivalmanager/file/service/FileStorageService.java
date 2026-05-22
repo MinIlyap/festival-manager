@@ -7,6 +7,7 @@ import io.minio.RemoveObjectArgs;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.tika.Tika;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.rsreu.festivalmanager.file.client.EventServiceClient;
@@ -34,6 +35,13 @@ public class FileStorageService {
     private final Tika tika = new Tika();
 
     private static final long MAX_FILE_SIZE = 5 * 1024 * 1024; // 5 MB
+
+    @Value("${internal.system-token}")
+    private String systemToken;
+
+    private String getSystemToken() {
+        return "Bearer " + systemToken;
+    }
 
     @Transactional
     public void uploadFile(byte[] fileBytes, EntityType type, Long entityId, Long creatorId) {
@@ -140,8 +148,8 @@ public class FileStorageService {
         }
 
         boolean hasAccess = switch (type) {
-            case FESTIVAL_LOCATION -> festivalClient.checkAccess(type.name(), entityId, creatorId);
-            case FESTIVAL_EVENT, FESTIVAL_STAND, EVENT_REWARD -> eventClient.checkAccess(type.name(), entityId, creatorId);
+            case FESTIVAL_LOCATION -> festivalClient.checkAccess(getSystemToken(), type.name(), entityId, creatorId);
+            case FESTIVAL_EVENT, FESTIVAL_STAND, EVENT_REWARD -> eventClient.checkAccess(getSystemToken(), type.name(), entityId, creatorId);
             default -> false;
         };
 

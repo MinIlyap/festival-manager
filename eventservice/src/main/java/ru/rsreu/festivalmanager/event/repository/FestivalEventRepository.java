@@ -24,8 +24,6 @@ public interface FestivalEventRepository extends JpaRepository<FestivalEvent, Lo
             "WHERE (:name IS NULL OR LOWER(e.name) LIKE LOWER(CONCAT('%', :name, '%'))) " +
             "AND (CAST(:startDate AS date) IS NULL OR ei.dateStart >= :startDate) " +
             "AND (CAST(:endDate AS date) IS NULL OR ei.dateStart <= :endDate) " +
-            // Если список locationIds пустой (передали пустой список из-за того что в городе нет фестивалей),
-            // Spring JPA может ругнуться, но мы это обрабатываем в сервисе заранее (возвращаем Page.empty).
             "AND (:locationIds IS NULL OR fe.festivalLocationId IN :locationIds)")
     Page<FestivalEvent> searchWithFilters(
             @Param("name") String name,
@@ -41,7 +39,7 @@ public interface FestivalEventRepository extends JpaRepository<FestivalEvent, Lo
 
     @Query("SELECT fe FROM FestivalEvent fe " +
             "WHERE fe.festivalLocationId = :locationId " +
-            "AND (:type IS NULL OR fe.eventInstance.type = :type)")
+            "AND (:type IS NULL OR fe.eventInstance.eventType = :type)")
     List<FestivalEvent> findByLocationAndType(
             @Param("locationId") Long locationId,
             @Param("type") EventType type

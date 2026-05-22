@@ -9,7 +9,6 @@ import org.springframework.transaction.annotation.Transactional;
 import ru.rsreu.festivalmanager.festival.client.AuthServiceClient;
 import ru.rsreu.festivalmanager.festival.client.CompanyServiceClient;
 import ru.rsreu.festivalmanager.festival.client.LocationServiceClient;
-import ru.rsreu.festivalmanager.festival.client.UserServiceClient;
 import ru.rsreu.festivalmanager.festival.dto.*;
 import ru.rsreu.festivalmanager.festival.entity.festival.*;
 import ru.rsreu.festivalmanager.festival.entity.ticket.TicketType;
@@ -38,7 +37,6 @@ public class FestivalService {
     private final FestivalCuratorRepository festivalCuratorRepository;
     private final CompanyServiceClient companyClient;
     private final AuthServiceClient authClient;
-    private final UserServiceClient userClient;
     private final ApplicationEventPublisher eventPublisher;
     private final LocationServiceClient locationClient;
 
@@ -52,6 +50,7 @@ public class FestivalService {
     @Transactional
     public Long applyForFestival(FestivalCreateRequest request, Long senderCompanyId) {
         boolean platformExists = locationClient.checkPlatformExists(getSystemToken(), request.getPlatformInstanceId());
+
         if (!platformExists) {
             throw new IllegalArgumentException("Указанная площадка не существует в Location Service");
         }
@@ -59,6 +58,7 @@ public class FestivalService {
         AgeLimit ageLimit = ageLimitRepository.findById(request.getAgeLimitId())
                 .orElseThrow(() -> new IllegalArgumentException("Возрастное ограничение не найдено"));
 
+        // 1. Ищем или создаем сам фестиваль (название)
         Festival festival = festivalRepository.findByNameIgnoreCase(request.getFestivalName())
                 .orElseGet(() -> {
                     Festival f = new Festival();
@@ -66,7 +66,11 @@ public class FestivalService {
                     return festivalRepository.save(f);
                 });
 
-        FestivalInstance instance = getFestivalInstance(request, festival, ageLimit);
+        // 2. ИСправлено: Ищем существующий инстанс (проведение) по датам, иначе создаем новый
+        FestivalInstance instance = instanceRepository
+                .findByFestivalIdAndDateStartAndDateEnd(festival.getId(), request.getDateStart(), request.getDateEnd())
+                .orElseGet(() -> getFestivalInstance(request, festival, ageLimit));
+
         instance = instanceRepository.save(instance);
 
         FestivalLocation location = new FestivalLocation();
@@ -153,13 +157,12 @@ public class FestivalService {
         instance.setVisible(false);
         return instance;
     }
-
     @Transactional
-    public void processApplicationResponse(Long festivalLocationId, String status, String comment) {
-        if ("APPROVED".equalsIgnoreCase(status)) {
-            FestivalLocation location = locationRepository.findById(festivalLocationId)
-                    .orElseThrow(() -> new IllegalArgumentException("Фестиваль не найден"));
+    public void processApplicationResponse(Long festivalLocationId, String status) {
+        FestivalLocation location = locationRepository.findById(festivalLocationId)
+                .orElseThrow(() -> new IllegalArgumentException("Фестиваль не найден"));
 
+        if ("APPROVED".equalsIgnoreCase(status)) {
             location.getFestivalInstance().setVisible(true);
             locationRepository.save(location);
 

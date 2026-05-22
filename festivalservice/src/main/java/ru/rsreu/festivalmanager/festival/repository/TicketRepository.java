@@ -21,4 +21,6 @@ public interface TicketRepository extends JpaRepository<Ticket, Long> {
             Long festivalLocationId,
             LocalDateTime date
     );
+
+    boolean existsByTicketTypeInstanceId(Long instanceId);
 }

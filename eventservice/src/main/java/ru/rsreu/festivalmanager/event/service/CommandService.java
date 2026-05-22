@@ -1,6 +1,7 @@
 package ru.rsreu.festivalmanager.event.service;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.rsreu.festivalmanager.event.dto.CommandInviteEvent;
@@ -24,6 +25,7 @@ public class CommandService {
     private final FestivalEventRepository festivalEventRepository;
     private final UserEventRegistrationRepository registrationRepository;
     private final CommandKafkaProducer kafkaProducer;
+    private final ApplicationEventPublisher eventPublisher;
 
     @Transactional
     public Long createCommand(Long festivalEventId, String commandName, Long creatorId) {
@@ -42,7 +44,8 @@ public class CommandService {
         }
 
         // 2. Проверяем, не состоит ли он уже в другой команде на этом мероприятии
-        if (commandMemberRepository.existsByCommandMemberId_UserIdAndCommandMemberId_Command_FestivalEvent_id(creatorId, festivalEventId)) {
+        if (commandMemberRepository
+                .existsByCommandMemberId_UserIdAndCommandMemberId_Command_FestivalEvent_id(creatorId, festivalEventId)) {
             throw new IllegalStateException("Вы уже состоите в команде на этом мероприятии");
         }
 
@@ -93,7 +96,7 @@ public class CommandService {
                 .createdAt(OffsetDateTime.now())
                 .build();
 
-        kafkaProducer.sendInvite(event);
+        eventPublisher.publishEvent(event);
     }
 
     @Transactional

@@ -8,6 +8,7 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 import ru.rsreu.festivalmanager.festival.entity.festival.FestivalInstance;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
@@ -18,4 +19,7 @@ public interface FestivalInstanceRepository extends JpaRepository<FestivalInstan
     Optional<FestivalInstance> findByIdWithPessimisticLock(@Param("id") Long id);
 
     List<FestivalInstance> findByFestivalIdOrderByDateStartDesc(Long festivalId);
+
+    Optional<FestivalInstance> findByFestivalIdAndDateStartAndDateEnd(Long id, LocalDate dateStart,
+                                                                      LocalDate dateEnd);
 }

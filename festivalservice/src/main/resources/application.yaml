@@ -29,5 +29,7 @@ jwt:
 
 internal:
   system-token: "my_super_secret_system_token_123"
+crypto:
+  secret-key: "MySuperSecretKey1234567890123456"
 server:
   port: 8085

@@ -6,8 +6,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
-import ru.rsreu.festivalmanager.festival.dto.TicketPurchaseRequest;
-import ru.rsreu.festivalmanager.festival.dto.UserTicketsResponse;
+import ru.rsreu.festivalmanager.festival.dto.*;
+import ru.rsreu.festivalmanager.festival.entity.ticket.TicketType;
 import ru.rsreu.festivalmanager.festival.service.TicketService;
 
 @RestController
@@ -29,5 +29,42 @@ public class TicketController {
     @PreAuthorize("hasAnyRole('USER', 'CURATOR')")
     public ResponseEntity<UserTicketsResponse> getMyTickets(@AuthenticationPrincipal Long userId) {
         return ResponseEntity.ok(ticketService.getUserTickets(userId));
+    }
+
+    @PreAuthorize("hasAnyAuthority('COMPANY', 'ADMIN')")
+    @PostMapping("/types")
+    public ResponseEntity<TicketType> createGlobalTicketType(@RequestBody TicketTypeCreateRequest request) {
+        return ResponseEntity.ok(ticketService.createTicketType(request.getName()));
+    }
+
+    @PreAuthorize("hasAuthority('COMPANY')")
+    @PostMapping("/instances")
+    public ResponseEntity<Long> createTicketInstance(
+            @RequestBody TicketTypeInstanceCreateRequest request,
+            @AuthenticationPrincipal Long companyId) {
+
+        Long instanceId = ticketService.createTicketTypeInstance(request, companyId);
+        return ResponseEntity.ok(instanceId);
+    }
+
+    @PreAuthorize("hasAuthority('COMPANY')")
+    @PutMapping("/instances/{instanceId}")
+    public ResponseEntity<Void> updateTicketInstance(
+            @PathVariable Long instanceId,
+            @RequestBody TicketTypeInstanceUpdateRequest request,
+            @AuthenticationPrincipal Long companyId) {
+
+        ticketService.updateTicketTypeInstance(instanceId, request.getDescription(), request.getPrice(), companyId);
+        return ResponseEntity.ok().build();
+    }
+
+    @PreAuthorize("hasAuthority('COMPANY')")
+    @DeleteMapping("/instances/{instanceId}")
+    public ResponseEntity<Void> deleteTicketInstance(
+            @PathVariable Long instanceId,
+            @AuthenticationPrincipal Long companyId) {
+
+        ticketService.deleteTicketTypeInstance(instanceId, companyId);
+        return ResponseEntity.noContent().build();
     }
 }

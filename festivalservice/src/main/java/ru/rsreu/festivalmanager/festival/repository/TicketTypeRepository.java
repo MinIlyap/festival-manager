@@ -5,4 +5,6 @@ import org.springframework.stereotype.Repository;
 import ru.rsreu.festivalmanager.festival.entity.ticket.TicketType;
 
 @Repository
-public interface TicketTypeRepository extends JpaRepository<TicketType, Long> {}
+public interface TicketTypeRepository extends JpaRepository<TicketType, Long> {
+    boolean existsByNameIgnoreCase(String name);
+}

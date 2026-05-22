@@ -22,5 +22,7 @@ jwt:
     access: "my_super_secret_access_key_that_must_be_long_enough_for_hs256"
 internal:
   system-token: "my_super_secret_system_token_123"
+crypto:
+  secret-key: "MySuperSecretKey1234567890123456"
 server:
   port: 8084
