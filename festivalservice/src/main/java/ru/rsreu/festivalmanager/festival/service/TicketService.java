@@ -7,7 +7,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.rsreu.festivalmanager.festival.client.UserServiceClient;
 import ru.rsreu.festivalmanager.festival.dto.*;
-import ru.rsreu.festivalmanager.festival.entity.*;
+import ru.rsreu.festivalmanager.festival.entity.ticket.*;
 import ru.rsreu.festivalmanager.festival.entity.festival.FestivalInstance;
 import ru.rsreu.festivalmanager.festival.entity.ticket.Ticket;
 import ru.rsreu.festivalmanager.festival.entity.ticket.TicketTypeInstance;

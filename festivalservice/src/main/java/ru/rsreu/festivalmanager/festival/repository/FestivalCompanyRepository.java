@@ -13,4 +13,6 @@ public interface FestivalCompanyRepository extends JpaRepository<FestivalCompany
     List<FestivalCompany> findAllByFestivalCompanyId_FestivalLocation(FestivalLocation festivalLocation);
 
     List<FestivalCompany> findAllByFestivalCompanyId_CompanyId(Long companyId);
+
+    boolean existsByFestivalCompanyId_FestivalLocationIdAndFestivalCompanyId_CompanyId(Long entityId, Long companyId);
 }

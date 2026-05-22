@@ -1,0 +1,93 @@
+databaseChangeLog:
+  - changeSet:
+      id: 001-create-user-files
+      author: ilyap
+      changes:
+        - createTable:
+            tableName: buckets
+            columns:
+              - column:
+                  name: id
+                  type: INTEGER
+                  autoIncrement: true
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: name
+                  type: VARCHAR(255)
+                  constraints:
+                    nullable: false
+
+        - createTable:
+            tableName: user_files
+            columns:
+              - column:
+                  name: id
+                  type: BIGINT
+                  autoIncrement: true
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: entity_type
+                  type: VARCHAR(50)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: entity_id
+                  type: BIGINT
+                  constraints:
+                    nullable: false
+              - column:
+                  name: bucket_id
+                  type: INTEGER
+                  constraints:
+                    nullable: false
+              - column:
+                  name: object_name
+                  type: VARCHAR(255)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: content_type
+                  type: VARCHAR(100)
+              - column:
+                  name: file_size
+                  type: BIGINT
+                  constraints:
+                    nullable: false
+              - column:
+                  name: creator_id
+                  type: BIGINT
+                  constraints:
+                    nullable: false
+              - column:
+                  name: created_at
+                  type: TIMESTAMPTZ
+                  defaultValueComputed: CURRENT_TIMESTAMP
+                  constraints:
+                    nullable: false
+
+        - addForeignKeyConstraint:
+            constraintName: fk_user_files_bucket
+            baseTableName: user_files
+            baseColumnNames: bucket_id
+            referencedTableName: buckets
+            referencedColumnNames: id
+
+        - sql:
+            sql: |
+              ALTER TABLE user_files
+                ADD CONSTRAINT chk_entity_type
+                CHECK (entity_type IN ('USER_AVATAR', 'FESTIVAL_LOCATION', 'FESTIVAL_EVENT', 
+              'FESTIVAL_STAND', 'EVENT_REWARD', 'PRODUCT_INSTANCE'));
+
+        - createIndex:
+            indexName: idx_app_files_entity
+            tableName: user_files
+            columns:
+              - column:
+                  name: entity_type
+              - column:
+                  name: entity_id

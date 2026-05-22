@@ -1,6 +1,28 @@
 spring:
   application:
     name: fileservice
+  liquibase:
+    change-log: classpath:/db/changelog/db.changelog-master.yaml
+  datasource:
+    name: file_db
+    username: file_service_user
+    password: file_service_password
+    driver-class-name: org.postgresql.Driver
+    url: jdbc:postgresql://localhost:5441/file_db
+  jpa:
+    hibernate:
+      ddl-auto: none
 
+minio:
+  url: http://localhost:9000
+  access-key: minioadmin
+  secret-key: minioadmin
+
+jwt:
+  secret:
+    access: "my_super_secret_access_key_that_must_be_long_enough_for_hs256"
+
+internal:
+  system-token: "my_super_secret_system_token_123"
 server:
   port: 8086

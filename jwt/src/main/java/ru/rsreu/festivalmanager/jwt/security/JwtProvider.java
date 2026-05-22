@@ -18,10 +18,10 @@ public class JwtProvider {
         this.jwtAccessSecret = Keys.hmacShaKeyFor(jwtAccessSecret.getBytes());
     }
 
-    public String generateAccessToken(Long userId, String email, String role) {
+    public String generateAccessToken(Long id, String email, String role) {
         return Jwts.builder()
                 .subject(email)
-                .claim("id", userId)
+                .claim("id", id)
                 .claim("role", role)
                 .issuedAt(new Date())
                 .expiration(new Date(System.currentTimeMillis() + 1000 * 60 * 60)) // 1 час

@@ -1,0 +1,11 @@
+databaseChangeLog:
+  - changeSet:
+      id: 005-fix-command-member
+      author: ilyap
+      changes:
+        - addForeignKeyConstraint:
+            constraintName: fk_command_members_command
+            baseTableName: command_members
+            baseColumnNames: command_id
+            referencedTableName: commands
+            referencedColumnNames: id

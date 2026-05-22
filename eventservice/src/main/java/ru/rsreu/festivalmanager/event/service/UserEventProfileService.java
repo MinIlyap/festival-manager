@@ -7,7 +7,6 @@ import ru.rsreu.festivalmanager.event.dto.FestivalEventResponse;
 import ru.rsreu.festivalmanager.event.dto.UserFestivalEventsResponse;
 import ru.rsreu.festivalmanager.event.dto.UserFestivalRewardsResponse;
 import ru.rsreu.festivalmanager.event.dto.UserRewardResponse;
-import ru.rsreu.festivalmanager.event.entity.*;
 import ru.rsreu.festivalmanager.event.entity.event.Event;
 import ru.rsreu.festivalmanager.event.entity.event.EventInstance;
 import ru.rsreu.festivalmanager.event.entity.event.EventType;

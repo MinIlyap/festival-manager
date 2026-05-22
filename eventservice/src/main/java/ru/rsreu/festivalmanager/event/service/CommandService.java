@@ -4,7 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.rsreu.festivalmanager.event.dto.CommandInviteEvent;
-import ru.rsreu.festivalmanager.event.entity.*;
+import ru.rsreu.festivalmanager.event.entity.registration.*;
 import ru.rsreu.festivalmanager.event.entity.event.FestivalEvent;
 import ru.rsreu.festivalmanager.event.entity.registration.Command;
 import ru.rsreu.festivalmanager.event.entity.registration.CommandMember;

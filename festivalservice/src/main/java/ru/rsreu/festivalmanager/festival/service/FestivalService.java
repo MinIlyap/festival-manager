@@ -276,6 +276,15 @@ public class FestivalService {
         return location.getFestivalInstance().isVisible();
     }
 
+    @Transactional(readOnly = true)
+    public Boolean hasAccessForFestival(String entityType, Long entityId, Long companyId) {
+        if ("FESTIVAL_LOCATION".equals(entityType)) {
+            return festivalCompanyRepository
+                    .existsByFestivalCompanyId_FestivalLocationIdAndFestivalCompanyId_CompanyId(entityId, companyId);
+        }
+        return false;
+    }
+
     private FestivalResponse mapToResponse(FestivalLocation location) {
         return FestivalResponse.builder()
                 .festivalLocationId(location.getId())

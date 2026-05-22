@@ -21,9 +21,8 @@ spring:
       group-id: festival-service-group
       auto-offset-reset: earliest
       key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
-      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
-      properties:
-        spring.json.trusted.packages: "*"
+      value-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+
 jwt:
   secret:
     access: "my_super_secret_access_key_that_must_be_long_enough_for_hs256"

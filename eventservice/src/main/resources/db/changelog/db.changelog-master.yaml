@@ -7,3 +7,5 @@ databaseChangeLog:
       file: db/changelog/changes/003-add-reward-destributions.yaml
   - include:
       file: db/changelog/changes/004-add-stands.yaml
+  - include:
+      file: db/changelog/changes/005-fix-command-member.yaml
