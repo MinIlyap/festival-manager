@@ -38,10 +38,18 @@ public class FestivalEventController {
     @DeleteMapping("/{festivalEventId}")
     @PreAuthorize("hasRole('COMPANY')")
     public ResponseEntity<String> detachEvent(
-            @PathVariable Long festivalEventId) {
+            @PathVariable Long festivalEventId,
+            @AuthenticationPrincipal Long companyId) {
 
-        festivalEventService.detachEventFromFestival(festivalEventId);
+        festivalEventService.detachEventFromFestival(festivalEventId, companyId);
         return ResponseEntity.ok("Мероприятие откреплено");
+    }
+
+    @GetMapping("/my/created")
+    @PreAuthorize("hasRole('COMPANY')")
+    public ResponseEntity<List<FestivalEventResponse>> getMyCompanyEvents(
+            @AuthenticationPrincipal Long companyId) {
+        return ResponseEntity.ok(festivalEventService.getEventsByCompany(companyId));
     }
 
     @GetMapping("/festival/{festivalLocationId}")
@@ -60,11 +68,12 @@ public class FestivalEventController {
             @RequestParam(value = "cityId", required = false) Long cityId,
             @RequestParam(value = "startDate", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
             @RequestParam(value = "endDate", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate,
+            @RequestParam(required = false) EventType type,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size) {
 
         return ResponseEntity.ok(festivalEventService.searchFestivalEvents(
-                name, cityId, startDate, endDate, PageRequest.of(page, size)
+                name, cityId, startDate, endDate, type, PageRequest.of(page, size)
         ));
     }
 }

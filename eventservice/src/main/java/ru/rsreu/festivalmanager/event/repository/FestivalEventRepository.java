@@ -21,15 +21,17 @@ public interface FestivalEventRepository extends JpaRepository<FestivalEvent, Lo
     @Query("SELECT fe FROM FestivalEvent fe " +
             "JOIN fe.eventInstance ei " +
             "JOIN ei.event e " +
-            "WHERE (:name IS NULL OR LOWER(e.name) LIKE LOWER(CONCAT('%', :name, '%'))) " +
+            "WHERE (CAST(:name AS string) IS NULL OR LOWER(e.name) LIKE LOWER(CONCAT('%', CAST(:name AS string), '%'))) " +
             "AND (CAST(:startDate AS date) IS NULL OR ei.dateStart >= :startDate) " +
             "AND (CAST(:endDate AS date) IS NULL OR ei.dateStart <= :endDate) " +
-            "AND (:locationIds IS NULL OR fe.festivalLocationId IN :locationIds)")
+            "AND (:locationIds IS NULL OR fe.festivalLocationId IN :locationIds) " +
+            "AND (:type IS NULL OR ei.eventType = :type)")
     Page<FestivalEvent> searchWithFilters(
             @Param("name") String name,
             @Param("startDate") LocalDate startDate,
             @Param("endDate") LocalDate endDate,
             @Param("locationIds") List<Long> locationIds,
+            @Param("type") EventType type,
             Pageable pageable
     );
 
@@ -44,4 +46,6 @@ public interface FestivalEventRepository extends JpaRepository<FestivalEvent, Lo
             @Param("locationId") Long locationId,
             @Param("type") EventType type
     );
+
+    List<FestivalEvent> findAllByEventInstance_CompanyId(Long companyId);
 }

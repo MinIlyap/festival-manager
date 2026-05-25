@@ -6,5 +6,6 @@ public enum EntityType {
     FESTIVAL_EVENT,
     FESTIVAL_STAND,
     EVENT_REWARD,
-    PRODUCT_INSTANCE
+    PRODUCT_INSTANCE,
+    COMPANY_LOGO
 }

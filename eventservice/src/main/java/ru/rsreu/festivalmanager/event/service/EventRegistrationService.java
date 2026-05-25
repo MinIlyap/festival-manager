@@ -60,19 +60,24 @@ public class EventRegistrationService {
     public void executeRegistrationWithLock(Long festivalEventId, Long userId, Integer maxPeople) {
 
         // 1. Блокируем строку мероприятия эксклюзивно (PESSIMISTIC_WRITE)
-        // Любой другой поток, дошедший сюда, будет ждать завершения этой транзакции
         FestivalEvent foundedFestivalEvent = festivalEventRepository.findByIdForUpdate(festivalEventId)
                 .orElseThrow(() -> new IllegalArgumentException("Мероприятие не найдено"));
 
-        // 2. Считаем актуальное количество участников
+        // 2. Повторная проверка дубля внутри блокировки (защита от гонок)
+        if (registrationRepository
+                .existsByUserEventRegistrationId_FestivalEvent_IdAndUserEventRegistrationId_UserId(festivalEventId, userId)) {
+            throw new IllegalStateException("Вы уже зарегистрированы на это мероприятие");
+        }
+
+        // 3. Считаем актуальное количество участников
         long currentParticipants = registrationRepository.countByUserEventRegistrationId_FestivalEvent_Id(festivalEventId);
 
-        // 3. Сверяем с лимитом
+        // 4. Сверяем с лимитом
         if (maxPeople != null && currentParticipants >= maxPeople) {
             throw new IllegalStateException("Регистрация закрыта: свободных мест больше нет");
         }
 
-        // 4. Сохраняем регистрацию
+        // 5. Сохраняем регистрацию
         UserEventRegistration registration = new UserEventRegistration();
         registration.setUserEventRegistrationId(new UserEventRegistrationId(foundedFestivalEvent, userId));
 

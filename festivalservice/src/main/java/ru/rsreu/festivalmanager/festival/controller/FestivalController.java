@@ -9,6 +9,7 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import ru.rsreu.festivalmanager.festival.dto.FestivalCreateRequest;
 import ru.rsreu.festivalmanager.festival.dto.FestivalResponse;
+import ru.rsreu.festivalmanager.festival.entity.festival.AgeLimit;
 import ru.rsreu.festivalmanager.festival.service.FestivalService;
 
 import java.time.LocalDate;
@@ -19,6 +20,11 @@ import java.util.List;
 @RequiredArgsConstructor
 public class FestivalController {
     private final FestivalService festivalService;
+
+    @GetMapping("/age-limits")
+    public ResponseEntity<List<AgeLimit>> getAgeLimits() {
+        return ResponseEntity.ok(festivalService.getAgeLimits());
+    }
 
     @GetMapping("/search")
     @PreAuthorize("isAuthenticated()")
@@ -53,5 +59,17 @@ public class FestivalController {
     @PreAuthorize("hasRole('COMPANY')")
     public ResponseEntity<List<FestivalResponse>> getMyCompanyFestivals(@AuthenticationPrincipal Long companyId) {
         return ResponseEntity.ok(festivalService.getFestivalsByCompany(companyId));
+    }
+
+    @GetMapping("/curator/my")
+    @PreAuthorize("hasRole('CURATOR')")
+    public ResponseEntity<List<FestivalResponse>> getMyCuratorFestivals(@AuthenticationPrincipal Long userId) {
+        return ResponseEntity.ok(festivalService.getFestivalsByCurator(userId));
+    }
+
+    @GetMapping("/{festivalLocationId}")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<FestivalResponse> getFestivalById(@PathVariable Long festivalLocationId) {
+        return ResponseEntity.ok(festivalService.getFestivalById(festivalLocationId));
     }
 }

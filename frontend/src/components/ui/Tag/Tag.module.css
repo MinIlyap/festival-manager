@@ -1,0 +1,15 @@
+.tag {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  border-radius: var(--radius-sm);
+  font-size: 11px;
+  font-weight: 600;
+  font-family: var(--font-heading);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.default { background: var(--bg-elevated); color: var(--text-secondary); border: 1px solid var(--border-subtle); }
+.gold    { background: rgba(232, 168, 56, 0.15); color: var(--accent-primary); border: 1px solid var(--border-accent); }
+.blue    { background: rgba(61, 139, 255, 0.15); color: var(--accent-secondary); border: 1px solid rgba(61, 139, 255, 0.3); }

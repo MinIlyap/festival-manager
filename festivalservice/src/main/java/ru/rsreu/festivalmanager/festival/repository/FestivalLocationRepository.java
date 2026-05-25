@@ -15,9 +15,9 @@ public interface FestivalLocationRepository extends JpaRepository<FestivalLocati
 
     @Query("SELECT fl FROM FestivalLocation fl " +
             "WHERE fl.festivalInstance.isVisible = true " +
-            "AND (:name IS NULL OR LOWER(fl.festivalInstance.festival.name) LIKE LOWER(CONCAT('%', :name, '%'))) " +
-            "AND (cast(:startDate as date) IS NULL OR fl.festivalInstance.dateStart >= :startDate) " +
-            "AND (cast(:endDate as date) IS NULL OR fl.festivalInstance.dateEnd <= :endDate)")
+            "AND (CAST(:name AS string) IS NULL OR LOWER(fl.festivalInstance.festival.name) LIKE LOWER(CONCAT('%', CAST(:name AS string), '%'))) " +
+            "AND (CAST(:startDate AS date) IS NULL OR fl.festivalInstance.dateStart >= :startDate) " +
+            "AND (CAST(:endDate AS date) IS NULL OR fl.festivalInstance.dateEnd <= :endDate)")
     List<FestivalLocation> searchActiveFestivals(
             @Param("name") String name,
             @Param("startDate") LocalDate startDate,

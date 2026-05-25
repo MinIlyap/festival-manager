@@ -1,0 +1,16 @@
+.wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-md);
+}
+
+.scanner {
+  width: 100%;
+  max-width: 400px;
+}
+
+/* Override html5-qrcode default styles */
+.scanner video {
+  border-radius: var(--radius-md) !important;
+}

@@ -27,7 +27,6 @@ public class FileController {
         return ResponseEntity.ok().build();
     }
 
-    @PreAuthorize("isAuthenticated()")
     @GetMapping(value = "/avatar/{userId}", produces = MediaType.APPLICATION_OCTET_STREAM_VALUE)
     public ResponseEntity<byte[]> getAvatar(@PathVariable Long userId) {
         byte[] fileBytes = fileService.downloadFile(EntityType.USER_AVATAR, userId);
@@ -53,7 +52,6 @@ public class FileController {
         return ResponseEntity.ok().build();
     }
 
-    @PreAuthorize("isAuthenticated()")
     @GetMapping(value = "/{entityType}/{entityId}", produces = MediaType.APPLICATION_OCTET_STREAM_VALUE)
     public ResponseEntity<byte[]> getEntityImage(
             @PathVariable EntityType entityType,

@@ -1,0 +1,62 @@
+:root {
+  /* Background */
+  --bg-base:        #0D0F14;
+  --bg-surface:     #161A23;
+  --bg-elevated:    #1F2533;
+  --bg-hover:       #252C3D;
+
+  /* Accents */
+  --accent-primary:   #E8A838;
+  --accent-glow:      #E8A83830;
+  --accent-secondary: #3D8BFF;
+  --accent-danger:    #E84040;
+  --accent-success:   #2ECC71;
+  --accent-warn:      #F0A500;
+
+  /* Text */
+  --text-primary:   #F0F2F7;
+  --text-secondary: #8B93A8;
+  --text-muted:     #4A5168;
+
+  /* Borders */
+  --border-subtle:  #232840;
+  --border-default: #2E3550;
+  --border-accent:  #E8A83855;
+
+  /* Radius */
+  --radius-sm: 6px;
+  --radius-md: 12px;
+  --radius-lg: 20px;
+  --radius-xl: 28px;
+
+  /* Shadows */
+  --shadow-sm:  0 2px 8px rgba(0, 0, 0, 0.3);
+  --shadow-md:  0 4px 20px rgba(0, 0, 0, 0.4);
+  --shadow-lg:  0 8px 40px rgba(0, 0, 0, 0.5);
+  --shadow-glow: 0 0 20px var(--accent-glow);
+
+  /* Transitions */
+  --transition-fast: 150ms ease;
+  --transition-base: 250ms ease;
+  --transition-slow: 350ms ease;
+
+  /* Fonts */
+  --font-display: 'Bebas Neue', sans-serif;
+  --font-heading:  'Syne', sans-serif;
+  --font-body:     'DM Sans', sans-serif;
+  --font-mono:     'JetBrains Mono', monospace;
+
+  /* Spacing */
+  --space-xs:  4px;
+  --space-sm:  8px;
+  --space-md:  16px;
+  --space-lg:  24px;
+  --space-xl:  32px;
+  --space-2xl: 48px;
+  --space-3xl: 64px;
+
+  /* Layout */
+  --header-height: 64px;
+  --sidebar-width: 240px;
+  --content-max:   1280px;
+}

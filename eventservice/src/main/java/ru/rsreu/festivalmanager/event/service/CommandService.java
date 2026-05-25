@@ -64,7 +64,7 @@ public class CommandService {
         return command.getId();
     }
 
-    @Transactional(readOnly = true)
+    @Transactional
     public void inviteUserToCommand(Long commandId, Long targetUserId, Long senderId) {
         Command command = commandRepository.findById(commandId)
                 .orElseThrow(() -> new IllegalArgumentException("Команда не найдена"));
@@ -104,6 +104,12 @@ public class CommandService {
         // Блокируем команду от гонок данных, чтобы не превысить лимит
         Command command = commandRepository.findByIdForUpdate(commandId)
                 .orElseThrow(() -> new IllegalArgumentException("Команда не найдена"));
+
+        // Проверяем, зарегистрирован ли пользователь на мероприятие
+        UserEventRegistrationId regId = new UserEventRegistrationId(command.getFestivalEvent(), userId);
+        if (!registrationRepository.existsById(regId)) {
+            throw new IllegalStateException("Вы должны быть зарегистрированы на мероприятие, чтобы вступить в команду");
+        }
 
         // Проверяем лимит
         Integer maxPeople = command.getFestivalEvent().getEventInstance().getMaxPeopleCommand();

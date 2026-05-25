@@ -1,3 +1,5 @@
 databaseChangeLog:
   - include:
       file: db/changelog/changes/001-create-app-files.yaml
+  - include:
+      file: db/changelog/changes/002-seed-buckets-add-company-logo.yaml

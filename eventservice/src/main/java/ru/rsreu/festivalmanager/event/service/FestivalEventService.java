@@ -1,6 +1,7 @@
 package ru.rsreu.festivalmanager.event.service;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -11,6 +12,7 @@ import ru.rsreu.festivalmanager.event.dto.FestivalEventCreateRequest;
 import ru.rsreu.festivalmanager.event.dto.FestivalEventResponse;
 import ru.rsreu.festivalmanager.event.entity.event.Event;
 import ru.rsreu.festivalmanager.event.entity.event.EventInstance;
+import ru.rsreu.festivalmanager.event.entity.event.EventType;
 import ru.rsreu.festivalmanager.event.entity.event.FestivalEvent;
 import ru.rsreu.festivalmanager.event.repository.EventInstanceRepository;
 import ru.rsreu.festivalmanager.event.repository.EventRepository;
@@ -19,6 +21,7 @@ import ru.rsreu.festivalmanager.event.repository.FestivalEventRepository;
 import java.time.LocalDate;
 import java.util.List;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class FestivalEventService {
@@ -40,56 +43,52 @@ public class FestivalEventService {
      */
     @Transactional(readOnly = true)
     public Page<FestivalEventResponse> searchFestivalEvents(
-            String name, Long cityId, LocalDate startDate, LocalDate endDate, Pageable pageable) {
+            String name, Long cityId, LocalDate startDate, LocalDate endDate, EventType type, Pageable pageable) {
 
         List<Long> festivalLocationIds = null;
 
-        // Если ищем по городу, идем в Festival Service за списком ID фестивалей
         if (cityId != null) {
             festivalLocationIds = festivalServiceClient.getFestivalLocationIdsByCity(getSystemToken(), cityId);
-
-            // Если в этом городе нет фестивалей, сразу возвращаем пустую страницу
             if (festivalLocationIds.isEmpty()) {
                 return Page.empty(pageable);
             }
         }
 
-        // В репозитории нужно написать @Query, который учитывает name, даты и список IN (festivalLocationIds)
-        return festivalEventRepository.searchWithFilters(name, startDate, endDate, festivalLocationIds, pageable)
-                .map(this::mapToResponse); // маппинг в DTO
+        return festivalEventRepository.searchWithFilters(name, startDate, endDate, festivalLocationIds, type, pageable)
+                .map(this::mapToResponse);
     }
 
-    /**
-     * БЕЗОПАСНОЕ ОТКРЕПЛЕНИЕ МЕРОПРИЯТИЯ ОТ ФЕСТИВАЛЯ
-     */
     @Transactional
-    public void detachEventFromFestival(Long festivalEventId) {
+    public void detachEventFromFestival(Long festivalEventId, Long companyId) {
         FestivalEvent festivalEvent = festivalEventRepository.findById(festivalEventId)
                 .orElseThrow(() -> new IllegalArgumentException("Мероприятие не найдено"));
 
-        // 1. Идем в Festival Service и проверяем статус фестиваля
+        if (!festivalEvent.getEventInstance().getCompanyId().equals(companyId)) {
+            throw new IllegalStateException("У вас нет прав на открепление этого мероприятия");
+        }
+
         Boolean isVisible = festivalServiceClient.isFestivalVisible(
                 getSystemToken(), festivalEvent.getFestivalLocationId()
         );
 
-        // 2. Реализуем твое правило: если фестиваль видим - откреплять нельзя!
         if (Boolean.TRUE.equals(isVisible)) {
             throw new IllegalStateException(
                     "Нельзя открепить мероприятие: фестиваль уже опубликован и доступен пользователям!"
             );
         }
 
-        // 3. Если фестиваль еще в черновике - спокойно удаляем связь
         festivalEventRepository.delete(festivalEvent);
     }
 
-    /**
-     * Создание экземпляра мероприятия и привязка к фестивалю
-     */
     @Transactional
     public Long createFestivalEvent(Long companyId, FestivalEventCreateRequest request) {
+        Boolean isVisible = festivalServiceClient.isFestivalVisible(
+                getSystemToken(), request.getFestivalLocationId()
+        );
+        if (Boolean.TRUE.equals(isVisible)) {
+            throw new IllegalStateException("Нельзя добавить мероприятие: фестиваль уже опубликован");
+        }
 
-        // 1. Ищем базовое мероприятие в словаре
         Event event = eventRepository.findById(request.getEventId())
                 .orElseThrow(() -> new IllegalArgumentException("Базовое мероприятие не найдено"));
 
@@ -133,6 +132,14 @@ public class FestivalEventService {
                 .build();
 
         return festivalEventRepository.save(festivalEvent).getId();
+    }
+
+    @Transactional(readOnly = true)
+    public List<FestivalEventResponse> getEventsByCompany(Long companyId) {
+        return festivalEventRepository.findAllByEventInstance_CompanyId(companyId)
+                .stream()
+                .map(this::mapToResponse)
+                .collect(java.util.stream.Collectors.toList());
     }
 
     private FestivalEventResponse mapToResponse(FestivalEvent fe) {

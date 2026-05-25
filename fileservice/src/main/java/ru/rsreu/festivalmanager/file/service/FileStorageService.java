@@ -60,7 +60,7 @@ public class FileStorageService {
                 .ifPresent(this::deleteImageInternal);
 
         String bucketName = switch (type) {
-            case USER_AVATAR -> "avatars";
+            case USER_AVATAR, COMPANY_LOGO -> "avatars";
             case FESTIVAL_LOCATION -> "festivals";
             case FESTIVAL_EVENT, FESTIVAL_STAND -> "events";
             case EVENT_REWARD -> "rewards";
@@ -140,9 +140,9 @@ public class FileStorageService {
     }
 
     private void checkPermissions(EntityType type, Long entityId, Long creatorId) {
-        if (type == EntityType.USER_AVATAR) {
+        if (type == EntityType.USER_AVATAR || type == EntityType.COMPANY_LOGO) {
             if (!entityId.equals(creatorId)) {
-                throw new SecurityException("Вы не можете изменять чужой аватар");
+                throw new SecurityException("Вы не можете изменять чужой файл");
             }
             return;
         }

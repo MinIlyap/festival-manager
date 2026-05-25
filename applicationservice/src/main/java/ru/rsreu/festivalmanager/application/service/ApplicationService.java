@@ -124,6 +124,11 @@ public class ApplicationService {
         ));
     }
 
+    public Application getApplicationById(Long id) {
+        return applicationRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Заявка не найдена"));
+    }
+
     public Page<Application> getMyApplications(Long companyId, ApplicationStatus status, Pageable pageable) {
         return applicationRepository.findAllBySenderIdWithFilters(companyId, status, pageable);
     }

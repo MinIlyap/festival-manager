@@ -1,0 +1,6 @@
+.title { font-family: var(--font-display); font-size: 32px; margin-bottom: var(--space-lg); }
+.content { margin-top: var(--space-lg); }
+.list { display: flex; flex-direction: column; gap: var(--space-sm); }
+.histItem { display: flex; gap: var(--space-md); align-items: center; }
+.histTitle { font-family: var(--font-heading); font-size: 15px; font-weight: 700; }
+.histSub { font-size: 13px; color: var(--text-muted); margin-top: 3px; }

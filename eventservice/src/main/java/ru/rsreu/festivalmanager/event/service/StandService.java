@@ -1,15 +1,24 @@
 package ru.rsreu.festivalmanager.event.service;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import ru.rsreu.festivalmanager.event.client.FestivalServiceClient;
 import ru.rsreu.festivalmanager.event.dto.FestivalStandCreateRequest;
+import ru.rsreu.festivalmanager.event.dto.FestivalStandResponse;
 import ru.rsreu.festivalmanager.event.dto.ProductAddRequest;
 import ru.rsreu.festivalmanager.event.entity.stand.*;
 import ru.rsreu.festivalmanager.event.repository.*;
 
+import java.time.LocalDate;
+import java.util.List;
+import java.util.stream.Collectors;
+
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class StandService {
@@ -92,13 +101,54 @@ public class StandService {
         standProductRepository.save(standProduct);
     }
 
-    /**
-     * Создание экземпляра стенда и привязка к фестивалю
-     */
+    @Transactional(readOnly = true)
+    public Page<FestivalStandResponse> searchStands(String name, Long cityId, LocalDate dateStart, StandType type, Pageable pageable) {
+        List<Long> locationIds = null;
+
+        if (cityId != null) {
+            locationIds = festivalServiceClient.getFestivalLocationIdsByCity(getSystemToken(), cityId);
+            if (locationIds.isEmpty()) {
+                return Page.empty(pageable);
+            }
+        }
+
+        return festivalStandRepository.searchStands(name, locationIds, type, dateStart, pageable)
+                .map(fs -> FestivalStandResponse.builder()
+                        .id(fs.getId())
+                        .festivalLocationId(fs.getFestivalLocationId())
+                        .name(fs.getStandInstance().getStand().getName())
+                        .type(fs.getStandInstance().getStandType())
+                        .description(fs.getStandInstance().getDescription())
+                        .companyId(fs.getStandInstance().getCompanyId())
+                        .dateStart(fs.getStandInstance().getDateStart())
+                        .build());
+    }
+
+    @Transactional(readOnly = true)
+    public List<FestivalStandResponse> getStandsByFestival(Long festivalLocationId) {
+        return festivalStandRepository.findAllByFestivalLocationId(festivalLocationId)
+                .stream()
+                .map(fs -> FestivalStandResponse.builder()
+                        .id(fs.getId())
+                        .festivalLocationId(fs.getFestivalLocationId())
+                        .name(fs.getStandInstance().getStand().getName())
+                        .type(fs.getStandInstance().getStandType())
+                        .description(fs.getStandInstance().getDescription())
+                        .companyId(fs.getStandInstance().getCompanyId())
+                        .dateStart(fs.getStandInstance().getDateStart())
+                        .build())
+                .collect(Collectors.toList());
+    }
+
     @Transactional
     public Long createFestivalStand(Long companyId, FestivalStandCreateRequest request) {
+        Boolean isVisible = festivalServiceClient.isFestivalVisible(
+                getSystemToken(), request.getFestivalLocationId()
+        );
+        if (Boolean.TRUE.equals(isVisible)) {
+            throw new IllegalStateException("Нельзя добавить стенд: фестиваль уже опубликован");
+        }
 
-        // 1. Ищем базовый стенд в словаре
         Stand stand = standRepository.findById(request.getStandId())
                 .orElseThrow(() -> new IllegalArgumentException("Базовый стенд не найден"));
 

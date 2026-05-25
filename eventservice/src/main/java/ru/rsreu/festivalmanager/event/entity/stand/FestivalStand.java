@@ -23,7 +23,7 @@ public class FestivalStand {
     private Long festivalLocationId;
 
     @ManyToOne
-    @JoinColumn(name = "stand_instance_id")
+    @JoinColumn(name = "stand_instance_id", nullable = false)
     private StandInstance standInstance;
 
     @Column(name = "created_at", updatable = false, nullable = false)

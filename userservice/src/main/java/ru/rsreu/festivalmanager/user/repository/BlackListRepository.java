@@ -8,11 +8,15 @@ import ru.rsreu.festivalmanager.user.entity.BlackList;
 import ru.rsreu.festivalmanager.user.entity.BlackListId;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Repository
 public interface BlackListRepository extends JpaRepository<BlackList, BlackListId> {
     @Query("SELECT CASE WHEN COUNT(b) > 0 THEN true ELSE false END FROM BlackList b WHERE b.blackListId.user.id = :userId AND b.expiryDate > :now")
     boolean isUserBlacklistedNow(@Param("userId") Long userId, @Param("now") LocalDateTime now);
+
+    @Query("SELECT b FROM BlackList b WHERE b.blackListId.user.id = :userId AND b.expiryDate > :now ORDER BY b.expiryDate DESC")
+    List<BlackList> findActiveEntries(@Param("userId") Long userId, @Param("now") LocalDateTime now);
 
     @Query("SELECT CASE WHEN COUNT(b) > 0 THEN true ELSE false END FROM BlackList b WHERE b.blackListId.user.phoneNumber = :phone AND b.expiryDate > :now")
     boolean isPhoneInBlackList(@Param("phone") String phone, @Param("now") LocalDateTime now);

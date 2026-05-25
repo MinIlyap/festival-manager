@@ -24,8 +24,13 @@ public class LocationController {
         return ResponseEntity.ok(locationService.checkCityExists(id));
     }
 
+    @GetMapping("/city/{id}")
+    @PreAuthorize("hasRole('INTERNAL')")
+    public ResponseEntity<CityResponse> getCityById(@PathVariable Long id) {
+        return ResponseEntity.ok(locationService.getCityById(id));
+    }
+
     @GetMapping("/city/search")
-    @PreAuthorize("hasAnyRole('USER', 'COMPANY', 'ADMIN')")
     public ResponseEntity<Page<CityResponse>> searchCities(
             @RequestParam("name") String name,
             @RequestParam(defaultValue = "0") int page,

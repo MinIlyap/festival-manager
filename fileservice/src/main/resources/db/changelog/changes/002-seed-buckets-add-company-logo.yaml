@@ -1,0 +1,47 @@
+databaseChangeLog:
+  - changeSet:
+      id: 002-seed-buckets
+      author: ilyap
+      changes:
+        - insert:
+            tableName: buckets
+            columns:
+              - column:
+                  name: name
+                  value: avatars
+        - insert:
+            tableName: buckets
+            columns:
+              - column:
+                  name: name
+                  value: festivals
+        - insert:
+            tableName: buckets
+            columns:
+              - column:
+                  name: name
+                  value: events
+        - insert:
+            tableName: buckets
+            columns:
+              - column:
+                  name: name
+                  value: rewards
+        - insert:
+            tableName: buckets
+            columns:
+              - column:
+                  name: name
+                  value: companies
+
+  - changeSet:
+      id: 002-add-company-logo-entity-type
+      author: ilyap
+      changes:
+        - sql:
+            sql: |
+              ALTER TABLE user_files DROP CONSTRAINT chk_entity_type;
+              ALTER TABLE user_files
+                ADD CONSTRAINT chk_entity_type
+                CHECK (entity_type IN ('USER_AVATAR', 'FESTIVAL_LOCATION', 'FESTIVAL_EVENT',
+              'FESTIVAL_STAND', 'EVENT_REWARD', 'PRODUCT_INSTANCE', 'COMPANY_LOGO'));

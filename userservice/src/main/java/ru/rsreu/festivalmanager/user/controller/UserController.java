@@ -60,6 +60,12 @@ public class UserController {
         return ResponseEntity.ok("Данные успешно частично обновлены");
     }
 
+    @GetMapping("/me/blacklist-check")
+    @PreAuthorize("hasAnyRole('USER', 'CURATOR', 'ADMIN')")
+    public ResponseEntity<BlacklistStatusResponse> getMyBlacklistStatus(@AuthenticationPrincipal Long id) {
+        return ResponseEntity.ok(userService.getMyBlacklistStatus(id));
+    }
+
     @PostMapping("/blacklist/{userId}")
     @PreAuthorize("hasRole('CURATOR')")
     public ResponseEntity<String> addToBlackList(

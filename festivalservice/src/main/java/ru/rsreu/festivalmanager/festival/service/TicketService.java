@@ -8,6 +8,7 @@ import org.springframework.transaction.annotation.Transactional;
 import ru.rsreu.festivalmanager.festival.client.UserServiceClient;
 import ru.rsreu.festivalmanager.festival.dto.*;
 import ru.rsreu.festivalmanager.festival.entity.festival.FestivalLocation;
+import java.util.stream.Collectors;
 import ru.rsreu.festivalmanager.festival.entity.ticket.*;
 import ru.rsreu.festivalmanager.festival.entity.festival.FestivalInstance;
 import ru.rsreu.festivalmanager.festival.entity.ticket.Ticket;
@@ -39,6 +40,11 @@ public class TicketService {
     private String systemToken;
 
     private String getSystemToken() { return "Bearer " + systemToken; }
+
+    @Transactional(readOnly = true)
+    public List<TicketType> getAllTicketTypes() {
+        return ticketTypeRepository.findAll();
+    }
 
     @Transactional
     public TicketType createTicketType(String name) {
@@ -193,6 +199,19 @@ public class TicketService {
                 userId, userAge, request.getQuantity(), instanceId);
 
         return ticket.getId();
+    }
+
+    @Transactional(readOnly = true)
+    public List<TicketTypeInstanceResponse> getTicketTypeInstancesByFestival(Long festivalLocationId) {
+        return ticketTypeInstanceRepository.findByFestivalLocation_Id(festivalLocationId)
+                .stream()
+                .map(tti -> TicketTypeInstanceResponse.builder()
+                        .id(tti.getId())
+                        .name(tti.getTicketType().getName())
+                        .description(tti.getDescription())
+                        .price(tti.getPrice())
+                        .build())
+                .collect(Collectors.toList());
     }
 
     @Transactional(readOnly = true)

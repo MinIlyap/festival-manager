@@ -1,0 +1,20 @@
+.badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 10px;
+  border-radius: 100px;
+  font-size: 12px;
+  font-weight: 600;
+  font-family: var(--font-heading);
+  white-space: nowrap;
+  letter-spacing: 0.02em;
+}
+
+.active   { background: rgba(46, 204, 113, 0.15); color: var(--accent-success); }
+.pending  { background: rgba(240, 165, 0, 0.15);  color: var(--accent-warn); }
+.approved { background: rgba(46, 204, 113, 0.15); color: var(--accent-success); }
+.rejected { background: rgba(232, 64, 64, 0.15);  color: var(--accent-danger); }
+.expired  { background: rgba(74, 81, 104, 0.3);   color: var(--text-muted); }
+.draft    { background: rgba(61, 139, 255, 0.15); color: var(--accent-secondary); }
+.info     { background: rgba(61, 139, 255, 0.15); color: var(--accent-secondary); }
+.warn     { background: rgba(240, 165, 0, 0.15);  color: var(--accent-warn); }

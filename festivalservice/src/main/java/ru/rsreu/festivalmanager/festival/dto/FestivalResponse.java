@@ -35,4 +35,7 @@ public class FestivalResponse {
 
     @JsonProperty("is_visible")
     private Boolean isVisible;
+
+    @JsonProperty("age_rating")
+    private Integer ageRating;
 }

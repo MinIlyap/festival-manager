@@ -15,6 +15,7 @@ import ru.rsreu.festivalmanager.user.repository.BlackListRepository;
 import ru.rsreu.festivalmanager.common.util.CryptoUtil;
 import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -51,16 +52,24 @@ public class UserService {
         AppUser user = userRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Пользователь не найден"));
 
+        String cityName = null;
+        if (user.getCity_id() != null) {
+            try {
+                cityName = locationClient.getCityById(getBearerSystemToken(), user.getCity_id()).getName();
+            } catch (Exception ignored) {}
+        }
+
         return UserResponse.builder()
                 .id(user.getId())
                 .birthDate(user.getBirthDate())
                 .nickname(user.getNickname())
                 .cityId(user.getCity_id())
+                .cityName(cityName)
                 .phoneNumber(user.getPhoneNumber())
                 .firstName(user.getFirstName())
                 .lastName(user.getLastName())
                 .middleName(user.getMiddleName())
-                .passportSeria(cryptoUtil.decrypt(user.getPassportSeriaHash()))
+                .passportSeries(cryptoUtil.decrypt(user.getPassportSeriaHash()))
                 .passportNumber(cryptoUtil.decrypt(user.getPassportNumberHash()))
                 .build();
     }
@@ -83,15 +92,22 @@ public class UserService {
         AppUser user = userRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Пользователь не найден"));
 
-        validateSensitiveDataAgainstBlacklist(request.getPhoneNumber(), request.getPassportSeria(), request.getPassportNumber());
+        validateSensitiveDataAgainstBlacklist(request.getPhoneNumber(), request.getPassportSeries(), request.getPassportNumber());
 
         user.setFirstName(request.getFirstName());
         user.setLastName(request.getLastName());
         user.setMiddleName(request.getMiddleName());
         user.setPhoneNumber(request.getPhoneNumber());
 
-        if (request.getPassportSeria() != null && request.getPassportNumber() != null) {
-            user.setPassportSeriaHash(cryptoUtil.encrypt(request.getPassportSeria()));
+        if (request.getCityId() != null) {
+            if (!locationClient.existsCityById(getBearerSystemToken(), request.getCityId())) {
+                throw new IllegalArgumentException("Указанный город не существует");
+            }
+            user.setCity_id(request.getCityId());
+        }
+
+        if (request.getPassportSeries() != null && request.getPassportNumber() != null) {
+            user.setPassportSeriaHash(cryptoUtil.encrypt(request.getPassportSeries()));
             user.setPassportNumberHash(cryptoUtil.encrypt(request.getPassportNumber()));
         }
 
@@ -103,14 +119,20 @@ public class UserService {
         AppUser user = userRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Пользователь не найден"));
 
-        validateSensitiveDataAgainstBlacklist(request.getPhoneNumber(), request.getPassportSeria(), request.getPassportNumber());
+        validateSensitiveDataAgainstBlacklist(request.getPhoneNumber(), request.getPassportSeries(), request.getPassportNumber());
 
+        if (request.getCityId() != null) {
+            if (!locationClient.existsCityById(getBearerSystemToken(), request.getCityId())) {
+                throw new IllegalArgumentException("Указанный город не существует");
+            }
+            user.setCity_id(request.getCityId());
+        }
         if (request.getFirstName() != null) user.setFirstName(request.getFirstName());
         if (request.getLastName() != null) user.setLastName(request.getLastName());
         if (request.getMiddleName() != null) user.setMiddleName(request.getMiddleName());
         if (request.getPhoneNumber() != null) user.setPhoneNumber(request.getPhoneNumber());
 
-        if (request.getPassportSeria() != null) user.setPassportSeriaHash(cryptoUtil.encrypt(request.getPassportSeria()));
+        if (request.getPassportSeries() != null) user.setPassportSeriaHash(cryptoUtil.encrypt(request.getPassportSeries()));
         if (request.getPassportNumber() != null) user.setPassportNumberHash(cryptoUtil.encrypt(request.getPassportNumber()));
 
         userRepository.save(user);
@@ -158,6 +180,20 @@ public class UserService {
 
     public boolean checkUserBlackListStatus(Long userId) {
         return blackListRepository.isUserBlacklistedNow(userId, LocalDateTime.now());
+    }
+
+    public BlacklistStatusResponse getMyBlacklistStatus(Long userId) {
+        LocalDateTime now = LocalDateTime.now();
+        List<BlackList> entries = blackListRepository.findActiveEntries(userId, now);
+        if (entries.isEmpty()) {
+            return BlacklistStatusResponse.builder().inBlacklist(false).build();
+        }
+        BlackList entry = entries.get(0);
+        return BlacklistStatusResponse.builder()
+                .inBlacklist(true)
+                .reason(entry.getReason())
+                .until(entry.getExpiryDate())
+                .build();
     }
 
     public boolean isNicknameTaken(String nickname) {

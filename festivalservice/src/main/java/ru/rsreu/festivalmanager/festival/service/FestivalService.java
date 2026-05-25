@@ -1,6 +1,7 @@
 package ru.rsreu.festivalmanager.festival.service;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.jspecify.annotations.NonNull;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationEventPublisher;
@@ -23,6 +24,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class FestivalService {
@@ -106,9 +108,11 @@ public class FestivalService {
                 try {
                     AuthCredentialDto credential = authClient.getUserByEmail(getSystemToken(), email);
                     if (credential.getUserId() == null) {
-                        throw new IllegalArgumentException("Email " + email + " принадлежит компании");
+                        throw new IllegalArgumentException("Email " + email + " принадлежит компании, а не пользователю");
                     }
                     if (!curatorIds.contains(credential.getUserId())) curatorIds.add(credential.getUserId());
+                } catch (IllegalArgumentException e) {
+                    throw e;
                 } catch (Exception e) {
                     throw new IllegalArgumentException("Пользователь с email " + email + " не найден в системе.");
                 }
@@ -172,7 +176,12 @@ public class FestivalService {
                     .collect(Collectors.toList());
 
             if (!curatorIds.isEmpty()) {
-                authClient.assignCuratorRoles(getSystemToken(), curatorIds);
+                try {
+                    authClient.assignCuratorRoles(getSystemToken(), curatorIds);
+                } catch (Exception e) {
+                    log.error("Не удалось назначить роли кураторов для фестиваля {}: {}", festivalLocationId, e.getMessage());
+                    // Одобрение фестиваля не откатываем — роли куратора можно назначить повторно
+                }
             }
         }
     }
@@ -196,6 +205,14 @@ public class FestivalService {
         return festivalCompanyRepository.findAllByFestivalCompanyId_CompanyId(companyId)
                 .stream()
                 .map(fc -> mapToResponse(fc.getFestivalCompanyId().getFestivalLocation()))
+                .collect(Collectors.toList());
+    }
+
+    @Transactional(readOnly = true)
+    public List<FestivalResponse> getFestivalsByCurator(Long curatorId) {
+        return festivalCuratorRepository.findAllByFestivalCuratorId_CuratorId(curatorId)
+                .stream()
+                .map(fc -> mapToResponse(fc.getFestivalCuratorId().getFestivalLocation()))
                 .collect(Collectors.toList());
     }
 
@@ -280,6 +297,18 @@ public class FestivalService {
     }
 
     @Transactional(readOnly = true)
+    public FestivalResponse getFestivalById(Long festivalLocationId) {
+        FestivalLocation location = locationRepository.findById(festivalLocationId)
+                .orElseThrow(() -> new IllegalArgumentException("Фестиваль не найден"));
+        return mapToResponse(location);
+    }
+
+    @Transactional(readOnly = true)
+    public List<AgeLimit> getAgeLimits() {
+        return ageLimitRepository.findAll();
+    }
+
+    @Transactional(readOnly = true)
     public Boolean hasAccessForFestival(String entityType, Long entityId, Long companyId) {
         if ("FESTIVAL_LOCATION".equals(entityType)) {
             return festivalCompanyRepository
@@ -289,16 +318,25 @@ public class FestivalService {
     }
 
     private FestivalResponse mapToResponse(FestivalLocation location) {
+        FestivalInstance instance = location.getFestivalInstance();
+        int ageRating = 0;
+        if (instance.getAgeLimit() != null && instance.getAgeLimit().getAgeLimitValue() != null) {
+            try {
+                ageRating = Integer.parseInt(instance.getAgeLimit().getAgeLimitValue().replace("+", "").trim());
+            } catch (NumberFormatException ignored) {
+            }
+        }
         return FestivalResponse.builder()
                 .festivalLocationId(location.getId())
-                .name(location.getFestivalInstance().getFestival().getName())
-                .description(location.getFestivalInstance().getDescription())
-                .dateStart(location.getFestivalInstance().getDateStart())
-                .timeStart(location.getFestivalInstance().getTimeStart())
-                .dateEnd(location.getFestivalInstance().getDateEnd())
-                .timeEnd(location.getFestivalInstance().getTimeEnd())
+                .name(instance.getFestival().getName())
+                .description(instance.getDescription())
+                .dateStart(instance.getDateStart())
+                .timeStart(instance.getTimeStart())
+                .dateEnd(instance.getDateEnd())
+                .timeEnd(instance.getTimeEnd())
                 .platformInstanceId(location.getPlatformInstanceId())
-                .isVisible(location.getFestivalInstance().isVisible())
+                .isVisible(instance.isVisible())
+                .ageRating(ageRating)
                 .build();
     }
 }

@@ -12,5 +12,7 @@ import java.util.List;
 public interface TicketTypeInstanceRepository extends JpaRepository<TicketTypeInstance, Long> {
     List<TicketTypeInstance> findByFestivalLocation(FestivalLocation festivalLocation);
 
+    List<TicketTypeInstance> findByFestivalLocation_Id(Long festivalLocationId);
+
     boolean existsByFestivalLocationAndTicketType(FestivalLocation location, TicketType ticketType);
 }

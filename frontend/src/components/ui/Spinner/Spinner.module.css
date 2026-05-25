@@ -1,0 +1,22 @@
+.spinner {
+  display: inline-block;
+  border: 2px solid var(--border-default);
+  border-top-color: var(--accent-primary);
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+}
+
+.sm { width: 16px; height: 16px; }
+.md { width: 28px; height: 28px; }
+.lg { width: 44px; height: 44px; border-width: 3px; }
+
+.centered {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 48px;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}

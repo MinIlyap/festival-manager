@@ -18,6 +18,10 @@ minio:
   access-key: minioadmin
   secret-key: minioadmin
 
+app:
+  security:
+    public-endpoints: "/files/avatar/**, /files/FESTIVAL_LOCATION/**, /files/FESTIVAL_EVENT/**, /files/FESTIVAL_STAND/**, /files/EVENT_REWARD/**, /files/COMPANY_LOGO/**"
+
 jwt:
   secret:
     access: "my_super_secret_access_key_that_must_be_long_enough_for_hs256"

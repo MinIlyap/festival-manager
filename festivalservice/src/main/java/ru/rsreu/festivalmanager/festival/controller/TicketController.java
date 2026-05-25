@@ -10,6 +10,8 @@ import ru.rsreu.festivalmanager.festival.dto.*;
 import ru.rsreu.festivalmanager.festival.entity.ticket.TicketType;
 import ru.rsreu.festivalmanager.festival.service.TicketService;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("/ticket")
 @RequiredArgsConstructor
@@ -29,6 +31,19 @@ public class TicketController {
     @PreAuthorize("hasAnyRole('USER', 'CURATOR')")
     public ResponseEntity<UserTicketsResponse> getMyTickets(@AuthenticationPrincipal Long userId) {
         return ResponseEntity.ok(ticketService.getUserTickets(userId));
+    }
+
+    @GetMapping("/instances/by-festival/{festivalLocationId}")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<List<TicketTypeInstanceResponse>> getTicketInstancesByFestival(
+            @PathVariable Long festivalLocationId) {
+        return ResponseEntity.ok(ticketService.getTicketTypeInstancesByFestival(festivalLocationId));
+    }
+
+    @GetMapping("/types")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<List<TicketType>> getAllTicketTypes() {
+        return ResponseEntity.ok(ticketService.getAllTicketTypes());
     }
 
     @PreAuthorize("hasAnyAuthority('COMPANY', 'ADMIN')")

@@ -44,6 +44,12 @@ public class LocationService {
         return cityRepository.existsById(id);
     }
 
+    public CityResponse getCityById(Long id) {
+        City city = cityRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Город не найден: " + id));
+        return mapToCityResponse(city);
+    }
+
     @Transactional
     public PlatformInstanceResponse createOrGetPlatformInstance(PlatformInstanceCreateRequest request) {
         City city = cityRepository.findById(request.getCityId())
