@@ -59,8 +59,8 @@ public class LocationController {
     @GetMapping("/platform-instance/search")
     @PreAuthorize("hasAnyRole('USER', 'COMPANY', 'ADMIN')")
     public ResponseEntity<Page<PlatformInstanceResponse>> searchPlatformInstances(
-            @RequestParam("cityId") Long cityId,
-            @RequestParam("platformName") String platformName,
+            @RequestParam(required = false) Long cityId,
+            @RequestParam(defaultValue = "") String platformName,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size) {
         return ResponseEntity.ok(locationService.searchPlatformInstances(cityId, platformName,

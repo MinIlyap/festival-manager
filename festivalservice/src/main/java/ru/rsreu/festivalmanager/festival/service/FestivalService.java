@@ -107,7 +107,7 @@ public class FestivalService {
             for (String email : request.getCuratorEmails()) {
                 try {
                     AuthCredentialDto credential = authClient.getUserByEmail(getSystemToken(), email);
-                    if (credential.getUserId() == null) {
+                    if ("COMPANY".equals(credential.getAccessType())) {
                         throw new IllegalArgumentException("Email " + email + " принадлежит компании, а не пользователю");
                     }
                     if (!curatorIds.contains(credential.getUserId())) curatorIds.add(credential.getUserId());
@@ -138,13 +138,6 @@ public class FestivalService {
             }
         }
 
-        eventPublisher.publishEvent(new FestivalEvents.FestivalAppRequestEvent(
-                location.getId(),
-                festival.getName(),
-                senderCompanyId,
-                OffsetDateTime.now()
-        ));
-
         return location.getId();
     }
 
@@ -161,6 +154,29 @@ public class FestivalService {
         instance.setVisible(false);
         return instance;
     }
+    @Transactional
+    public void submitForModeration(Long festivalLocationId, Long requestingCompanyId) {
+        FestivalLocation location = locationRepository.findById(festivalLocationId)
+                .orElseThrow(() -> new IllegalArgumentException("Фестиваль не найден"));
+
+        if (location.getFestivalInstance().isVisible()) {
+            throw new IllegalStateException("Фестиваль уже опубликован");
+        }
+
+        boolean isOrganizer = festivalCompanyRepository
+                .existsByFestivalCompanyId_FestivalLocationIdAndFestivalCompanyId_CompanyId(festivalLocationId, requestingCompanyId);
+        if (!isOrganizer) {
+            throw new IllegalStateException("Только организатор может отправить заявку на модерацию");
+        }
+
+        eventPublisher.publishEvent(new FestivalEvents.FestivalAppRequestEvent(
+                festivalLocationId,
+                location.getFestivalInstance().getFestival().getName(),
+                requestingCompanyId,
+                OffsetDateTime.now()
+        ));
+    }
+
     @Transactional
     public void processApplicationResponse(Long festivalLocationId, String status) {
         FestivalLocation location = locationRepository.findById(festivalLocationId)
@@ -308,6 +324,16 @@ public class FestivalService {
         return ageLimitRepository.findAll();
     }
 
+    public CompanyDto searchCompanyByTin(String tin) {
+        return companyClient.getCompanyByTin(getSystemToken(), tin);
+    }
+
+    @Transactional
+    public CompanyDto createCompany(CompanyCreateDto dto) {
+        Long companyId = companyClient.createInactiveCompany(getSystemToken(), dto);
+        return companyClient.getCompanyById(getSystemToken(), companyId);
+    }
+
     @Transactional(readOnly = true)
     public Boolean hasAccessForFestival(String entityType, Long entityId, Long companyId) {
         if ("FESTIVAL_LOCATION".equals(entityType)) {
@@ -315,6 +341,169 @@ public class FestivalService {
                     .existsByFestivalCompanyId_FestivalLocationIdAndFestivalCompanyId_CompanyId(entityId, companyId);
         }
         return false;
+    }
+
+    @Transactional(readOnly = true)
+    public List<FestivalOrganizerDto> getOrganizers(Long festivalLocationId) {
+        FestivalLocation location = locationRepository.findById(festivalLocationId)
+                .orElseThrow(() -> new IllegalArgumentException("Фестиваль не найден"));
+
+        return festivalCompanyRepository.findAllByFestivalCompanyId_FestivalLocation(location)
+                .stream()
+                .map(fc -> {
+                    Long companyId = fc.getFestivalCompanyId().getCompanyId();
+                    try {
+                        CompanyDto company = companyClient.getCompanyById(getSystemToken(), companyId);
+                        return FestivalOrganizerDto.builder()
+                                .companyId(companyId)
+                                .tin(company.getTin())
+                                .brandName(company.getBrandName())
+                                .fullName(company.getFullName())
+                                .email(company.getEmail())
+                                .build();
+                    } catch (Exception e) {
+                        return FestivalOrganizerDto.builder().companyId(companyId).build();
+                    }
+                })
+                .collect(Collectors.toList());
+    }
+
+    @Transactional
+    public FestivalOrganizerDto addOrganizer(Long festivalLocationId, String tin, Long requestingCompanyId) {
+        FestivalLocation location = locationRepository.findById(festivalLocationId)
+                .orElseThrow(() -> new IllegalArgumentException("Фестиваль не найден"));
+
+        if (location.getFestivalInstance().isVisible()) {
+            throw new IllegalStateException("Нельзя редактировать опубликованный фестиваль");
+        }
+
+        boolean isOrganizer = festivalCompanyRepository
+                .existsByFestivalCompanyId_FestivalLocationIdAndFestivalCompanyId_CompanyId(festivalLocationId, requestingCompanyId);
+        if (!isOrganizer) {
+            throw new IllegalStateException("Только организатор фестиваля может добавлять компании");
+        }
+
+        CompanyDto company = companyClient.getCompanyByTin(getSystemToken(), tin);
+
+        boolean alreadyAdded = festivalCompanyRepository
+                .existsByFestivalCompanyId_FestivalLocationIdAndFestivalCompanyId_CompanyId(festivalLocationId, company.getId());
+        if (alreadyAdded) {
+            throw new IllegalArgumentException("Компания уже является организатором этого фестиваля");
+        }
+
+        FestivalCompanyId fcId = new FestivalCompanyId(location, company.getId());
+        festivalCompanyRepository.save(new FestivalCompany(fcId));
+
+        return FestivalOrganizerDto.builder()
+                .companyId(company.getId())
+                .tin(company.getTin())
+                .brandName(company.getBrandName())
+                .fullName(company.getFullName())
+                .email(company.getEmail())
+                .build();
+    }
+
+    @Transactional
+    public void removeOrganizer(Long festivalLocationId, Long companyId, Long requestingCompanyId) {
+        FestivalLocation location = locationRepository.findById(festivalLocationId)
+                .orElseThrow(() -> new IllegalArgumentException("Фестиваль не найден"));
+
+        if (location.getFestivalInstance().isVisible()) {
+            throw new IllegalStateException("Нельзя редактировать опубликованный фестиваль");
+        }
+
+        boolean isOrganizer = festivalCompanyRepository
+                .existsByFestivalCompanyId_FestivalLocationIdAndFestivalCompanyId_CompanyId(festivalLocationId, requestingCompanyId);
+        if (!isOrganizer) {
+            throw new IllegalStateException("Только организатор фестиваля может удалять компании");
+        }
+
+        FestivalCompanyId fcId = new FestivalCompanyId(location, companyId);
+        if (!festivalCompanyRepository.existsById(fcId)) {
+            throw new IllegalArgumentException("Компания не является организатором этого фестиваля");
+        }
+
+        festivalCompanyRepository.deleteById(fcId);
+    }
+
+    @Transactional(readOnly = true)
+    public List<FestivalCuratorDto> getCurators(Long festivalLocationId) {
+        FestivalLocation location = locationRepository.findById(festivalLocationId)
+                .orElseThrow(() -> new IllegalArgumentException("Фестиваль не найден"));
+
+        return festivalCuratorRepository.findAllByFestivalCuratorId_FestivalLocation(location)
+                .stream()
+                .map(fc -> {
+                    Long curatorId = fc.getFestivalCuratorId().getCuratorId();
+                    try {
+                        AuthCredentialDto credential = authClient.getCredentialByUserId(getSystemToken(), curatorId);
+                        return FestivalCuratorDto.builder()
+                                .userId(curatorId)
+                                .email(credential.getEmail())
+                                .build();
+                    } catch (Exception e) {
+                        return FestivalCuratorDto.builder().userId(curatorId).build();
+                    }
+                })
+                .collect(Collectors.toList());
+    }
+
+    @Transactional
+    public FestivalCuratorDto addCurator(Long festivalLocationId, String email, Long requestingCompanyId) {
+        FestivalLocation location = locationRepository.findById(festivalLocationId)
+                .orElseThrow(() -> new IllegalArgumentException("Фестиваль не найден"));
+
+        if (location.getFestivalInstance().isVisible()) {
+            throw new IllegalStateException("Нельзя редактировать опубликованный фестиваль");
+        }
+
+        boolean isOrganizer = festivalCompanyRepository
+                .existsByFestivalCompanyId_FestivalLocationIdAndFestivalCompanyId_CompanyId(festivalLocationId, requestingCompanyId);
+        if (!isOrganizer) {
+            throw new IllegalStateException("Только организатор фестиваля может добавлять кураторов");
+        }
+
+        AuthCredentialDto credential = authClient.getUserByEmail(getSystemToken(), email);
+        if ("COMPANY".equals(credential.getAccessType())) {
+            throw new IllegalArgumentException("Email " + email + " принадлежит компании, а не пользователю");
+        }
+
+        boolean alreadyAdded = festivalCuratorRepository
+                .existsByFestivalCuratorId_FestivalLocationIdAndFestivalCuratorId_CuratorId(festivalLocationId, credential.getUserId());
+        if (alreadyAdded) {
+            throw new IllegalArgumentException("Пользователь уже является куратором этого фестиваля");
+        }
+
+        FestivalCuratorId curId = new FestivalCuratorId(location, credential.getUserId());
+        festivalCuratorRepository.save(new FestivalCurator(curId));
+
+        return FestivalCuratorDto.builder()
+                .userId(credential.getUserId())
+                .email(credential.getEmail())
+                .build();
+    }
+
+    @Transactional
+    public void removeCurator(Long festivalLocationId, Long curatorId, Long requestingCompanyId) {
+        FestivalLocation location = locationRepository.findById(festivalLocationId)
+                .orElseThrow(() -> new IllegalArgumentException("Фестиваль не найден"));
+
+        if (location.getFestivalInstance().isVisible()) {
+            throw new IllegalStateException("Нельзя редактировать опубликованный фестиваль");
+        }
+
+        boolean isOrganizer = festivalCompanyRepository
+                .existsByFestivalCompanyId_FestivalLocationIdAndFestivalCompanyId_CompanyId(festivalLocationId, requestingCompanyId);
+        if (!isOrganizer) {
+            throw new IllegalStateException("Только организатор фестиваля может удалять кураторов");
+        }
+
+        FestivalCuratorId curId = new FestivalCuratorId(location, curatorId);
+        if (!festivalCuratorRepository.existsById(curId)) {
+            throw new IllegalArgumentException("Пользователь не является куратором этого фестиваля");
+        }
+
+        festivalCuratorRepository.deleteById(curId);
     }
 
     private FestivalResponse mapToResponse(FestivalLocation location) {

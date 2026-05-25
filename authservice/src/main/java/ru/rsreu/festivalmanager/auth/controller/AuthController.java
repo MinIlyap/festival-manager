@@ -41,6 +41,12 @@ public class AuthController {
         return ResponseEntity.ok(authService.refreshToken(request.getRefreshToken()));
     }
 
+    @GetMapping("/users/{userId}")
+    @PreAuthorize("hasRole('INTERNAL')")
+    public ResponseEntity<AuthCredential> getCredentialByUserId(@PathVariable Long userId) {
+        return ResponseEntity.ok(authService.getCredentialByUserId(userId));
+    }
+
     @GetMapping("/search")
     @PreAuthorize("hasRole('INTERNAL')")
     public ResponseEntity<AuthCredential> getUserByEmail(@RequestParam("email") String email) {

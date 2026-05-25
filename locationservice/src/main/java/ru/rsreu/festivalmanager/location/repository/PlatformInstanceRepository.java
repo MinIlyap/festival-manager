@@ -28,6 +28,12 @@ public interface PlatformInstanceRepository extends JpaRepository<PlatformInstan
             Pageable pageable
     );
 
+    @Query("SELECT p FROM PlatformInstance p WHERE LOWER(p.platform.name) LIKE LOWER(CONCAT('%', :platformName, '%'))")
+    Page<PlatformInstance> searchInstancesByPlatformName(
+            @Param("platformName") String platformName,
+            Pageable pageable
+    );
+
     @Query("SELECT pi.id FROM PlatformInstance pi WHERE pi.city.id = :cityId")
     List<Long> findPlatformInstanceIdsByCityId(@Param("cityId") Long cityId);
 }

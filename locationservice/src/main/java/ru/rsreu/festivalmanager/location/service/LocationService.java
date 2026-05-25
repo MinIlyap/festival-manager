@@ -75,6 +75,10 @@ public class LocationService {
     }
 
     public Page<PlatformInstanceResponse> searchPlatformInstances(Long cityId, String platformNamePart, Pageable pageable) {
+        if (cityId == null) {
+            return instanceRepository.searchInstancesByPlatformName(platformNamePart, pageable)
+                    .map(this::mapToInstanceResponse);
+        }
         return instanceRepository.searchInstancesByCityAndPlatformName(cityId, platformNamePart, pageable)
                 .map(this::mapToInstanceResponse);
     }

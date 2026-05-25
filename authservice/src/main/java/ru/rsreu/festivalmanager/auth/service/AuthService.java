@@ -138,6 +138,11 @@ public class AuthService {
         credentialRepository.saveAll(credentials);
     }
 
+    public AuthCredential getCredentialByUserId(Long userId) {
+        return credentialRepository.findByUserId(userId)
+                .orElseThrow(() -> new IllegalArgumentException("Пользователь не найден: " + userId));
+    }
+
     public AuthCredential getCurrentUserInfo(Long id, String role) {
         if ("COMPANY".equals(role)) {
             return credentialRepository.findByCompanyId(id)

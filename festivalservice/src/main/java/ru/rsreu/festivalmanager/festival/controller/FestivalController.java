@@ -7,8 +7,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
-import ru.rsreu.festivalmanager.festival.dto.FestivalCreateRequest;
-import ru.rsreu.festivalmanager.festival.dto.FestivalResponse;
+import ru.rsreu.festivalmanager.festival.dto.*;
 import ru.rsreu.festivalmanager.festival.entity.festival.AgeLimit;
 import ru.rsreu.festivalmanager.festival.service.FestivalService;
 
@@ -71,5 +70,17 @@ public class FestivalController {
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<FestivalResponse> getFestivalById(@PathVariable Long festivalLocationId) {
         return ResponseEntity.ok(festivalService.getFestivalById(festivalLocationId));
+    }
+
+    @GetMapping("/company/search")
+    @PreAuthorize("hasRole('COMPANY')")
+    public ResponseEntity<CompanyDto> searchCompanyByTin(@RequestParam("tin") String tin) {
+        return ResponseEntity.ok(festivalService.searchCompanyByTin(tin));
+    }
+
+    @PostMapping("/company")
+    @PreAuthorize("hasRole('COMPANY')")
+    public ResponseEntity<CompanyDto> createCompany(@Valid @RequestBody CompanyCreateDto request) {
+        return ResponseEntity.ok(festivalService.createCompany(request));
     }
 }

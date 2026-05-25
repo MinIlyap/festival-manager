@@ -67,24 +67,23 @@ interface EventFilters {
 
 interface CreateEventPayload {
   festivalId: string;
-  name: string;
+  eventId: number;
   type: string;
   description?: string;
   format: 'SOLO' | 'TEAM';
   maxParticipants?: number;
   teamSize?: number;
   startDate: string;
-  endDate: string;
-  photoUrl?: string;
+  startTime: string;
+  approximateDuration?: number;
 }
 
 interface CreateStandPayload {
   festivalId: string;
-  eventId?: string;
-  name: string;
+  standId: number;
   type: 'TRADE' | 'DEMO';
   description?: string;
-  photoUrl?: string;
+  startDate: string;
 }
 
 interface CreateRewardPayload {
@@ -133,15 +132,16 @@ export const eventApi = {
   getEventById: (id: string) =>
     api.get<RawFestivalEventResponse>(`/events/${id}`).then(r => mapEvent(r.data)),
 
-  // POST /events — COMPANY creates festival event (requires eventId from dictionary)
+  // POST /events — COMPANY creates festival event
   createEvent: (data: CreateEventPayload) =>
     api.post<number>('/events', {
-      eventId: 0,
+      eventId: data.eventId,
       festivalLocationId: Number(data.festivalId),
       type: data.type,
       description: data.description,
-      dateStart: data.startDate?.split('T')[0] ?? data.startDate,
-      timeStart: data.startDate?.includes('T') ? data.startDate.split('T')[1]?.slice(0, 5) : '00:00',
+      dateStart: data.startDate,
+      timeStart: data.startTime || '00:00',
+      approximateDuration: data.approximateDuration,
       isCommand: data.format === 'TEAM',
       maxNumberPeople: data.maxParticipants ?? 0,
       maxPeopleCommand: data.teamSize,
@@ -199,11 +199,11 @@ export const eventApi = {
   // POST /events/stands
   createStand: (data: CreateStandPayload) =>
     api.post<number>('/events/stands', {
-      standId: 0,
+      standId: data.standId,
       festivalLocationId: Number(data.festivalId),
       type: data.type,
       description: data.description,
-      dateStart: new Date().toISOString().split('T')[0],
+      dateStart: data.startDate,
     }).then(r => ({ id: String(r.data) } as Stand)),
 
   updateStand: (_id: string, _data: Partial<CreateStandPayload>) =>
@@ -308,6 +308,19 @@ export const eventApi = {
 
   // GET URL for event photo
   getEventPhotoUrl: (eventId: string) => `/api/files/FESTIVAL_EVENT/${eventId}`,
+
+  // ── Dictionary management ────────────────────────────────────────────────────
+  getDictionaryEvents: () =>
+    api.get<Array<{ id: number; name: string }>>('/events/dictionaries/events').then(r => r.data),
+
+  createDictionaryEvent: (name: string) =>
+    api.post<number>('/events/dictionaries/events', { name }).then(r => r.data),
+
+  getDictionaryStands: () =>
+    api.get<Array<{ id: number; name: string }>>('/events/dictionaries/stands').then(r => r.data),
+
+  createDictionaryStand: (name: string) =>
+    api.post<number>('/events/dictionaries/stands', { name }).then(r => r.data),
 
   // POST /files/FESTIVAL_STAND/{standId}
   uploadStandPhoto: async (standId: string, file: File) => {

@@ -11,6 +11,31 @@ export interface TicketTypeOption {
   name: string;
 }
 
+// ── Management DTOs ─────────────────────────────────────────────────────────
+
+export interface FestivalOrganizer {
+  company_id: number;
+  tin: string;
+  brand_name: string;
+  full_name: string;
+  email: string;
+}
+
+export interface FestivalCurator {
+  user_id: number;
+  email: string;
+}
+
+export interface CompanyInfo {
+  id: number;
+  tin: string;
+  full_name: string;
+  brand_name: string;
+  email: string;
+  website?: string;
+  is_active: boolean;
+}
+
 // ── Raw backend shapes ──────────────────────────────────────────────────────
 
 interface RawFestivalResponse {
@@ -184,10 +209,34 @@ export const festivalApi = {
   update: (_id: string, _data: Partial<CreateFestivalPayload>) =>
     Promise.resolve({} as Festival),
 
-  addCurator: (_festivalId: string, _email: string) => Promise.resolve(),
-  removeCurator: (_festivalId: string, _userId: string) => Promise.resolve(),
-  addCompany: (_festivalId: string, _tin: string) => Promise.resolve(),
-  removeCompany: (_festivalId: string, _companyId: string) => Promise.resolve(),
+  // Company/curator management (after festival creation)
+  getOrganizers: (locationId: string) =>
+    api.get<FestivalOrganizer[]>(`/festival/${locationId}/management/organizers`).then(r => r.data),
+
+  addOrganizer: (locationId: string, tin: string) =>
+    api.post<FestivalOrganizer>(`/festival/${locationId}/management/organizers`, { tin }).then(r => r.data),
+
+  removeOrganizer: (locationId: string, companyId: number) =>
+    api.delete(`/festival/${locationId}/management/organizers/${companyId}`),
+
+  getCurators: (locationId: string) =>
+    api.get<FestivalCurator[]>(`/festival/${locationId}/management/curators`).then(r => r.data),
+
+  addCurator: (locationId: string, email: string) =>
+    api.post<FestivalCurator>(`/festival/${locationId}/management/curators`, { email }).then(r => r.data),
+
+  removeCurator: (locationId: string, userId: number) =>
+    api.delete(`/festival/${locationId}/management/curators/${userId}`),
+
+  submitForModeration: (locationId: string) =>
+    api.post(`/festival/${locationId}/management/submit`),
+
+  // Company search/create proxy (via festivalservice with system token)
+  searchCompanyByTin: (tin: string) =>
+    api.get<CompanyInfo>('/festival/company/search', { params: { tin } }).then(r => r.data),
+
+  createCompany: (data: { tin: string; full_name: string; brand_name: string; email: string }) =>
+    api.post<CompanyInfo>('/festival/company', data).then(r => r.data),
 
   // POST /ticket/instances
   createTicketType: (data: CreateTicketTypePayload) =>

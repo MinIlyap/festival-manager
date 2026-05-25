@@ -13,4 +13,7 @@ public interface AuthServiceClient {
 
     @GetMapping("/search")
     AuthCredentialDto getUserByEmail(@RequestHeader("Authorization") String token, @RequestParam("email") String email);
+
+    @GetMapping("/users/{userId}")
+    AuthCredentialDto getCredentialByUserId(@RequestHeader("Authorization") String token, @PathVariable("userId") Long userId);
 }

@@ -4,7 +4,7 @@ import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
-@FeignClient(name = "location-service", url = "http://localhost:8084/location")
+@FeignClient(name = "location-service", url = "http://localhost:8087/location")
 public interface LocationServiceClient {
 
     @GetMapping("/platform-instance/city/{cityId}")

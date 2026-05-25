@@ -41,7 +41,7 @@ export default function CompanyFestivalsPage() {
                 <p className={styles.festDate}>{new Date(f.startDate).toLocaleDateString('ru-RU')} — {new Date(f.endDate).toLocaleDateString('ru-RU')}</p>
                 <div className={styles.festActions}>
                   <Button variant="secondary" size="sm" onClick={() => navigate(`/festival/${f.id}`)}>Просмотреть</Button>
-                  {(f.status === 'DRAFT' || f.status === 'REJECTED') && (
+                  {f.status !== 'APPROVED' && (
                     <Button size="sm" onClick={() => navigate(`/company/festivals/${f.id}/edit`)}>Редактировать</Button>
                   )}
                 </div>
