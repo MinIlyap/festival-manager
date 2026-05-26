@@ -7,6 +7,8 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import ru.rsreu.festivalmanager.event.dto.DictionaryCreateRequest;
 import ru.rsreu.festivalmanager.event.entity.event.Event;
+import ru.rsreu.festivalmanager.event.entity.reward.Reward;
+import ru.rsreu.festivalmanager.event.entity.stand.Product;
 import ru.rsreu.festivalmanager.event.entity.stand.Stand;
 import ru.rsreu.festivalmanager.event.service.DictionaryService;
 
@@ -39,5 +41,27 @@ public class DictionaryController {
     @PreAuthorize("hasAnyRole('COMPANY', 'ADMIN')")
     public ResponseEntity<Long> createStand(@Valid @RequestBody DictionaryCreateRequest request) {
         return ResponseEntity.ok(dictionaryService.createStandDictionary(request.getName()));
+    }
+
+    @GetMapping("/rewards")
+    public ResponseEntity<List<Reward>> getRewards() {
+        return ResponseEntity.ok(dictionaryService.getAllRewards());
+    }
+
+    @PostMapping("/rewards")
+    @PreAuthorize("hasAnyRole('COMPANY', 'ADMIN')")
+    public ResponseEntity<Long> createReward(@Valid @RequestBody DictionaryCreateRequest request) {
+        return ResponseEntity.ok(dictionaryService.createRewardDictionary(request.getName()));
+    }
+
+    @GetMapping("/products")
+    public ResponseEntity<List<Product>> getProducts() {
+        return ResponseEntity.ok(dictionaryService.getAllProducts());
+    }
+
+    @PostMapping("/products")
+    @PreAuthorize("hasAnyRole('COMPANY', 'ADMIN')")
+    public ResponseEntity<Long> createProduct(@Valid @RequestBody DictionaryCreateRequest request) {
+        return ResponseEntity.ok(dictionaryService.createProductDictionary(request.getName()));
     }
 }

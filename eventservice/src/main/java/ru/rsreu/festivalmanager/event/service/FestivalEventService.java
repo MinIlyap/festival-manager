@@ -10,6 +10,7 @@ import org.springframework.transaction.annotation.Transactional;
 import ru.rsreu.festivalmanager.event.client.FestivalServiceClient;
 import ru.rsreu.festivalmanager.event.dto.FestivalEventCreateRequest;
 import ru.rsreu.festivalmanager.event.dto.FestivalEventResponse;
+import ru.rsreu.festivalmanager.event.dto.FestivalEventUpdateRequest;
 import ru.rsreu.festivalmanager.event.entity.event.Event;
 import ru.rsreu.festivalmanager.event.entity.event.EventInstance;
 import ru.rsreu.festivalmanager.event.entity.event.EventType;
@@ -59,13 +60,40 @@ public class FestivalEventService {
     }
 
     @Transactional
-    public void detachEventFromFestival(Long festivalEventId, Long companyId) {
+    public void updateFestivalEvent(Long festivalEventId, Long companyId, FestivalEventUpdateRequest request) {
         FestivalEvent festivalEvent = festivalEventRepository.findById(festivalEventId)
                 .orElseThrow(() -> new IllegalArgumentException("Мероприятие не найдено"));
 
-        if (!festivalEvent.getEventInstance().getCompanyId().equals(companyId)) {
-            throw new IllegalStateException("У вас нет прав на открепление этого мероприятия");
+        Boolean isVisible = festivalServiceClient.isFestivalVisible(
+                getSystemToken(), festivalEvent.getFestivalLocationId()
+        );
+        if (Boolean.TRUE.equals(isVisible)) {
+            throw new IllegalStateException("Нельзя редактировать мероприятие: фестиваль уже опубликован");
         }
+
+        if (Boolean.TRUE.equals(request.getIsCommand()) && request.getMaxPeopleCommand() == null) {
+            throw new IllegalArgumentException("Для командного мероприятия нужно указать лимит людей в команде");
+        }
+
+        EventInstance instance = festivalEvent.getEventInstance();
+        instance.setEventType(request.getType());
+        instance.setDescription(request.getDescription());
+        instance.setDateStart(request.getDateStart());
+        instance.setTimeStart(request.getTimeStart());
+        instance.setApproximateDuration(request.getApproximateDuration());
+        instance.setIsCommand(request.getIsCommand());
+        instance.setMaxNumberPeople(request.getMaxNumberPeople());
+        instance.setMaxPeopleCommand(request.getMaxPeopleCommand());
+        if (request.getOrganizerCompanyId() != null) {
+            instance.setCompanyId(request.getOrganizerCompanyId());
+        }
+        eventInstanceRepository.save(instance);
+    }
+
+    @Transactional
+    public void detachEventFromFestival(Long festivalEventId, Long companyId) {
+        FestivalEvent festivalEvent = festivalEventRepository.findById(festivalEventId)
+                .orElseThrow(() -> new IllegalArgumentException("Мероприятие не найдено"));
 
         Boolean isVisible = festivalServiceClient.isFestivalVisible(
                 getSystemToken(), festivalEvent.getFestivalLocationId()
@@ -96,10 +124,13 @@ public class FestivalEventService {
             throw new IllegalArgumentException("Для командного мероприятия нужно указать лимит людей в команде");
         }
 
+        // companyId хранит компанию-организатора; если не задана в запросе — создающая компания
+        Long organizerCompanyId = request.getOrganizerCompanyId() != null ? request.getOrganizerCompanyId() : companyId;
+
         // 2. Ищем точную копию инстанса ИЛИ создаем новую
         EventInstance instance = eventInstanceRepository.findIdenticalInstance(
                 request.getEventId(),
-                companyId,
+                organizerCompanyId,
                 request.getType(),
                 request.getDateStart(),
                 request.getTimeStart(),
@@ -112,7 +143,7 @@ public class FestivalEventService {
             // Если не нашли - собираем новый
             EventInstance newInstance = EventInstance.builder()
                     .event(event)
-                    .companyId(companyId)
+                    .companyId(organizerCompanyId)
                     .eventType(request.getType())
                     .description(request.getDescription())
                     .dateStart(request.getDateStart())
@@ -158,6 +189,7 @@ public class FestivalEventService {
                 .isCommand(ei.getIsCommand())
                 .maxNumberPeople(ei.getMaxNumberPeople())
                 .maxPeopleCommand(ei.getMaxPeopleCommand())
+                .organizerCompanyId(ei.getCompanyId())
                 .createdAt(fe.getCreatedAt())
                 .build();
     }

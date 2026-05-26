@@ -17,7 +17,7 @@ public class FestivalQrController {
 
     private final FestivalQrService qrService;
 
-    @PreAuthorize("hasAuthority('USER')")
+    @PreAuthorize("hasRole('USER')")
     @PostMapping("/ticket/{ticketId}/generate")
     public ResponseEntity<QrTicketResponse> generateTicket(
             @PathVariable Long ticketId,
@@ -25,7 +25,7 @@ public class FestivalQrController {
         return ResponseEntity.ok(qrService.generateFestivalTicket(ticketId, userId));
     }
 
-    @PreAuthorize("hasAuthority('CURATOR')")
+    @PreAuthorize("hasRole('CURATOR')")
     @PostMapping("/location/{locationId}/verify")
     public ResponseEntity<VerifyQrTicketResponse> verifyTicket(
             @PathVariable Long locationId,

@@ -6,9 +6,12 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
+import ru.rsreu.festivalmanager.event.dto.EventRewardResponse;
 import ru.rsreu.festivalmanager.event.dto.RewardAddRequest;
 import ru.rsreu.festivalmanager.event.dto.RewardDistributionRequest;
 import ru.rsreu.festivalmanager.event.service.RewardService;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/events/rewards")
@@ -16,6 +19,25 @@ import ru.rsreu.festivalmanager.event.service.RewardService;
 public class RewardController {
 
     private final RewardService rewardService;
+
+    @GetMapping("/by-event/{festivalEventId}")
+    @PreAuthorize("hasRole('COMPANY')")
+    public ResponseEntity<List<EventRewardResponse>> getRewardsByEvent(
+            @PathVariable Long festivalEventId,
+            @AuthenticationPrincipal Long companyId) {
+
+        return ResponseEntity.ok(rewardService.getRewardsByEvent(festivalEventId));
+    }
+
+    @DeleteMapping("/{eventRewardId}")
+    @PreAuthorize("hasRole('COMPANY')")
+    public ResponseEntity<String> removeRewardFromEvent(
+            @PathVariable Long eventRewardId,
+            @AuthenticationPrincipal Long companyId) {
+
+        rewardService.removeRewardFromEvent(eventRewardId, companyId);
+        return ResponseEntity.ok("Награда удалена");
+    }
 
     @PostMapping("/{festivalEventId}")
     @PreAuthorize("hasRole('COMPANY')")

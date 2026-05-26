@@ -11,6 +11,7 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import ru.rsreu.festivalmanager.event.dto.FestivalEventCreateRequest;
 import ru.rsreu.festivalmanager.event.dto.FestivalEventResponse;
+import ru.rsreu.festivalmanager.event.dto.FestivalEventUpdateRequest;
 import ru.rsreu.festivalmanager.event.entity.event.EventType;
 import ru.rsreu.festivalmanager.event.service.FestivalEventService;
 import ru.rsreu.festivalmanager.event.service.UserEventProfileService;
@@ -33,6 +34,17 @@ public class FestivalEventController {
             @AuthenticationPrincipal Long companyId) {
 
         return ResponseEntity.ok(festivalEventService.createFestivalEvent(companyId, request));
+    }
+
+    @PutMapping("/{festivalEventId}")
+    @PreAuthorize("hasRole('COMPANY')")
+    public ResponseEntity<Void> updateFestivalEvent(
+            @PathVariable Long festivalEventId,
+            @Valid @RequestBody FestivalEventUpdateRequest request,
+            @AuthenticationPrincipal Long companyId) {
+
+        festivalEventService.updateFestivalEvent(festivalEventId, companyId, request);
+        return ResponseEntity.ok().build();
     }
 
     @DeleteMapping("/{festivalEventId}")

@@ -12,6 +12,9 @@ public class UserProfileDto {
     @JsonProperty("id")
     private Long id;
 
+    @JsonProperty("nickname")
+    private String nickname;
+
     @JsonProperty("phone")
     private String phone;
 

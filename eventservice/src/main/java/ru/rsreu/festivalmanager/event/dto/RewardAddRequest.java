@@ -1,5 +1,6 @@
 package ru.rsreu.festivalmanager.event.dto;
 
+import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -14,7 +15,9 @@ public class RewardAddRequest {
     @NotNull(message = "ID базовой награды (из словаря) обязателен")
     private Long rewardId;
 
+    @NotBlank(message = "Описание награды обязательно")
     private String description;
+
     private Integer place;
     private Integer pointNumber;
 }

@@ -31,5 +31,7 @@ public class FestivalEventResponse {
     private Integer maxNumberPeople;
     private Integer maxPeopleCommand;
 
+    private Long organizerCompanyId;
+
     private OffsetDateTime createdAt;
 }

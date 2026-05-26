@@ -27,4 +27,6 @@ public class FestivalStandCreateRequest {
 
     @NotNull(message = "Дата начала обязательна")
     private LocalDate dateStart;
+
+    private Long organizerCompanyId;
 }

@@ -24,6 +24,7 @@ export interface FestivalOrganizer {
 export interface FestivalCurator {
   user_id: number;
   email: string;
+  nickname?: string;
 }
 
 export interface CompanyInfo {
@@ -49,6 +50,8 @@ interface RawFestivalResponse {
   platform_instance_id?: number;
   is_visible?: boolean;
   age_rating?: number;
+  age_limit_id?: number;
+  max_people_number?: number;
 }
 
 interface RawTicketResponse {
@@ -82,8 +85,12 @@ function mapFestival(f: RawFestivalResponse): Festival {
     cityId: '',
     cityName: '',
     startDate: f.date_start,
+    timeStart: f.time_start,
     endDate: f.date_end,
+    timeEnd: f.time_end,
     ageRating: f.age_rating ?? 0,
+    ageLimitId: f.age_limit_id,
+    maxPeople: f.max_people_number,
     status: f.is_visible ? 'APPROVED' : 'PENDING',
     companies: [],
     ticketTypes: [],
@@ -185,6 +192,10 @@ export const festivalApi = {
   getTicketTypes: () =>
     api.get<TicketTypeOption[]>('/ticket/types').then(r => r.data),
 
+  // POST /ticket/types — create a new global ticket type
+  createGlobalTicketType: (name: string) =>
+    api.post<TicketTypeOption>('/ticket/types', { name }).then(r => r.data),
+
   // POST /festival/apply — COMPANY creates festival application
   create: (data: CreateFestivalPayload) =>
     api.post<number>('/festival/apply', {
@@ -206,8 +217,26 @@ export const festivalApi = {
       })) : undefined,
     }).then(r => ({ id: String(r.data) } as Festival)),
 
-  update: (_id: string, _data: Partial<CreateFestivalPayload>) =>
-    Promise.resolve({} as Festival),
+  update: (id: string, data: {
+    name: string;
+    description?: string;
+    dateStart: string;
+    timeStart: string;
+    dateEnd: string;
+    timeEnd: string;
+    maxPeople: number;
+    ageLimitId: number;
+  }) =>
+    api.put(`/festival/${id}`, {
+      festival_name: data.name,
+      description: data.description,
+      date_start: data.dateStart,
+      time_start: data.timeStart,
+      date_end: data.dateEnd,
+      time_end: data.timeEnd,
+      max_people_number: data.maxPeople,
+      age_limit_id: data.ageLimitId,
+    }).then(r => r.data),
 
   // Company/curator management (after festival creation)
   getOrganizers: (locationId: string) =>
@@ -234,6 +263,9 @@ export const festivalApi = {
   // Company search/create proxy (via festivalservice with system token)
   searchCompanyByTin: (tin: string) =>
     api.get<CompanyInfo>('/festival/company/search', { params: { tin } }).then(r => r.data),
+
+  getCompanyById: (id: number) =>
+    api.get<CompanyInfo>(`/festival/company/${id}`).then(r => r.data),
 
   createCompany: (data: { tin: string; full_name: string; brand_name: string; email: string }) =>
     api.post<CompanyInfo>('/festival/company', data).then(r => r.data),

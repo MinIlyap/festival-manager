@@ -11,7 +11,9 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import ru.rsreu.festivalmanager.event.dto.FestivalStandCreateRequest;
 import ru.rsreu.festivalmanager.event.dto.FestivalStandResponse;
+import ru.rsreu.festivalmanager.event.dto.FestivalStandUpdateRequest;
 import ru.rsreu.festivalmanager.event.dto.ProductAddRequest;
+import ru.rsreu.festivalmanager.event.dto.StandProductResponse;
 import ru.rsreu.festivalmanager.event.entity.stand.StandType;
 import ru.rsreu.festivalmanager.event.service.StandService;
 
@@ -28,6 +30,17 @@ public class StandController {
     /**
      * Открепление стенда от фестиваля (только если фестиваль еще не опубликован)
      */
+    @PutMapping("/{festivalStandId}")
+    @PreAuthorize("hasRole('COMPANY')")
+    public ResponseEntity<Void> updateFestivalStand(
+            @PathVariable Long festivalStandId,
+            @Valid @RequestBody FestivalStandUpdateRequest request,
+            @AuthenticationPrincipal Long companyId) {
+
+        standService.updateFestivalStand(festivalStandId, companyId, request);
+        return ResponseEntity.ok().build();
+    }
+
     @DeleteMapping("/{festivalStandId}")
     @PreAuthorize("hasRole('COMPANY')")
     public ResponseEntity<String> detachStandFromFestival(
@@ -50,6 +63,34 @@ public class StandController {
 
         standService.addProductToStand(festivalStandId, companyId, request);
         return ResponseEntity.ok("Товар успешно добавлен на стенд");
+    }
+
+    @GetMapping("/{festivalStandId}/products")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<List<StandProductResponse>> getProductsByStand(
+            @PathVariable Long festivalStandId) {
+        return ResponseEntity.ok(standService.getProductsByStand(festivalStandId));
+    }
+
+    @DeleteMapping("/{festivalStandId}/products/{productInstanceId}")
+    @PreAuthorize("hasRole('COMPANY')")
+    public ResponseEntity<String> removeProductFromStand(
+            @PathVariable Long festivalStandId,
+            @PathVariable Long productInstanceId,
+            @AuthenticationPrincipal Long companyId) {
+        standService.removeProductFromStand(festivalStandId, productInstanceId, companyId);
+        return ResponseEntity.ok("Товар удалён со стенда");
+    }
+
+    @PutMapping("/{festivalStandId}/products/{productInstanceId}")
+    @PreAuthorize("hasRole('COMPANY')")
+    public ResponseEntity<String> updateProductOnStand(
+            @PathVariable Long festivalStandId,
+            @PathVariable Long productInstanceId,
+            @Valid @RequestBody ProductAddRequest request,
+            @AuthenticationPrincipal Long companyId) {
+        standService.updateProductOnStand(festivalStandId, productInstanceId, companyId, request);
+        return ResponseEntity.ok("Товар обновлён");
     }
 
     @GetMapping("/search")

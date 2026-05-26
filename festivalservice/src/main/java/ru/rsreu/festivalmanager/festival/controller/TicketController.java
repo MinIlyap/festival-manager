@@ -46,13 +46,13 @@ public class TicketController {
         return ResponseEntity.ok(ticketService.getAllTicketTypes());
     }
 
-    @PreAuthorize("hasAnyAuthority('COMPANY', 'ADMIN')")
+    @PreAuthorize("hasAnyRole('COMPANY', 'ADMIN')")
     @PostMapping("/types")
     public ResponseEntity<TicketType> createGlobalTicketType(@RequestBody TicketTypeCreateRequest request) {
         return ResponseEntity.ok(ticketService.createTicketType(request.getName()));
     }
 
-    @PreAuthorize("hasAuthority('COMPANY')")
+    @PreAuthorize("hasRole('COMPANY')")
     @PostMapping("/instances")
     public ResponseEntity<Long> createTicketInstance(
             @RequestBody TicketTypeInstanceCreateRequest request,
@@ -62,7 +62,7 @@ public class TicketController {
         return ResponseEntity.ok(instanceId);
     }
 
-    @PreAuthorize("hasAuthority('COMPANY')")
+    @PreAuthorize("hasRole('COMPANY')")
     @PutMapping("/instances/{instanceId}")
     public ResponseEntity<Void> updateTicketInstance(
             @PathVariable Long instanceId,
@@ -73,7 +73,7 @@ public class TicketController {
         return ResponseEntity.ok().build();
     }
 
-    @PreAuthorize("hasAuthority('COMPANY')")
+    @PreAuthorize("hasRole('COMPANY')")
     @DeleteMapping("/instances/{instanceId}")
     public ResponseEntity<Void> deleteTicketInstance(
             @PathVariable Long instanceId,

@@ -10,7 +10,9 @@ import org.springframework.data.domain.Pageable;
 import ru.rsreu.festivalmanager.event.client.FestivalServiceClient;
 import ru.rsreu.festivalmanager.event.dto.FestivalStandCreateRequest;
 import ru.rsreu.festivalmanager.event.dto.FestivalStandResponse;
+import ru.rsreu.festivalmanager.event.dto.FestivalStandUpdateRequest;
 import ru.rsreu.festivalmanager.event.dto.ProductAddRequest;
+import ru.rsreu.festivalmanager.event.dto.StandProductResponse;
 import ru.rsreu.festivalmanager.event.entity.stand.*;
 import ru.rsreu.festivalmanager.event.repository.*;
 
@@ -40,14 +42,31 @@ public class StandService {
 
 
     @Transactional
-    public void detachStandFromFestival(Long festivalStandId, Long companyId) {
+    public void updateFestivalStand(Long festivalStandId, Long companyId, FestivalStandUpdateRequest request) {
         FestivalStand festivalStand = festivalStandRepository.findById(festivalStandId)
                 .orElseThrow(() -> new IllegalArgumentException("Стенд не найден"));
 
-        // Защита: только владелец стенда может его открепить
-        if (!festivalStand.getStandInstance().getCompanyId().equals(companyId)) {
-            throw new IllegalStateException("У вас нет прав на редактирование этого стенда");
+        Boolean isVisible = festivalServiceClient.isFestivalVisible(
+                getSystemToken(), festivalStand.getFestivalLocationId()
+        );
+        if (Boolean.TRUE.equals(isVisible)) {
+            throw new IllegalStateException("Нельзя редактировать стенд: фестиваль уже опубликован");
         }
+
+        StandInstance instance = festivalStand.getStandInstance();
+        instance.setStandType(request.getType());
+        instance.setDescription(request.getDescription() != null ? request.getDescription() : "");
+        instance.setDateStart(request.getDateStart());
+        if (request.getOrganizerCompanyId() != null) {
+            instance.setCompanyId(request.getOrganizerCompanyId());
+        }
+        standInstanceRepository.save(instance);
+    }
+
+    @Transactional
+    public void detachStandFromFestival(Long festivalStandId, Long companyId) {
+        FestivalStand festivalStand = festivalStandRepository.findById(festivalStandId)
+                .orElseThrow(() -> new IllegalArgumentException("Стенд не найден"));
 
         // Защита: проверяем статус фестиваля через Feign Client
         Boolean isVisible = festivalServiceClient.isFestivalVisible(
@@ -102,6 +121,64 @@ public class StandService {
     }
 
     @Transactional(readOnly = true)
+    public List<StandProductResponse> getProductsByStand(Long festivalStandId) {
+        return standProductRepository.findAllByStandProductId_FestivalStand_Id(festivalStandId)
+                .stream()
+                .map(sp -> {
+                    ProductInstance pi = sp.getStandProductId().getProductInstance();
+                    return StandProductResponse.builder()
+                            .productInstanceId(pi.getId())
+                            .productId(pi.getProduct().getId())
+                            .productName(pi.getProduct().getName())
+                            .description(pi.getDescription())
+                            .quantity(pi.getQuantity())
+                            .price(pi.getPrice())
+                            .build();
+                })
+                .collect(Collectors.toList());
+    }
+
+    @Transactional
+    public void removeProductFromStand(Long festivalStandId, Long productInstanceId, Long companyId) {
+        FestivalStand festivalStand = festivalStandRepository.findById(festivalStandId)
+                .orElseThrow(() -> new IllegalArgumentException("Стенд не найден"));
+        if (!festivalStand.getStandInstance().getCompanyId().equals(companyId)) {
+            throw new IllegalStateException("Это не ваш стенд");
+        }
+        StandProduct sp = standProductRepository
+                .findByStandProductId_FestivalStand_IdAndStandProductId_ProductInstance_Id(festivalStandId, productInstanceId)
+                .orElseThrow(() -> new IllegalArgumentException("Товар не найден на стенде"));
+        standProductRepository.delete(sp);
+    }
+
+    @Transactional
+    public void updateProductOnStand(Long festivalStandId, Long oldProductInstanceId, Long companyId, ProductAddRequest request) {
+        FestivalStand festivalStand = festivalStandRepository.findById(festivalStandId)
+                .orElseThrow(() -> new IllegalArgumentException("Стенд не найден"));
+        if (!festivalStand.getStandInstance().getCompanyId().equals(companyId)) {
+            throw new IllegalStateException("Это не ваш стенд");
+        }
+        StandProduct oldSp = standProductRepository
+                .findByStandProductId_FestivalStand_IdAndStandProductId_ProductInstance_Id(festivalStandId, oldProductInstanceId)
+                .orElseThrow(() -> new IllegalArgumentException("Товар не найден на стенде"));
+        standProductRepository.delete(oldSp);
+
+        Product baseProduct = productRepository.findById(request.getProductId())
+                .orElseThrow(() -> new IllegalArgumentException("Базовый продукт не найден в словаре"));
+
+        ProductInstance productInstance = productInstanceRepository.findIdenticalInstance(
+                request.getProductId(), request.getQuantity(), request.getPrice(), request.getDescription()
+        ).orElseGet(() -> productInstanceRepository.save(ProductInstance.builder()
+                .product(baseProduct)
+                .description(request.getDescription())
+                .quantity(request.getQuantity())
+                .price(request.getPrice())
+                .build()));
+
+        standProductRepository.save(new StandProduct(new StandProductId(festivalStand, productInstance)));
+    }
+
+    @Transactional(readOnly = true)
     public Page<FestivalStandResponse> searchStands(String name, Long cityId, LocalDate dateStart, StandType type, Pageable pageable) {
         List<Long> locationIds = null;
 
@@ -120,6 +197,7 @@ public class StandService {
                         .type(fs.getStandInstance().getStandType())
                         .description(fs.getStandInstance().getDescription())
                         .companyId(fs.getStandInstance().getCompanyId())
+                        .organizerCompanyId(fs.getStandInstance().getCompanyId())
                         .dateStart(fs.getStandInstance().getDateStart())
                         .build());
     }
@@ -135,6 +213,7 @@ public class StandService {
                         .type(fs.getStandInstance().getStandType())
                         .description(fs.getStandInstance().getDescription())
                         .companyId(fs.getStandInstance().getCompanyId())
+                        .organizerCompanyId(fs.getStandInstance().getCompanyId())
                         .dateStart(fs.getStandInstance().getDateStart())
                         .build())
                 .collect(Collectors.toList());
@@ -152,10 +231,13 @@ public class StandService {
         Stand stand = standRepository.findById(request.getStandId())
                 .orElseThrow(() -> new IllegalArgumentException("Базовый стенд не найден"));
 
+        // companyId хранит компанию-организатора; если не задана в запросе — создающая компания
+        Long organizerCompanyId = request.getOrganizerCompanyId() != null ? request.getOrganizerCompanyId() : companyId;
+
         // 2. Ищем точную копию инстанса ИЛИ создаем новую
         StandInstance instance = standInstanceRepository.findIdenticalInstance(
                 request.getStandId(),
-                companyId,
+                organizerCompanyId,
                 request.getType(),
                 request.getDateStart(),
                 request.getDescription()
@@ -163,7 +245,7 @@ public class StandService {
             // Если не нашли - собираем новый
             StandInstance newInstance = StandInstance.builder()
                     .stand(stand)
-                    .companyId(companyId)
+                    .companyId(organizerCompanyId)
                     .standType(request.getType())
                     .description(request.getDescription())
                     .dateStart(request.getDateStart())

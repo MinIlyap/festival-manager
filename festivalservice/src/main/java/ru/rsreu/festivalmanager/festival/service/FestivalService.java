@@ -10,6 +10,7 @@ import org.springframework.transaction.annotation.Transactional;
 import ru.rsreu.festivalmanager.festival.client.AuthServiceClient;
 import ru.rsreu.festivalmanager.festival.client.CompanyServiceClient;
 import ru.rsreu.festivalmanager.festival.client.LocationServiceClient;
+import ru.rsreu.festivalmanager.festival.client.UserServiceClient;
 import ru.rsreu.festivalmanager.festival.dto.*;
 import ru.rsreu.festivalmanager.festival.entity.festival.*;
 import ru.rsreu.festivalmanager.festival.entity.ticket.TicketType;
@@ -41,6 +42,7 @@ public class FestivalService {
     private final AuthServiceClient authClient;
     private final ApplicationEventPublisher eventPublisher;
     private final LocationServiceClient locationClient;
+    private final UserServiceClient userServiceClient;
 
     @Value("${internal.system-token}")
     private String systemToken;
@@ -328,6 +330,10 @@ public class FestivalService {
         return companyClient.getCompanyByTin(getSystemToken(), tin);
     }
 
+    public CompanyDto getCompanyById(Long id) {
+        return companyClient.getCompanyById(getSystemToken(), id);
+    }
+
     @Transactional
     public CompanyDto createCompany(CompanyCreateDto dto) {
         Long companyId = companyClient.createInactiveCompany(getSystemToken(), dto);
@@ -435,15 +441,21 @@ public class FestivalService {
                 .stream()
                 .map(fc -> {
                     Long curatorId = fc.getFestivalCuratorId().getCuratorId();
+                    String email = null;
+                    String nickname = null;
                     try {
                         AuthCredentialDto credential = authClient.getCredentialByUserId(getSystemToken(), curatorId);
-                        return FestivalCuratorDto.builder()
-                                .userId(curatorId)
-                                .email(credential.getEmail())
-                                .build();
-                    } catch (Exception e) {
-                        return FestivalCuratorDto.builder().userId(curatorId).build();
-                    }
+                        email = credential.getEmail();
+                    } catch (Exception ignored) {}
+                    try {
+                        UserProfileDto profile = userServiceClient.getUserProfile(getSystemToken(), curatorId);
+                        nickname = profile.getNickname();
+                    } catch (Exception ignored) {}
+                    return FestivalCuratorDto.builder()
+                            .userId(curatorId)
+                            .email(email)
+                            .nickname(nickname)
+                            .build();
                 })
                 .collect(Collectors.toList());
     }
@@ -506,6 +518,39 @@ public class FestivalService {
         festivalCuratorRepository.deleteById(curId);
     }
 
+    @Transactional
+    public void updateFestival(Long locationId, FestivalUpdateRequest request, Long companyId) {
+        FestivalLocation location = locationRepository.findById(locationId)
+                .orElseThrow(() -> new IllegalArgumentException("Фестиваль не найден"));
+
+        if (location.getFestivalInstance().isVisible()) {
+            throw new IllegalStateException("Нельзя редактировать опубликованный фестиваль");
+        }
+
+        boolean isOrganizer = festivalCompanyRepository
+                .existsByFestivalCompanyId_FestivalLocationIdAndFestivalCompanyId_CompanyId(locationId, companyId);
+        if (!isOrganizer) {
+            throw new IllegalStateException("Только организатор может редактировать фестиваль");
+        }
+
+        AgeLimit ageLimit = ageLimitRepository.findById(request.getAgeLimitId())
+                .orElseThrow(() -> new IllegalArgumentException("Возрастное ограничение не найдено"));
+
+        Festival festival = location.getFestivalInstance().getFestival();
+        festival.setName(request.getFestivalName());
+        festivalRepository.save(festival);
+
+        FestivalInstance instance = location.getFestivalInstance();
+        instance.setDescription(request.getDescription() != null ? request.getDescription() : "");
+        instance.setDateStart(request.getDateStart());
+        instance.setTimeStart(request.getTimeStart());
+        instance.setDateEnd(request.getDateEnd());
+        instance.setTimeEnd(request.getTimeEnd());
+        instance.setMaxPeopleNumber(request.getMaxPeopleNumber());
+        instance.setAgeLimit(ageLimit);
+        instanceRepository.save(instance);
+    }
+
     private FestivalResponse mapToResponse(FestivalLocation location) {
         FestivalInstance instance = location.getFestivalInstance();
         int ageRating = 0;
@@ -526,6 +571,8 @@ public class FestivalService {
                 .platformInstanceId(location.getPlatformInstanceId())
                 .isVisible(instance.isVisible())
                 .ageRating(ageRating)
+                .ageLimitId(instance.getAgeLimit() != null ? instance.getAgeLimit().getId() : null)
+                .maxPeopleNumber(instance.getMaxPeopleNumber())
                 .build();
     }
 }

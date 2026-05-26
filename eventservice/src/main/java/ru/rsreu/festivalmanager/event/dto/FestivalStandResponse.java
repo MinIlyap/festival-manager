@@ -15,5 +15,6 @@ public class FestivalStandResponse {
     private StandType type;
     private String description;
     private Long companyId;
+    private Long organizerCompanyId;
     private LocalDate dateStart;
 }

@@ -104,6 +104,7 @@ public class UserEventProfileService {
                 .isCommand(ei.getIsCommand())
                 .maxNumberPeople(ei.getMaxNumberPeople())
                 .maxPeopleCommand(ei.getMaxPeopleCommand())
+                .organizerCompanyId(ei.getCompanyId())
                 .createdAt(fe.getCreatedAt())
                 .build();
     }

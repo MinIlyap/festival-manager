@@ -62,8 +62,12 @@ export interface Festival {
   platformId?: string;
   platformName?: string;
   startDate: string;
+  timeStart?: string;
   endDate: string;
+  timeEnd?: string;
   ageRating: number;
+  ageLimitId?: number;
+  maxPeople?: number;
   coverUrl?: string;
   status: 'DRAFT' | 'PENDING' | 'APPROVED' | 'REJECTED';
   companies: Company[];
@@ -90,7 +94,10 @@ export interface FestivalEvent {
   maxParticipants?: number;
   teamSize?: number;
   startDate: string;
+  startTime?: string;
+  approximateDuration?: number;
   endDate: string;
+  organizerCompanyId?: number;
   photoUrl?: string;
   companyName?: string;
   rewards: Reward[];
@@ -103,10 +110,12 @@ export interface Stand {
   eventId?: string;
   eventName?: string;
   name: string;
-  type: 'TRADE' | 'DEMO';
+  type: 'COMMERCIAL' | 'DEMONSTRATION';
   description?: string;
+  startDate?: string;
   photoUrl?: string;
   companyName?: string;
+  organizerCompanyId?: number;
   products?: StandProduct[];
 }
 

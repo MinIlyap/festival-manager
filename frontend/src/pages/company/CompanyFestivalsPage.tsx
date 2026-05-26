@@ -38,12 +38,12 @@ export default function CompanyFestivalsPage() {
               </div>
               <div className={styles.festBody}>
                 <h3 className={styles.festName}>{f.name}</h3>
-                <p className={styles.festDate}>{new Date(f.startDate).toLocaleDateString('ru-RU')} — {new Date(f.endDate).toLocaleDateString('ru-RU')}</p>
+                <p className={styles.festDate}>{f.startDate?.split('-').reverse().join('.')} — {f.endDate?.split('-').reverse().join('.')}</p>
                 <div className={styles.festActions}>
                   <Button variant="secondary" size="sm" onClick={() => navigate(`/festival/${f.id}`)}>Просмотреть</Button>
-                  {f.status !== 'APPROVED' && (
-                    <Button size="sm" onClick={() => navigate(`/company/festivals/${f.id}/edit`)}>Редактировать</Button>
-                  )}
+                  <Button size="sm" onClick={() => navigate(`/company/festivals/${f.id}/edit`)}>
+                    {f.status === 'APPROVED' ? 'Управление' : 'Редактировать'}
+                  </Button>
                 </div>
               </div>
             </Card>

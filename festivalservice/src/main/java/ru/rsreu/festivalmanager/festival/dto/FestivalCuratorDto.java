@@ -12,4 +12,7 @@ public class FestivalCuratorDto {
 
     @JsonProperty("email")
     private String email;
+
+    @JsonProperty("nickname")
+    private String nickname;
 }

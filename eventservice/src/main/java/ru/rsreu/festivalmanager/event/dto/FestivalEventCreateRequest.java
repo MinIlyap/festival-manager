@@ -41,4 +41,6 @@ public class FestivalEventCreateRequest {
     private Integer maxNumberPeople;
 
     private Integer maxPeopleCommand;
+
+    private Long organizerCompanyId;
 }

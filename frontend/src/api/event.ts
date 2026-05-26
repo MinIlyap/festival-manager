@@ -7,9 +7,10 @@ interface RawFestivalStandResponse {
   id: number;
   festivalLocationId: number;
   name: string;
-  type: 'TRADE' | 'DEMO';
+  type: 'COMMERCIAL' | 'DEMONSTRATION';
   description?: string;
   companyId: number;
+  organizerCompanyId?: number;
   dateStart: string;
 }
 
@@ -25,6 +26,7 @@ interface RawFestivalEventResponse {
   isCommand: boolean;
   maxNumberPeople?: number;
   maxPeopleCommand?: number;
+  organizerCompanyId?: number;
   createdAt: string;
 }
 
@@ -47,7 +49,10 @@ function mapEvent(e: RawFestivalEventResponse): FestivalEvent {
     maxParticipants: e.maxNumberPeople,
     teamSize: e.maxPeopleCommand,
     startDate: e.dateStart,
+    startTime: e.timeStart,
+    approximateDuration: e.approximateDuration,
     endDate: e.dateStart,
+    organizerCompanyId: e.organizerCompanyId,
     rewards: [],
   };
 }
@@ -76,14 +81,46 @@ interface CreateEventPayload {
   startDate: string;
   startTime: string;
   approximateDuration?: number;
+  organizerCompanyId?: number;
+}
+
+interface UpdateEventPayload {
+  type: string;
+  description?: string;
+  format: 'SOLO' | 'TEAM';
+  maxParticipants?: number;
+  teamSize?: number;
+  startDate: string;
+  startTime: string;
+  approximateDuration?: number;
+  organizerCompanyId?: number;
+}
+
+export interface EventReward {
+  eventRewardId: number;
+  rewardId: number;
+  rewardName: string;
+  description?: string;
+  place?: number;
+  pointNumber?: number;
+}
+
+export interface StandProduct {
+  productInstanceId: number;
+  productId: number;
+  productName: string;
+  description?: string;
+  quantity: number;
+  price: number;
 }
 
 interface CreateStandPayload {
   festivalId: string;
   standId: number;
-  type: 'TRADE' | 'DEMO';
+  type: 'COMMERCIAL' | 'DEMONSTRATION';
   description?: string;
   startDate: string;
+  organizerCompanyId?: number;
 }
 
 interface CreateRewardPayload {
@@ -145,10 +182,21 @@ export const eventApi = {
       isCommand: data.format === 'TEAM',
       maxNumberPeople: data.maxParticipants ?? 0,
       maxPeopleCommand: data.teamSize,
+      organizerCompanyId: data.organizerCompanyId ?? null,
     }).then(r => ({ id: String(r.data) } as FestivalEvent)),
 
-  updateEvent: (_id: string, _data: Partial<CreateEventPayload>) =>
-    Promise.resolve({} as FestivalEvent),
+  updateEvent: (festivalEventId: string, data: UpdateEventPayload) =>
+    api.put(`/events/${festivalEventId}`, {
+      type: data.type,
+      description: data.description,
+      dateStart: data.startDate,
+      timeStart: data.startTime || '00:00',
+      approximateDuration: data.approximateDuration,
+      isCommand: data.format === 'TEAM',
+      maxNumberPeople: data.maxParticipants ?? 0,
+      maxPeopleCommand: data.teamSize,
+      organizerCompanyId: data.organizerCompanyId ?? null,
+    }).then(r => r.data),
 
   // DELETE /events/{festivalEventId}
   deleteEvent: (id: string) =>
@@ -164,6 +212,8 @@ export const eventApi = {
         name: s.name,
         type: s.type,
         description: s.description,
+        startDate: s.dateStart,
+        organizerCompanyId: s.organizerCompanyId,
       } as Stand))),
 
   // GET /events/stands/search
@@ -188,6 +238,8 @@ export const eventApi = {
         name: s.name,
         type: s.type,
         description: s.description,
+        startDate: s.dateStart,
+        organizerCompanyId: s.organizerCompanyId,
       } as Stand)),
       totalElements: r.data.totalElements,
       totalPages: r.data.totalPages,
@@ -204,22 +256,45 @@ export const eventApi = {
       type: data.type,
       description: data.description,
       dateStart: data.startDate,
+      organizerCompanyId: data.organizerCompanyId ?? null,
     }).then(r => ({ id: String(r.data) } as Stand)),
 
-  updateStand: (_id: string, _data: Partial<CreateStandPayload>) =>
-    Promise.resolve({} as Stand),
+  updateStand: (festivalStandId: string, data: { type: 'COMMERCIAL' | 'DEMONSTRATION'; description?: string; startDate: string; organizerCompanyId?: number }) =>
+    api.put(`/events/stands/${festivalStandId}`, {
+      type: data.type,
+      description: data.description,
+      dateStart: data.startDate,
+      organizerCompanyId: data.organizerCompanyId ?? null,
+    }).then(r => r.data),
 
   // DELETE /events/stands/{festivalStandId}
   deleteStand: (id: string) =>
     api.delete(`/events/stands/${id}`).then(r => r.data),
 
   // POST /events/stands/{festivalStandId}/products
-  addProduct: (standId: string, product: { name: string; description?: string; price: number; quantity: number; photoUrl?: string }) =>
+  addProduct: (standId: string, product: { productId: number; description?: string; price: number; quantity: number }) =>
     api.post(`/events/stands/${standId}/products`, {
-      productId: 0,
+      productId: product.productId,
       description: product.description,
       quantity: product.quantity,
       price: product.price,
+    }).then(r => r.data),
+
+  // GET /events/stands/{festivalStandId}/products
+  getProductsByStand: (standId: string) =>
+    api.get<StandProduct[]>(`/events/stands/${standId}/products`).then(r => r.data),
+
+  // DELETE /events/stands/{festivalStandId}/products/{productInstanceId}
+  deleteProduct: (standId: string, productInstanceId: number) =>
+    api.delete(`/events/stands/${standId}/products/${productInstanceId}`).then(r => r.data),
+
+  // PUT /events/stands/{festivalStandId}/products/{productInstanceId}
+  updateProduct: (standId: string, productInstanceId: number, data: { productId: number; description?: string; price: number; quantity: number }) =>
+    api.put(`/events/stands/${standId}/products/${productInstanceId}`, {
+      productId: data.productId,
+      description: data.description,
+      quantity: data.quantity,
+      price: data.price,
     }).then(r => r.data),
 
   // POST /events/rewards/{festivalEventId}
@@ -321,6 +396,31 @@ export const eventApi = {
 
   createDictionaryStand: (name: string) =>
     api.post<number>('/events/dictionaries/stands', { name }).then(r => r.data),
+
+  getDictionaryRewards: () =>
+    api.get<Array<{ id: number; name: string }>>('/events/dictionaries/rewards').then(r => r.data),
+
+  createDictionaryReward: (name: string) =>
+    api.post<number>('/events/dictionaries/rewards', { name }).then(r => r.data),
+
+  getDictionaryProducts: () =>
+    api.get<Array<{ id: number; name: string }>>('/events/dictionaries/products').then(r => r.data),
+
+  createDictionaryProduct: (name: string) =>
+    api.post<number>('/events/dictionaries/products', { name }).then(r => r.data),
+
+  // ── Event rewards ────────────────────────────────────────────────────────────
+  getRewardsByEvent: (festivalEventId: string) =>
+    api.get<EventReward[]>(`/events/rewards/by-event/${festivalEventId}`).then(r => r.data),
+
+  addRewardToEvent: (festivalEventId: string, data: { rewardId: number; description?: string; place?: number; pointNumber?: number }) =>
+    api.post<number>(`/events/rewards/${festivalEventId}`, data).then(r => r.data),
+
+  deleteReward: (eventRewardId: string) =>
+    api.delete(`/events/rewards/${eventRewardId}`).then(r => r.data),
+
+  distributeRewardToUsers: (eventRewardId: string, userIds: number[]) =>
+    api.post(`/events/rewards/${eventRewardId}/distribute/users`, { userIds }).then(r => r.data),
 
   // POST /files/FESTIVAL_STAND/{standId}
   uploadStandPhoto: async (standId: string, file: File) => {

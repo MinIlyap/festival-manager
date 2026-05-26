@@ -72,10 +72,26 @@ public class FestivalController {
         return ResponseEntity.ok(festivalService.getFestivalById(festivalLocationId));
     }
 
+    @PutMapping("/{locationId}")
+    @PreAuthorize("hasRole('COMPANY')")
+    public ResponseEntity<Void> updateFestival(
+            @PathVariable Long locationId,
+            @Valid @RequestBody FestivalUpdateRequest request,
+            @AuthenticationPrincipal Long companyId) {
+        festivalService.updateFestival(locationId, request, companyId);
+        return ResponseEntity.ok().build();
+    }
+
     @GetMapping("/company/search")
     @PreAuthorize("hasRole('COMPANY')")
     public ResponseEntity<CompanyDto> searchCompanyByTin(@RequestParam("tin") String tin) {
         return ResponseEntity.ok(festivalService.searchCompanyByTin(tin));
+    }
+
+    @GetMapping("/company/{id}")
+    @PreAuthorize("hasRole('COMPANY')")
+    public ResponseEntity<CompanyDto> getCompanyById(@PathVariable Long id) {
+        return ResponseEntity.ok(festivalService.getCompanyById(id));
     }
 
     @PostMapping("/company")

@@ -81,6 +81,7 @@ public class UserService {
 
         return UserProfileDto.builder()
                 .id(user.getId())
+                .nickname(user.getNickname())
                 .phone(user.getPhoneNumber())
                 .passportData(user.getPassportNumberHash())
                 .dateOfBirth(user.getBirthDate())

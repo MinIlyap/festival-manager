@@ -38,4 +38,10 @@ public class FestivalResponse {
 
     @JsonProperty("age_rating")
     private Integer ageRating;
+
+    @JsonProperty("age_limit_id")
+    private Integer ageLimitId;
+
+    @JsonProperty("max_people_number")
+    private Integer maxPeopleNumber;
 }
