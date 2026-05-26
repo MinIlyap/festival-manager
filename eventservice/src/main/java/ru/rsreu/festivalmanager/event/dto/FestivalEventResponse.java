@@ -33,5 +33,7 @@ public class FestivalEventResponse {
 
     private Long organizerCompanyId;
 
+    private String companyBrandName;
+
     private OffsetDateTime createdAt;
 }

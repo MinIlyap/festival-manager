@@ -1,13 +1,17 @@
 package ru.rsreu.festivalmanager.festival.dto;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.time.LocalDate;
 
 @Data
 @Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class UserProfileDto {
     @JsonProperty("id")
     private Long id;

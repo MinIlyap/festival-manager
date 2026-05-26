@@ -821,18 +821,9 @@ export default function CompanyFestivalEditPage() {
                   {curators.length === 0
                     ? <p style={{ color: 'var(--text-muted)', fontSize: 14 }}>Нет кураторов</p>
                     : curators.map(c => (
-                      <div key={c.user_id} className={styles.listItem}>
-                        <div>
-                          <p className={styles.listItemName}>{c.nickname ?? c.email ?? `Куратор #${c.user_id}`}</p>
-                          {c.nickname && c.email && <p className={styles.listItemSub}>{c.email}</p>}
-                        </div>
-                        {!isPublished && (
-                          <Button variant="danger" size="sm" loading={removeCuratorMutation.isPending}
-                            onClick={() => removeCuratorMutation.mutate(c.user_id)}>
-                            <Trash2 size={14} />
-                          </Button>
-                        )}
-                      </div>
+                      <CuratorRow key={c.user_id} curator={c} canRemove={!isPublished}
+                        onRemove={() => removeCuratorMutation.mutate(c.user_id)}
+                        removing={removeCuratorMutation.isPending} />
                     ))
                   }
                 </div>
@@ -1728,6 +1719,30 @@ function OrganizerBlock({
             <p style={{ fontSize: 12, color: 'var(--accent-danger)', marginTop: 6 }}>Компания не найдена</p>
           )}
         </>
+      )}
+    </div>
+  );
+}
+
+function CuratorRow({ curator, canRemove, onRemove, removing }: {
+  curator: FestivalCurator;
+  canRemove: boolean;
+  onRemove: () => void;
+  removing: boolean;
+}) {
+  const primary = curator.nickname ?? `Куратор #${curator.user_id}`;
+  return (
+    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 16px', background: 'var(--bg-elevated)', borderRadius: 'var(--radius-sm)' }}>
+      <div>
+        <p style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-primary)' }}>{primary}</p>
+        {curator.email && (
+          <p style={{ fontSize: 12, color: 'var(--text-muted)' }}>{curator.email}</p>
+        )}
+      </div>
+      {canRemove && (
+        <Button variant="danger" size="sm" loading={removing} onClick={onRemove}>
+          <Trash2 size={14} />
+        </Button>
       )}
     </div>
   );

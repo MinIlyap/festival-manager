@@ -1,10 +1,34 @@
-.hero {
+/* ── Back button ──────────────────────────────────────────────────────────── */
+
+.backBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  font-size: 13px;
+  font-family: var(--font-heading);
+  font-weight: 600;
+  padding: 0;
+  margin-bottom: var(--space-lg);
+  transition: color 0.15s;
+}
+
+.backBtn:hover {
+  color: var(--text-primary);
+}
+
+/* ── Hero photo ───────────────────────────────────────────────────────────── */
+
+.heroWrap {
   position: relative;
   width: 100%;
-  height: 280px;
-  border-radius: var(--radius-lg);
+  height: 260px;
+  border-radius: var(--radius-xl);
   overflow: hidden;
-  margin-bottom: 24px;
+  margin-bottom: var(--space-xl);
 }
 
 .heroImg {
@@ -16,52 +40,246 @@
 .heroOverlay {
   position: absolute;
   inset: 0;
-  background: linear-gradient(to top, var(--bg-base) 0%, transparent 60%);
+  background: linear-gradient(to top, rgba(8, 10, 14, 0.7) 0%, transparent 50%);
 }
 
-.content {
-  display: flex;
-  flex-direction: column;
-  gap: 24px;
-}
+/* ── Header ───────────────────────────────────────────────────────────────── */
 
 .header {
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
-  gap: 16px;
+  gap: 20px;
   flex-wrap: wrap;
+  margin-bottom: var(--space-xl);
+}
+
+.headerLeft {
+  flex: 1;
+  min-width: 0;
+}
+
+.badgeRow {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-bottom: 10px;
 }
 
 .title {
-  font-family: var(--font-heading);
-  font-size: 28px;
+  font-family: var(--font-display);
+  font-size: clamp(22px, 4vw, 36px);
   font-weight: 700;
   color: var(--text-primary);
-  margin: 0;
+  line-height: 1.2;
+  margin: 0 0 6px;
 }
+
+.festivalRef {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 13px;
+  color: var(--text-muted);
+}
+
+.headerActions {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  flex-shrink: 0;
+  flex-wrap: wrap;
+}
+
+/* ── Main grid ────────────────────────────────────────────────────────────── */
 
 .grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 16px;
+  align-items: start;
 }
 
-.sectionTitle {
+.infoCard {
+  grid-column: 1 / -1;
+}
+
+.rewardsCard {
+  grid-column: 1 / -1;
+}
+
+
+/* ── Card internals ───────────────────────────────────────────────────────── */
+
+.cardTitle {
   font-family: var(--font-heading);
-  font-size: 16px;
+  font-size: 15px;
   font-weight: 700;
   color: var(--text-primary);
   margin: 0 0 16px;
+  display: flex;
+  align-items: center;
+  gap: 7px;
 }
+
+.description {
+  font-size: 14px;
+  color: var(--text-secondary);
+  line-height: 1.7;
+  margin-bottom: var(--space-md);
+}
+
+/* ── Meta grid ────────────────────────────────────────────────────────────── */
+
+.metaList {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px 24px;
+}
+
+.metaRow {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+}
+
+.metaIcon {
+  color: var(--accent-primary);
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.metaRow > div {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.metaLabel {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.metaValue {
+  font-size: 14px;
+  color: var(--text-primary);
+  font-weight: 500;
+}
+
+@media (max-width: 480px) {
+  .metaList {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ── Team card ────────────────────────────────────────────────────────────── */
+
+.teamInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.teamName {
+  font-size: 17px;
+  font-weight: 700;
+  font-family: var(--font-heading);
+  color: var(--text-primary);
+}
+
+.teamEmpty {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.teamEmptyText {
+  font-size: 14px;
+  color: var(--text-muted);
+}
+
+/* ── Rewards ──────────────────────────────────────────────────────────────── */
+
+.rewardsList {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.rewardRow {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 12px 16px;
+  background: var(--bg-page);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-subtle);
+}
+
+.rewardPlace {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  min-width: 64px;
+}
+
+.rewardMedalIcon {
+  color: var(--accent-primary);
+}
+
+.rewardPlaceLabel {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--text-secondary);
+  text-align: center;
+}
+
+.rewardInfo {
+  flex: 1;
+  min-width: 0;
+}
+
+.rewardName {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: 2px;
+}
+
+.rewardDesc {
+  font-size: 13px;
+  color: var(--text-muted);
+}
+
+.rewardPhoto {
+  width: 52px;
+  height: 52px;
+  border-radius: var(--radius-sm);
+  object-fit: cover;
+  flex-shrink: 0;
+}
+
+/* ── Responsive ───────────────────────────────────────────────────────────── */
 
 @media (max-width: 768px) {
   .grid {
     grid-template-columns: 1fr;
   }
 
+  .infoCard,
+  .rewardsCard {
+    grid-column: 1;
+  }
+
   .header {
     flex-direction: column;
-    align-items: stretch;
+  }
+
+  .headerActions {
+    width: 100%;
   }
 }

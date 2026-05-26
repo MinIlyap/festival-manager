@@ -1,56 +1,161 @@
-import { useState } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { MapPin, Calendar, Trophy, Store, Ticket, AlertCircle } from 'lucide-react';
+import {
+  MapPin, Calendar, Trophy, Store, Ticket, AlertCircle,
+  Clock, Users, ChevronRight, CheckCircle, Building2,
+} from 'lucide-react';
 import Layout from '../../components/layout/Layout';
-import Tabs from '../../components/ui/Tabs';
 import Badge from '../../components/ui/Badge';
 import Button from '../../components/ui/Button';
-import Card from '../../components/ui/Card';
 import Modal from '../../components/ui/Modal';
 import Spinner from '../../components/ui/Spinner';
 import { festivalApi } from '../../api/festival';
 import { eventApi } from '../../api/event';
 import { userApi } from '../../api/user';
 import { useAuthStore } from '../../store/authStore';
-import type { TicketType } from '../../types';
+import type { FestivalEvent, Stand } from '../../types';
 import styles from './FestivalPage.module.css';
 
-function formatDate(d: string) {
-  return new Date(d).toLocaleDateString('ru-RU', { day: 'numeric', month: 'long', year: 'numeric' });
+// ── helpers ───────────────────────────────────────────────────────────────────
+
+function getDays(start: string, end: string): string[] {
+  const days: string[] = [];
+  const [sy, sm, sd] = start.split('-').map(Number);
+  const [ey, em, ed] = end.split('-').map(Number);
+  const cur = new Date(Date.UTC(sy, sm - 1, sd));
+  const endD = new Date(Date.UTC(ey, em - 1, ed));
+  while (cur <= endD) {
+    days.push(cur.toISOString().slice(0, 10));
+    cur.setUTCDate(cur.getUTCDate() + 1);
+  }
+  return days;
 }
 
-function TicketTypeCard({ tt, onBuy }: { tt: TicketType; onBuy: (id: string) => void }) {
+const TYPE_LABEL: Record<string, string> = {
+  TOURNAMENT:    'Турнир',
+  QUEST:         'Квест',
+  MASTER_CLASS:  'Мастер-класс',
+  MASTERCLASS:   'Мастер-класс',
+  DEMONSTRATION: 'Демонстрация',
+  DEMO:          'Демонстрация',
+};
+
+function fmtDateLong(iso: string) {
+  return new Date(iso + 'T00:00:00').toLocaleDateString('ru-RU', {
+    day: 'numeric', month: 'long', year: 'numeric',
+  });
+}
+
+function fmtDayFull(iso: string) {
+  return new Date(iso + 'T00:00:00').toLocaleDateString('ru-RU', {
+    weekday: 'short', day: 'numeric', month: 'short',
+  });
+}
+
+function fmtTime(t?: string) {
+  return t ? t.substring(0, 5) : '';
+}
+
+function sortByTime<T extends { startTime?: string }>(items: T[]): T[] {
+  return [...items].sort((a, b) => {
+    if (!a.startTime) return 1;
+    if (!b.startTime) return -1;
+    return a.startTime.localeCompare(b.startTime);
+  });
+}
+
+// ── Event card (vertical grid) ───────────────────────────────────────────────
+
+function EventCard({ ev, onClick }: { ev: FestivalEvent; onClick: () => void }) {
+  const [imgErr, setImgErr] = useState(false);
   return (
-    <Card padding="md">
-      <div className={styles.ttHeader}>
-        <div>
-          <p className={styles.ttName}>{tt.name}</p>
-          {tt.description && <p className={styles.ttDesc}>{tt.description}</p>}
+    <div className={styles.itemCard} onClick={onClick} role="button" tabIndex={0}
+         onKeyDown={e => e.key === 'Enter' && onClick()}>
+      <div className={styles.itemCardPhoto}>
+        {!imgErr ? (
+          <img
+            src={`/api/files/FESTIVAL_EVENT/${ev.id}`}
+            alt={ev.name}
+            onError={() => setImgErr(true)}
+          />
+        ) : (
+          <div className={styles.itemCardPhotoFallback}>
+            <Trophy size={28} />
+          </div>
+        )}
+      </div>
+      <div className={styles.itemCardBody}>
+        <div className={styles.itemCardBadges}>
+          <Badge status="info">{TYPE_LABEL[ev.type] ?? ev.type}</Badge>
+          <Badge status={ev.format === 'TEAM' ? 'pending' : 'active'}>
+            {ev.format === 'TEAM'
+              ? `Командное${ev.teamSize ? ` · до ${ev.teamSize}` : ''}`
+              : 'Одиночное'}
+          </Badge>
         </div>
-        <div className={styles.ttPrice}>
-          {tt.price === 0 ? 'Бесплатно' : `${tt.price.toLocaleString('ru-RU')} ₽`}
+        <p className={styles.itemCardName}>{ev.name}</p>
+        {ev.description && <p className={styles.itemCardDesc}>{ev.description}</p>}
+        <div className={styles.itemCardMeta}>
+          {ev.startTime && <span><Clock size={11} />{fmtTime(ev.startTime)}</span>}
+          {ev.approximateDuration && <span>~{ev.approximateDuration} мин</span>}
+          {ev.maxParticipants ? <span><Users size={11} />до {ev.maxParticipants}</span> : null}
+          {ev.companyName && <span><Building2 size={11} />{ev.companyName}</span>}
         </div>
       </div>
-      <div className={styles.ttFooter}>
-        <span className={styles.ttRemaining}>Осталось: {tt.remaining}</span>
-        <Button size="sm" disabled={tt.remaining === 0} onClick={() => onBuy(tt.id)}>
-          {tt.remaining === 0 ? 'Распродано' : 'Купить'}
-        </Button>
-      </div>
-    </Card>
+      <ChevronRight size={14} className={styles.itemCardArrow} />
+    </div>
   );
 }
+
+// ── Stand card (vertical grid) ───────────────────────────────────────────────
+
+function StandCard({ st, onClick }: { st: Stand; onClick: () => void }) {
+  const [imgErr, setImgErr] = useState(false);
+  return (
+    <div className={styles.itemCard} onClick={onClick} role="button" tabIndex={0}
+         onKeyDown={e => e.key === 'Enter' && onClick()}>
+      <div className={styles.itemCardPhoto}>
+        {!imgErr ? (
+          <img
+            src={`/api/files/FESTIVAL_STAND/${st.id}`}
+            alt={st.name}
+            onError={() => setImgErr(true)}
+          />
+        ) : (
+          <div className={styles.itemCardPhotoFallback}>
+            <Store size={28} />
+          </div>
+        )}
+      </div>
+      <div className={styles.itemCardBody}>
+        <div className={styles.itemCardBadges}>
+          <Badge status={st.type === 'COMMERCIAL' ? 'active' : 'info'}>
+            {st.type === 'COMMERCIAL' ? 'Коммерческий' : 'Демонстрационный'}
+          </Badge>
+        </div>
+        <p className={styles.itemCardName}>{st.name}</p>
+        {st.companyName && <p className={styles.itemCardCompany}>{st.companyName}</p>}
+        {st.description && <p className={styles.itemCardDesc}>{st.description}</p>}
+      </div>
+      <ChevronRight size={14} className={styles.itemCardArrow} />
+    </div>
+  );
+}
+
+// ── main page ─────────────────────────────────────────────────────────────────
 
 export default function FestivalPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const qc = useQueryClient();
-  const { accessToken } = useAuthStore();
-  const [tab, setTab] = useState('overview');
-  const [buyConfirm, setBuyConfirm] = useState<string | null>(null);
-  const [blacklistModal, setBlacklistModal] = useState(false);
-  const [blacklistInfo, setBlacklistInfo] = useState<{ reason?: string; until?: string } | null>(null);
+  const { accessToken, role } = useAuthStore();
+
+  const [activeDay, setActiveDay] = useState<string>('');
+  const [activeSection, setActiveSection] = useState<'events' | 'stands'>('events');
+  const [buyModal, setBuyModal] = useState(false);
+  const [selectedTicketId, setSelectedTicketId] = useState<string | null>(null);
+  const [buySuccess, setBuySuccess] = useState(false);
 
   const { data: festival, isLoading } = useQuery({
     queryKey: ['festival', id],
@@ -58,192 +163,298 @@ export default function FestivalPage() {
     enabled: !!id,
   });
 
-  const { data: festivalEvents = [] } = useQuery({
+  const { data: festivalEvents = [], isLoading: eventsLoading } = useQuery({
     queryKey: ['festival-events', id],
     queryFn: () => eventApi.getEventsByFestival(id!),
-    enabled: !!id && tab === 'events',
+    enabled: !!id && !!festival,
   });
 
   const { data: festivalStands = [] } = useQuery({
     queryKey: ['festival-stands', id],
     queryFn: () => eventApi.getStandsByFestival(id!),
-    enabled: !!id && tab === 'stands',
+    enabled: !!id && !!festival,
   });
+
+  const { data: blacklistStatus } = useQuery({
+    queryKey: ['my-blacklist'],
+    queryFn: userApi.checkBlacklist,
+    enabled: !!accessToken && (role === 'USER' || role === 'CURATOR'),
+  });
+
+  const isBlacklisted = blacklistStatus?.inBlacklist ?? false;
+  const canPay = !!accessToken && (role === 'USER' || role === 'CURATOR') && !isBlacklisted;
+  const payDisabledReason = !accessToken
+    ? 'Необходимо войти в аккаунт'
+    : role === 'ADMIN' || role === 'COMPANY'
+    ? 'Покупка билетов недоступна для компаний и администраторов'
+    : isBlacklisted
+    ? `Вы в чёрном списке${blacklistStatus?.until ? ` до ${fmtDateLong(blacklistStatus.until)}` : ''}`
+    : null;
+
+  const days = useMemo(() => {
+    if (!festival) return [];
+    return getDays(festival.startDate, festival.endDate);
+  }, [festival]);
+
+  useEffect(() => {
+    if (days.length > 0 && !activeDay) setActiveDay(days[0]);
+  }, [days, activeDay]);
+
+  const isFirstDay = activeDay === days[0];
+
+  const eventsForDay = useMemo(
+    () => sortByTime(festivalEvents.filter(ev => {
+      if (!ev.startDate || !days.includes(ev.startDate)) return isFirstDay;
+      return ev.startDate === activeDay;
+    })),
+    [festivalEvents, activeDay, isFirstDay, days],
+  );
+
+  const standsForDay = useMemo(
+    () => festivalStands.filter(st => {
+      if (!st.startDate || !days.includes(st.startDate)) return isFirstDay;
+      return st.startDate === activeDay;
+    }),
+    [festivalStands, activeDay, isFirstDay, days],
+  );
+
+  const eventCountsByDay = useMemo(() => {
+    const counts: Record<string, number> = {};
+    const firstDay = days[0];
+    festivalEvents.forEach(ev => {
+      const day = (ev.startDate && days.includes(ev.startDate)) ? ev.startDate : firstDay;
+      if (day) counts[day] = (counts[day] || 0) + 1;
+    });
+    return counts;
+  }, [festivalEvents, days]);
+
+  const selectedTicket = festival?.ticketTypes.find(t => t.id === selectedTicketId);
 
   const buyMutation = useMutation({
     mutationFn: (ticketTypeId: string) => festivalApi.buyTicket(ticketTypeId),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['festival', id] });
       qc.invalidateQueries({ queryKey: ['my-tickets'] });
-      setBuyConfirm(null);
-      navigate('/tickets');
+      setBuySuccess(true);
     },
   });
 
-  const handleBuyClick = async (ticketTypeId: string) => {
-    if (!accessToken) { navigate('/auth/login'); return; }
-    try {
-      const bl = await userApi.checkBlacklist();
-      if (bl.inBlacklist) {
-        setBlacklistInfo(bl);
-        setBlacklistModal(true);
-        return;
-      }
-    } catch { /* ignore */ }
-    setBuyConfirm(ticketTypeId);
+  const closeBuyModal = () => {
+    setBuyModal(false);
+    setSelectedTicketId(null);
+    setBuySuccess(false);
   };
 
   if (isLoading) return <Layout><Spinner centered /></Layout>;
   if (!festival) return <Layout><p style={{ color: 'var(--text-muted)' }}>Фестиваль не найден</p></Layout>;
 
-  const eventTabs = [
-    { key: 'overview',  label: 'Обзор' },
-    { key: 'events',    label: 'Мероприятия' },
-    { key: 'stands',    label: 'Стенды' },
-    { key: 'tickets',   label: 'Билеты' },
-  ];
+  const hasTickets = festival.ticketTypes.length > 0;
+  const locationStr = [festival.cityName, festival.platformName].filter(Boolean).join(' · ');
 
   return (
-    <Layout noFooter={false}>
-      {/* Hero */}
+    <Layout>
+      {/* ── Hero ── */}
       <div className={styles.hero}>
-        {festival.coverUrl && (
-          <div className={styles.heroBg}>
-            <img src={festival.coverUrl} alt={festival.name} />
-          </div>
+        {festival.coverUrl ? (
+          <div className={styles.heroBg}><img src={festival.coverUrl} alt={festival.name} /></div>
+        ) : (
+          <div className={styles.heroBgGradient} />
         )}
         <div className={styles.heroOverlay} />
+
         <div className={styles.heroContent}>
-          <Badge status="info">{festival.ageRating}+</Badge>
-          <h1 className={styles.heroTitle}>{festival.name}</h1>
-          <div className={styles.heroMeta}>
-            <span><MapPin size={14} /> {festival.cityName}{festival.platformName ? ` · ${festival.platformName}` : ''}</span>
-            <span><Calendar size={14} /> {formatDate(festival.startDate)} — {formatDate(festival.endDate)}</span>
+          <div className={styles.heroTop}>
+            <Badge status="info">{festival.ageRating}+</Badge>
+            {festival.status === 'APPROVED' && <Badge status="active">Опубликован</Badge>}
           </div>
+
+          <h1 className={styles.heroTitle}>{festival.name}</h1>
+
+          <div className={styles.heroMeta}>
+            {locationStr && (
+              <div className={styles.heroMetaItem}>
+                <MapPin size={14} />
+                <span>{locationStr}</span>
+                {festival.address && <span className={styles.heroMetaAddress}>· {festival.address}</span>}
+              </div>
+            )}
+            <div className={styles.heroMetaItem}>
+              <Calendar size={14} />
+              <span>{fmtDateLong(festival.startDate)} — {fmtDateLong(festival.endDate)}</span>
+            </div>
+          </div>
+
           {festival.companies.length > 0 && (
             <div className={styles.heroOrgs}>
               {festival.companies.map(c => (
                 <div key={c.id} className={styles.orgChip}>
-                  {c.logoUrl ? <img src={c.logoUrl} alt={c.fullName} className={styles.orgLogo} /> : null}
-                  <span>{c.fullName}</span>
+                  {c.logoUrl && <img src={c.logoUrl} alt={c.brandName ?? c.fullName} className={styles.orgLogo} />}
+                  <span>{c.brandName || c.fullName}</span>
                 </div>
               ))}
+            </div>
+          )}
+
+          {hasTickets && (
+            <div className={styles.heroBuyBtn}>
+              <Button onClick={() => setBuyModal(true)} size="lg">
+                <Ticket size={16} /> Купить билет
+              </Button>
             </div>
           )}
         </div>
       </div>
 
-      <Tabs tabs={eventTabs} activeKey={tab} onChange={setTab} className={styles.pageTabs} />
+      {/* ── Description ── */}
+      {festival.description && <p className={styles.desc}>{festival.description}</p>}
 
-      <div className={styles.tabContent}>
-        {tab === 'overview' && (
-          <div className={styles.overview}>
-            {festival.description && <p className={styles.desc}>{festival.description}</p>}
-            {festival.platformName && (
-              <Card padding="md">
-                <p className={styles.overviewLabel}>Площадка</p>
-                <p>{festival.platformName}</p>
-              </Card>
-            )}
-          </div>
-        )}
+      {/* ── Day tabs (full-width, equal) ── */}
+      {days.length > 0 && (
+        <div className={styles.dayTabs}>
+          {days.map((day, i) => (
+            <button
+              key={day}
+              className={[styles.dayTab, activeDay === day ? styles.dayTabActive : ''].join(' ')}
+              onClick={() => setActiveDay(day)}
+            >
+              <span className={styles.dayTabNum}>День {i + 1}</span>
+              <span className={styles.dayTabDate}>{fmtDayFull(day)}</span>
+              {(eventCountsByDay[day] ?? 0) > 0 && (
+                <span className={styles.dayTabBadge}>{eventCountsByDay[day]}</span>
+              )}
+            </button>
+          ))}
+        </div>
+      )}
 
-        {tab === 'events' && (
-          <div>
-            <h2 className={styles.sectionTitle}>Мероприятия</h2>
-            {festivalEvents.length === 0 ? (
-              <div className={styles.emptySection}>
-                <Trophy size={32} style={{ color: 'var(--text-muted)' }} />
-                <p style={{ color: 'var(--text-muted)' }}>Мероприятия не добавлены</p>
-              </div>
-            ) : (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-                {festivalEvents.map(ev => (
-                  <Card key={ev.id} padding="md" hoverable onClick={() => navigate(`/events/${ev.id}`)}>
-                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
-                      <div>
-                        <p style={{ fontFamily: 'var(--font-heading)', fontWeight: 700, fontSize: 16 }}>{ev.name}</p>
-                        {ev.description && <p style={{ fontSize: 13, color: 'var(--text-muted)', marginTop: 4 }}>{ev.description}</p>}
-                      </div>
-                      <div style={{ display: 'flex', gap: 6, flexShrink: 0 }}>
-                        <Badge status="info">{ev.type}</Badge>
-                        <Badge status={ev.format === 'TEAM' ? 'pending' : 'info'}>{ev.format === 'TEAM' ? 'Командное' : 'Соло'}</Badge>
-                      </div>
-                    </div>
-                  </Card>
-                ))}
-              </div>
-            )}
-          </div>
-        )}
-
-        {tab === 'stands' && (
-          <div>
-            <h2 className={styles.sectionTitle}>Стенды</h2>
-            {festivalStands.length === 0 ? (
-              <div className={styles.emptySection}>
-                <Store size={32} style={{ color: 'var(--text-muted)' }} />
-                <p style={{ color: 'var(--text-muted)' }}>Стенды не добавлены</p>
-              </div>
-            ) : (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-                {festivalStands.map(st => (
-                  <Card key={st.id} padding="md">
-                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
-                      <div>
-                        <p style={{ fontFamily: 'var(--font-heading)', fontWeight: 700, fontSize: 16 }}>{st.name}</p>
-                        {st.description && <p style={{ fontSize: 13, color: 'var(--text-muted)', marginTop: 4 }}>{st.description}</p>}
-                      </div>
-                      <Badge status="info">{st.type === 'TRADE' ? 'Торговый' : 'Демо'}</Badge>
-                    </div>
-                  </Card>
-                ))}
-              </div>
-            )}
-          </div>
-        )}
-
-        {tab === 'tickets' && (
-          <div>
-            <h2 className={styles.sectionTitle}>Типы билетов</h2>
-            {festival.ticketTypes.length === 0
-              ? <p style={{ color: 'var(--text-muted)' }}>Билеты пока не добавлены</p>
-              : (
-                <div className={styles.ticketsGrid}>
-                  {festival.ticketTypes.map(tt => (
-                    <TicketTypeCard key={tt.id} tt={tt} onBuy={handleBuyClick} />
-                  ))}
-                </div>
-              )
-            }
-          </div>
-        )}
+      {/* ── Section tabs: Мероприятия / Стенды ── */}
+      <div className={styles.sectionTabs}>
+        <button
+          className={[styles.sectionTab, activeSection === 'events' ? styles.sectionTabActive : ''].join(' ')}
+          onClick={() => setActiveSection('events')}
+        >
+          <Trophy size={14} />
+          Мероприятия
+          {eventsForDay.length > 0 && (
+            <span className={styles.sectionTabCount}>{eventsForDay.length}</span>
+          )}
+        </button>
+        <button
+          className={[styles.sectionTab, activeSection === 'stands' ? styles.sectionTabActive : ''].join(' ')}
+          onClick={() => setActiveSection('stands')}
+        >
+          <Store size={14} />
+          Стенды
+          {standsForDay.length > 0 && (
+            <span className={styles.sectionTabCount}>{standsForDay.length}</span>
+          )}
+        </button>
       </div>
 
-      {/* Buy confirm modal */}
-      <Modal open={!!buyConfirm} onClose={() => setBuyConfirm(null)} title="Подтверждение покупки" size="sm">
-        <div className={styles.confirmModal}>
-          <p>Вы уверены, что хотите купить билет?</p>
-          <div className={styles.confirmActions}>
-            <Button variant="secondary" onClick={() => setBuyConfirm(null)}>Отмена</Button>
-            <Button loading={buyMutation.isPending} onClick={() => buyConfirm && buyMutation.mutate(buyConfirm)}>
-              Купить
+      {/* ── Content ── */}
+      <section className={styles.contentSection}>
+        {activeSection === 'events' ? (
+          eventsLoading ? (
+            <Spinner />
+          ) : eventsForDay.length === 0 ? (
+            <p className={styles.emptyHint}>Мероприятия не запланированы на этот день</p>
+          ) : (
+            <div className={styles.itemGrid}>
+              {eventsForDay.map(ev => (
+                <EventCard key={ev.id} ev={ev} onClick={() => navigate(`/event/${ev.id}`)} />
+              ))}
+            </div>
+          )
+        ) : (
+          standsForDay.length === 0 ? (
+            <p className={styles.emptyHint}>Стенды не запланированы на этот день</p>
+          ) : (
+            <div className={styles.itemGrid}>
+              {standsForDay.map(st => (
+                <StandCard
+                  key={st.id}
+                  st={st}
+                  onClick={() =>
+                    navigate(`/stand/${st.id}`, {
+                      state: { stand: st, festivalName: festival.name, festivalId: id },
+                    })
+                  }
+                />
+              ))}
+            </div>
+          )
+        )}
+      </section>
+
+      {/* ── Buy ticket modal ── */}
+      <Modal open={buyModal} onClose={closeBuyModal} title="Купить билет">
+        {buySuccess ? (
+          <div className={styles.successState}>
+            <CheckCircle size={52} className={styles.successIcon} />
+            <p className={styles.successTitle}>Билет успешно оформлен!</p>
+            <p className={styles.successSub}>Билет добавлен в раздел «Мои билеты»</p>
+            <div className={styles.successActions}>
+              <Button onClick={() => { closeBuyModal(); navigate('/tickets'); }}>Мои билеты</Button>
+              <Button variant="secondary" onClick={closeBuyModal}>Закрыть</Button>
+            </div>
+          </div>
+        ) : (
+          <div className={styles.buyBody}>
+            <div className={styles.buyPeriod}>
+              <Calendar size={13} />
+              {fmtDateLong(festival.startDate)} — {fmtDateLong(festival.endDate)}
+            </div>
+
+            <p className={styles.buyLabel}>Тип билета</p>
+            <div className={styles.ticketChoices}>
+              {festival.ticketTypes.map(tt => (
+                <div
+                  key={tt.id}
+                  className={[
+                    styles.ticketChoice,
+                    selectedTicketId === tt.id ? styles.ticketChoiceActive : '',
+                    tt.remaining === 0 ? styles.ticketChoiceSoldOut : '',
+                  ].join(' ')}
+                  onClick={() => tt.remaining !== 0 && setSelectedTicketId(tt.id)}
+                >
+                  <div className={styles.ticketChoiceInfo}>
+                    <p className={styles.ticketChoiceName}>{tt.name}</p>
+                    {tt.description && <p className={styles.ticketChoiceDesc}>{tt.description}</p>}
+                    {tt.remaining === 0 && <p className={styles.soldOutLabel}>Распродано</p>}
+                  </div>
+                  <span className={styles.ticketChoicePrice}>
+                    {tt.price === 0 ? 'Бесплатно' : `${tt.price.toLocaleString('ru-RU')} ₽`}
+                  </span>
+                </div>
+              ))}
+            </div>
+
+            <div className={styles.buyTotal}>
+              Итого:{' '}
+              <strong>
+                {selectedTicket
+                  ? selectedTicket.price === 0 ? 'Бесплатно' : `${selectedTicket.price.toLocaleString('ru-RU')} ₽`
+                  : '—'}
+              </strong>
+            </div>
+
+            {payDisabledReason && (
+              <div className={styles.payDisabledNotice}>
+                <AlertCircle size={14} />
+                {payDisabledReason}
+              </div>
+            )}
+
+            <Button
+              fullWidth
+              loading={buyMutation.isPending}
+              disabled={!canPay || !selectedTicketId}
+              onClick={() => selectedTicketId && buyMutation.mutate(selectedTicketId)}
+            >
+              Оплатить
             </Button>
           </div>
-        </div>
-      </Modal>
-
-      {/* Blacklist modal */}
-      <Modal open={blacklistModal} onClose={() => setBlacklistModal(false)} title="Доступ ограничен" size="sm">
-        <div className={styles.confirmModal}>
-          <AlertCircle size={32} style={{ color: 'var(--accent-danger)', margin: '0 auto' }} />
-          <p style={{ textAlign: 'center' }}>
-            Вы в чёрном списке
-            {blacklistInfo?.until ? ` до ${formatDate(blacklistInfo.until)}` : ''}.
-          </p>
-          {blacklistInfo?.reason && <p style={{ color: 'var(--text-muted)', textAlign: 'center', fontSize: 13 }}>Причина: {blacklistInfo.reason}</p>}
-          <Button fullWidth onClick={() => setBlacklistModal(false)}>Понятно</Button>
-        </div>
+        )}
       </Modal>
     </Layout>
   );

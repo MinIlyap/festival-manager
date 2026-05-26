@@ -1,0 +1,137 @@
+.backBtn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  font-size: 14px;
+  margin-bottom: 24px;
+  padding: 0;
+  transition: color 0.15s;
+}
+
+.backBtn:hover {
+  color: var(--text-primary);
+}
+
+.photoWrapper {
+  width: 100%;
+  max-height: 400px;
+  border-radius: var(--radius-xl);
+  overflow: hidden;
+  margin-bottom: 32px;
+  background: var(--bg-elevated);
+}
+
+.photo {
+  width: 100%;
+  height: 400px;
+  object-fit: cover;
+  display: block;
+}
+
+.header {
+  margin-bottom: 28px;
+}
+
+.title {
+  font-family: var(--font-display);
+  font-size: 36px;
+  margin-top: 12px;
+  margin-bottom: 8px;
+  line-height: 1.2;
+}
+
+.company {
+  font-size: 15px;
+  color: var(--text-secondary);
+  margin-bottom: 4px;
+}
+
+.festivalRef {
+  font-size: 13px;
+  color: var(--text-muted);
+}
+
+.descCard {
+  margin-bottom: 32px;
+  max-width: 720px;
+}
+
+.descLabel {
+  font-family: var(--font-heading);
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  margin-bottom: 8px;
+}
+
+.descText {
+  font-size: 15px;
+  color: var(--text-secondary);
+  line-height: 1.7;
+}
+
+.productsSection {
+  margin-top: 8px;
+}
+
+.sectionTitle {
+  font-family: var(--font-heading);
+  font-size: 20px;
+  font-weight: 700;
+  margin-bottom: 16px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.productsGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 12px;
+}
+
+.productName {
+  font-family: var(--font-heading);
+  font-size: 15px;
+  font-weight: 700;
+  margin-bottom: 6px;
+}
+
+.productDesc {
+  font-size: 13px;
+  color: var(--text-muted);
+  margin-bottom: 10px;
+  line-height: 1.5;
+}
+
+.productFooter {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-top: 10px;
+  border-top: 1px solid var(--border-subtle);
+  margin-top: auto;
+}
+
+.productPrice {
+  font-family: var(--font-mono);
+  font-size: 17px;
+  font-weight: 700;
+  color: var(--accent-primary);
+}
+
+.productQty {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.emptyText {
+  color: var(--text-muted);
+  font-size: 14px;
+}

@@ -88,8 +88,14 @@ public class FestivalController {
         return ResponseEntity.ok(festivalService.searchCompanyByTin(tin));
     }
 
+    @GetMapping("/{festivalLocationId}/organizers")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<List<FestivalOrganizerDto>> getOrganizersPublic(@PathVariable Long festivalLocationId) {
+        return ResponseEntity.ok(festivalService.getOrganizers(festivalLocationId));
+    }
+
     @GetMapping("/company/{id}")
-    @PreAuthorize("hasRole('COMPANY')")
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<CompanyDto> getCompanyById(@PathVariable Long id) {
         return ResponseEntity.ok(festivalService.getCompanyById(id));
     }

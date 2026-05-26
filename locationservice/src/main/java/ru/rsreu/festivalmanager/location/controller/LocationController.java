@@ -44,6 +44,12 @@ public class LocationController {
         return ResponseEntity.ok(locationService.addCity(request));
     }
 
+    @GetMapping("/platform-instance/{id}")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<PlatformInstanceResponse> getPlatformById(@PathVariable Long id) {
+        return ResponseEntity.ok(locationService.getPlatformInstanceById(id));
+    }
+
     @GetMapping("/platform-instance/check/{id}")
     @PreAuthorize("hasRole('INTERNAL')")
     public ResponseEntity<Boolean> checkPlatformExists(@PathVariable Long id) {

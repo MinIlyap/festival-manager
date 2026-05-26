@@ -61,6 +61,7 @@ export interface Festival {
   cityName: string;
   platformId?: string;
   platformName?: string;
+  address?: string;
   startDate: string;
   timeStart?: string;
   endDate: string;
@@ -88,7 +89,7 @@ export interface FestivalEvent {
   festivalId: string;
   festivalName: string;
   name: string;
-  type: 'TOURNAMENT' | 'QUEST' | 'MASTERCLASS' | 'DEMO';
+  type: 'TOURNAMENT' | 'QUEST' | 'MASTER_CLASS' | 'DEMONSTRATION' | 'MASTERCLASS' | 'DEMO';
   description?: string;
   format: 'SOLO' | 'TEAM';
   maxParticipants?: number;

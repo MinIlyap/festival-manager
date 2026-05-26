@@ -14,6 +14,7 @@ import YandexCallbackPage from './pages/auth/YandexCallbackPage';
 import HomePage from './pages/home/HomePage';
 import FestivalPage from './pages/festival/FestivalPage';
 import EventDetailPage from './pages/event/EventDetailPage';
+import StandPage from './pages/stand/StandPage';
 
 // Shared authenticated
 import NotificationsPage from './pages/notifications/NotificationsPage';
@@ -82,6 +83,7 @@ export default function App() {
           <Route path="/home" element={<HomePage />} />
           <Route path="/festival/:id" element={<FestivalPage />} />
           <Route path="/event/:id" element={<EventDetailPage />} />
+          <Route path="/stand/:id" element={<StandPage />} />
           <Route path="/notifications" element={<NotificationsPage />} />
         </Route>
 

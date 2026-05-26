@@ -52,6 +52,9 @@ interface RawFestivalResponse {
   age_rating?: number;
   age_limit_id?: number;
   max_people_number?: number;
+  city_name?: string;
+  platform_name?: string;
+  address?: string;
 }
 
 interface RawTicketResponse {
@@ -83,7 +86,9 @@ function mapFestival(f: RawFestivalResponse): Festival {
     name: f.name,
     description: f.description,
     cityId: '',
-    cityName: '',
+    cityName: f.city_name ?? '',
+    platformName: f.platform_name,
+    address: f.address,
     startDate: f.date_start,
     timeStart: f.time_start,
     endDate: f.date_end,
@@ -166,12 +171,13 @@ export const festivalApi = {
       last: true,
     } as Page<Festival>)),
 
-  // GET /festival/{id} + GET /ticket/instances/by-festival/{id} in parallel
+  // GET /festival/{id} + tickets + organizers in parallel
   getById: (id: string) =>
     Promise.all([
       api.get<RawFestivalResponse>(`/festival/${id}`),
       api.get<RawTicketTypeInstanceResponse[]>(`/ticket/instances/by-festival/${id}`).catch(() => ({ data: [] as RawTicketTypeInstanceResponse[] })),
-    ]).then(([festivalRes, ticketsRes]) => {
+      api.get<FestivalOrganizer[]>(`/festival/${id}/organizers`).catch(() => ({ data: [] as FestivalOrganizer[] })),
+    ]).then(([festivalRes, ticketsRes, organizersRes]) => {
       const festival = mapFestival(festivalRes.data);
       festival.ticketTypes = (ticketsRes.data ?? []).map(t => ({
         id: String(t.id),
@@ -180,6 +186,14 @@ export const festivalApi = {
         price: Number(t.price) || 0,
         quantity: 0,
         remaining: 0,
+      }));
+      festival.companies = (organizersRes.data ?? []).map(o => ({
+        id: String(o.company_id),
+        fullName: o.full_name,
+        brandName: o.brand_name,
+        tin: o.tin,
+        email: o.email,
+        active: true,
       }));
       return festival;
     }),

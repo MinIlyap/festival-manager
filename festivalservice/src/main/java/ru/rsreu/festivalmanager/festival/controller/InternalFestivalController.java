@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+import ru.rsreu.festivalmanager.festival.dto.CompanyDto;
 import ru.rsreu.festivalmanager.festival.service.FestivalService;
 import ru.rsreu.festivalmanager.festival.service.TicketService;
 
@@ -35,5 +36,19 @@ public class InternalFestivalController {
             @PathVariable Long festivalLocationId,
             @RequestParam("userId") Long userId) {
         return ResponseEntity.ok(ticketService.hasValidTicket(festivalLocationId, userId));
+    }
+
+    @GetMapping("/{festivalLocationId}/companies/check")
+    @PreAuthorize("hasRole('INTERNAL')")
+    public ResponseEntity<Boolean> isCompanyFestivalOrganizer(
+            @PathVariable Long festivalLocationId,
+            @RequestParam("companyId") Long companyId) {
+        return ResponseEntity.ok(festivalService.isCompanyFestivalOrganizer(festivalLocationId, companyId));
+    }
+
+    @GetMapping("/company/{companyId}")
+    @PreAuthorize("hasRole('INTERNAL')")
+    public ResponseEntity<CompanyDto> getCompanyById(@PathVariable Long companyId) {
+        return ResponseEntity.ok(festivalService.getCompanyById(companyId));
     }
 }

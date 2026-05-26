@@ -100,6 +100,13 @@ public class LocationService {
     }
 
     @Transactional(readOnly = true)
+    public PlatformInstanceResponse getPlatformInstanceById(Long id) {
+        PlatformInstance instance = instanceRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Площадка не найдена: " + id));
+        return mapToInstanceResponse(instance);
+    }
+
+    @Transactional(readOnly = true)
     public List<Long> getPlatformIdsByCity(Long cityId) {
         return instanceRepository.findPlatformInstanceIdsByCityId(cityId);
     }

@@ -2,6 +2,8 @@ package ru.rsreu.festivalmanager.festival.client;
 
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.*;
+import ru.rsreu.festivalmanager.festival.dto.PlatformInfoDto;
+
 import java.util.List;
 
 @FeignClient(name = "location-service", url = "http://localhost:8087/location")
@@ -12,4 +14,7 @@ public interface LocationServiceClient {
 
     @GetMapping("/platform-instance/check/{id}")
     boolean checkPlatformExists(@RequestHeader("Authorization") String token, @PathVariable Long id);
+
+    @GetMapping("/platform-instance/{id}")
+    PlatformInfoDto getPlatformInstanceById(@RequestHeader("Authorization") String token, @PathVariable Long id);
 }

@@ -8,6 +8,8 @@ import java.time.LocalTime;
 
 @Data
 @Builder
+@lombok.NoArgsConstructor
+@lombok.AllArgsConstructor
 public class FestivalResponse {
     @JsonProperty("festival_location_id")
     private Long festivalLocationId;
@@ -44,4 +46,13 @@ public class FestivalResponse {
 
     @JsonProperty("max_people_number")
     private Integer maxPeopleNumber;
+
+    @JsonProperty("city_name")
+    private String cityName;
+
+    @JsonProperty("platform_name")
+    private String platformName;
+
+    @JsonProperty("address")
+    private String address;
 }

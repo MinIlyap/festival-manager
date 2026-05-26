@@ -73,6 +73,12 @@ public class FestivalEventController {
         return ResponseEntity.ok(userEventProfileService.getEventsForFestival(festivalLocationId, type));
     }
 
+    @GetMapping("/{festivalEventId}")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<FestivalEventResponse> getEventById(@PathVariable Long festivalEventId) {
+        return ResponseEntity.ok(festivalEventService.getEventById(festivalEventId));
+    }
+
     @GetMapping("/search")
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<Page<FestivalEventResponse>> searchFestivalEvents(

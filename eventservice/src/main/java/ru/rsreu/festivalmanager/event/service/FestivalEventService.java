@@ -71,6 +71,15 @@ public class FestivalEventService {
             throw new IllegalStateException("Нельзя редактировать мероприятие: фестиваль уже опубликован");
         }
 
+        Long eventCompanyId = festivalEvent.getEventInstance().getCompanyId();
+        boolean isEventOrganizer = companyId.equals(eventCompanyId);
+        boolean isFestivalOrganizer = Boolean.TRUE.equals(
+                festivalServiceClient.isCompanyFestivalOrganizer(getSystemToken(), festivalEvent.getFestivalLocationId(), companyId)
+        );
+        if (!isEventOrganizer && !isFestivalOrganizer) {
+            throw new IllegalStateException("Редактировать мероприятие может только его компания-организатор или организатор фестиваля");
+        }
+
         if (Boolean.TRUE.equals(request.getIsCommand()) && request.getMaxPeopleCommand() == null) {
             throw new IllegalArgumentException("Для командного мероприятия нужно указать лимит людей в команде");
         }
@@ -103,6 +112,15 @@ public class FestivalEventService {
             throw new IllegalStateException(
                     "Нельзя открепить мероприятие: фестиваль уже опубликован и доступен пользователям!"
             );
+        }
+
+        Long eventCompanyId = festivalEvent.getEventInstance().getCompanyId();
+        boolean isEventOrganizer = companyId.equals(eventCompanyId);
+        boolean isFestivalOrganizer = Boolean.TRUE.equals(
+                festivalServiceClient.isCompanyFestivalOrganizer(getSystemToken(), festivalEvent.getFestivalLocationId(), companyId)
+        );
+        if (!isEventOrganizer && !isFestivalOrganizer) {
+            throw new IllegalStateException("Удалить мероприятие может только его компания-организатор или организатор фестиваля");
         }
 
         festivalEventRepository.delete(festivalEvent);
@@ -163,6 +181,25 @@ public class FestivalEventService {
                 .build();
 
         return festivalEventRepository.save(festivalEvent).getId();
+    }
+
+    @Transactional(readOnly = true)
+    public FestivalEventResponse getEventById(Long festivalEventId) {
+        FestivalEvent festivalEvent = festivalEventRepository.findById(festivalEventId)
+                .orElseThrow(() -> new IllegalArgumentException("Мероприятие не найдено"));
+        FestivalEventResponse response = mapToResponse(festivalEvent);
+        if (festivalEvent.getEventInstance().getCompanyId() != null) {
+            try {
+                ru.rsreu.festivalmanager.event.dto.CompanyBriefDto company =
+                        festivalServiceClient.getCompanyById(getSystemToken(), festivalEvent.getEventInstance().getCompanyId());
+                if (company != null) {
+                    response.setCompanyBrandName(
+                            company.getBrandName() != null ? company.getBrandName() : company.getFullName()
+                    );
+                }
+            } catch (Exception ignored) {}
+        }
+        return response;
     }
 
     @Transactional(readOnly = true)

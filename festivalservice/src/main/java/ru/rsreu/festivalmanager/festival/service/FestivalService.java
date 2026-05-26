@@ -341,6 +341,12 @@ public class FestivalService {
     }
 
     @Transactional(readOnly = true)
+    public Boolean isCompanyFestivalOrganizer(Long festivalLocationId, Long companyId) {
+        return festivalCompanyRepository
+                .existsByFestivalCompanyId_FestivalLocationIdAndFestivalCompanyId_CompanyId(festivalLocationId, companyId);
+    }
+
+    @Transactional(readOnly = true)
     public Boolean hasAccessForFestival(String entityType, Long entityId, Long companyId) {
         if ("FESTIVAL_LOCATION".equals(entityType)) {
             return festivalCompanyRepository
@@ -560,6 +566,24 @@ public class FestivalService {
             } catch (NumberFormatException ignored) {
             }
         }
+
+        String cityName = null;
+        String platformName = null;
+        String address = null;
+        if (location.getPlatformInstanceId() != null) {
+            try {
+                ru.rsreu.festivalmanager.festival.dto.PlatformInfoDto info =
+                        locationClient.getPlatformInstanceById(getSystemToken(), location.getPlatformInstanceId());
+                if (info != null) {
+                    platformName = info.getPlatformName();
+                    if (info.getCity() != null) cityName = info.getCity().getName();
+                    if (info.getStreet() != null) {
+                        address = info.getStreet() + (info.getHouse() != null ? ", " + info.getHouse() : "");
+                    }
+                }
+            } catch (Exception ignored) {}
+        }
+
         return FestivalResponse.builder()
                 .festivalLocationId(location.getId())
                 .name(instance.getFestival().getName())
@@ -573,6 +597,9 @@ public class FestivalService {
                 .ageRating(ageRating)
                 .ageLimitId(instance.getAgeLimit() != null ? instance.getAgeLimit().getId() : null)
                 .maxPeopleNumber(instance.getMaxPeopleNumber())
+                .cityName(cityName)
+                .platformName(platformName)
+                .address(address)
                 .build();
     }
 }

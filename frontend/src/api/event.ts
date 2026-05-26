@@ -27,6 +27,7 @@ interface RawFestivalEventResponse {
   maxNumberPeople?: number;
   maxPeopleCommand?: number;
   organizerCompanyId?: number;
+  companyBrandName?: string;
   createdAt: string;
 }
 
@@ -53,6 +54,7 @@ function mapEvent(e: RawFestivalEventResponse): FestivalEvent {
     approximateDuration: e.approximateDuration,
     endDate: e.dateStart,
     organizerCompanyId: e.organizerCompanyId,
+    companyName: e.companyBrandName,
     rewards: [],
   };
 }
@@ -165,9 +167,21 @@ export const eventApi = {
     api.get<RawFestivalEventResponse[]>(`/events/festival/${festivalLocationId}`)
       .then(r => r.data.map(mapEvent)),
 
-  // No general GET /events/{id} in backend — try search fallback
   getEventById: (id: string) =>
-    api.get<RawFestivalEventResponse>(`/events/${id}`).then(r => mapEvent(r.data)),
+    Promise.all([
+      api.get<RawFestivalEventResponse>(`/events/${id}`),
+      api.get<EventReward[]>(`/events/rewards/by-event/${id}`).catch(() => ({ data: [] as EventReward[] })),
+    ]).then(([eventRes, rewardsRes]) => {
+      const event = mapEvent(eventRes.data);
+      event.rewards = (rewardsRes.data ?? []).map(r => ({
+        id: String(r.eventRewardId),
+        name: r.rewardName,
+        description: r.description,
+        place: r.place ?? 0,
+        eventId: id,
+      }));
+      return event;
+    }),
 
   // POST /events — COMPANY creates festival event
   createEvent: (data: CreateEventPayload) =>
