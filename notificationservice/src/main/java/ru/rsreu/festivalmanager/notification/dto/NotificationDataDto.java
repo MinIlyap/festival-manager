@@ -24,6 +24,9 @@ public class NotificationDataDto {
     @JsonProperty("festival_name")
     private String festivalName;
 
+    @JsonProperty("application_id")
+    private Long applicationId;
+
     @JsonProperty("comment")
     private String comment;
 

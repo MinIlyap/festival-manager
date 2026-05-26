@@ -1,9 +1,9 @@
 import { useState, useMemo, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import {
   MapPin, Calendar, Trophy, Store, Ticket, AlertCircle,
-  Clock, Users, ChevronRight, CheckCircle, Building2,
+  Clock, Users, ChevronRight, CheckCircle, Building2, Check, X,
 } from 'lucide-react';
 import Layout from '../../components/layout/Layout';
 import Badge from '../../components/ui/Badge';
@@ -13,6 +13,7 @@ import Spinner from '../../components/ui/Spinner';
 import { festivalApi } from '../../api/festival';
 import { eventApi } from '../../api/event';
 import { userApi } from '../../api/user';
+import { applicationApi } from '../../api/application';
 import { useAuthStore } from '../../store/authStore';
 import type { FestivalEvent, Stand } from '../../types';
 import styles from './FestivalPage.module.css';
@@ -148,14 +149,21 @@ function StandCard({ st, onClick }: { st: Stand; onClick: () => void }) {
 export default function FestivalPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const qc = useQueryClient();
   const { accessToken, role } = useAuthStore();
+
+  const adminReviewAppId = searchParams.get('adminReview');
+  const isAdminReview = role === 'ADMIN' && !!adminReviewAppId;
 
   const [activeDay, setActiveDay] = useState<string>('');
   const [activeSection, setActiveSection] = useState<'events' | 'stands'>('events');
   const [buyModal, setBuyModal] = useState(false);
   const [selectedTicketId, setSelectedTicketId] = useState<string | null>(null);
   const [buySuccess, setBuySuccess] = useState(false);
+  const [hasCover, setHasCover] = useState(true);
+  const [rejectModal, setRejectModal] = useState(false);
+  const [rejectReason, setRejectReason] = useState('');
 
   const { data: festival, isLoading } = useQuery({
     queryKey: ['festival', id],
@@ -239,6 +247,22 @@ export default function FestivalPage() {
     },
   });
 
+  const approveMutation = useMutation({
+    mutationFn: () => applicationApi.approve(adminReviewAppId!),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['admin-applications'] });
+      navigate('/admin/applications');
+    },
+  });
+
+  const rejectMutation = useMutation({
+    mutationFn: () => applicationApi.reject(adminReviewAppId!, rejectReason),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['admin-applications'] });
+      navigate('/admin/applications');
+    },
+  });
+
   const closeBuyModal = () => {
     setBuyModal(false);
     setSelectedTicketId(null);
@@ -253,10 +277,34 @@ export default function FestivalPage() {
 
   return (
     <Layout>
+      {/* ── Admin review bar ── */}
+      {isAdminReview && (
+        <div className={styles.adminReviewBar}>
+          <div className={styles.adminReviewBarInfo}>
+            <span className={styles.adminReviewBarTitle}>Заявка на утверждение фестиваля</span>
+            <span className={styles.adminReviewBarSub}>Заявка #{adminReviewAppId} · {festival.name}</span>
+          </div>
+          <div className={styles.adminReviewBarActions}>
+            <Button variant="danger" onClick={() => setRejectModal(true)}>
+              <X size={16} /> Отклонить
+            </Button>
+            <Button loading={approveMutation.isPending} onClick={() => approveMutation.mutate()}>
+              <Check size={16} /> Одобрить
+            </Button>
+          </div>
+        </div>
+      )}
+
       {/* ── Hero ── */}
       <div className={styles.hero}>
-        {festival.coverUrl ? (
-          <div className={styles.heroBg}><img src={festival.coverUrl} alt={festival.name} /></div>
+        {hasCover ? (
+          <div className={styles.heroBg}>
+            <img
+              src={`/api/files/FESTIVAL_LOCATION/${festival.id}`}
+              alt={festival.name}
+              onError={() => setHasCover(false)}
+            />
+          </div>
         ) : (
           <div className={styles.heroBgGradient} />
         )}
@@ -275,7 +323,11 @@ export default function FestivalPage() {
               <div className={styles.heroMetaItem}>
                 <MapPin size={14} />
                 <span>{locationStr}</span>
-                {festival.address && <span className={styles.heroMetaAddress}>· {festival.address}</span>}
+              </div>
+            )}
+            {festival.address && (
+              <div className={`${styles.heroMetaItem} ${styles.heroMetaIndented}`}>
+                <span className={styles.heroMetaAddress}>{festival.address}</span>
               </div>
             )}
             <div className={styles.heroMetaItem}>
@@ -317,11 +369,8 @@ export default function FestivalPage() {
               className={[styles.dayTab, activeDay === day ? styles.dayTabActive : ''].join(' ')}
               onClick={() => setActiveDay(day)}
             >
-              <span className={styles.dayTabNum}>День {i + 1}</span>
               <span className={styles.dayTabDate}>{fmtDayFull(day)}</span>
-              {(eventCountsByDay[day] ?? 0) > 0 && (
-                <span className={styles.dayTabBadge}>{eventCountsByDay[day]}</span>
-              )}
+              <span className={styles.dayTabNum}>День {i + 1}</span>
             </button>
           ))}
         </div>
@@ -385,6 +434,29 @@ export default function FestivalPage() {
           )
         )}
       </section>
+
+      {/* ── Admin reject modal ── */}
+      <Modal open={rejectModal} onClose={() => setRejectModal(false)} title="Причина отказа" size="sm">
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+          <textarea
+            value={rejectReason}
+            onChange={e => setRejectReason(e.target.value)}
+            placeholder="Укажите причину отказа..."
+            rows={4}
+          />
+          <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
+            <Button variant="secondary" onClick={() => setRejectModal(false)}>Отмена</Button>
+            <Button
+              variant="danger"
+              disabled={!rejectReason.trim()}
+              loading={rejectMutation.isPending}
+              onClick={() => rejectMutation.mutate()}
+            >
+              Отклонить
+            </Button>
+          </div>
+        </div>
+      </Modal>
 
       {/* ── Buy ticket modal ── */}
       <Modal open={buyModal} onClose={closeBuyModal} title="Купить билет">

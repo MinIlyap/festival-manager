@@ -1,5 +1,7 @@
 package ru.rsreu.festivalmanager.festival.kafka;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.kafka.annotation.KafkaListener;
@@ -13,9 +15,15 @@ import ru.rsreu.festivalmanager.festival.service.FestivalService;
 public class FestivalKafkaListener {
 
     private final FestivalService festivalService;
+    private final ObjectMapper objectMapper;
 
     @KafkaListener(topics = "FESTIVAL_APPLICATION_RESPONSE_TOPIC", groupId = "festival-service-group")
-    public void listenApplicationResponse(FestivalAppResponseMsg message) {
+    public void listenApplicationResponse(String jsonMessage) throws JsonProcessingException {
+        if (jsonMessage.startsWith("\"") && jsonMessage.endsWith("\"")) {
+            jsonMessage = objectMapper.readValue(jsonMessage, String.class);
+        }
+
+        FestivalAppResponseMsg message = objectMapper.readValue(jsonMessage, FestivalAppResponseMsg.class);
         log.info("Получен ответ по фестивалю ID: {}", message.getFestivalLocationId());
 
         festivalService.processApplicationResponse(

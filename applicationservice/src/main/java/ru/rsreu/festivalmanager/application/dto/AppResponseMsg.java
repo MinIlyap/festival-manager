@@ -24,6 +24,9 @@ public class AppResponseMsg {
     @JsonProperty("company_id")
     private Long companyId;
 
+    @JsonProperty("target_user")
+    private Long targetUser;
+
     @JsonProperty("status")
     private String status;
 

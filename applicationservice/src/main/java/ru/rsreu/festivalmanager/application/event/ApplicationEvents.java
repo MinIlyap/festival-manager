@@ -11,6 +11,7 @@ public class ApplicationEvents {
             String comment,
             Long companyId,
             Long festivalLocationId,
+            Long senderId,
             OffsetDateTime updatedAt
     ) {}
 
@@ -18,6 +19,7 @@ public class ApplicationEvents {
             Long agentId,
             String type,
             Long entityId,
+            Long applicationId,
             OffsetDateTime updatedAt
     ) {}
 }

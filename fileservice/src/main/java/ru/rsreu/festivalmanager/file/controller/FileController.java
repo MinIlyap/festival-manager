@@ -1,7 +1,7 @@
 package ru.rsreu.festivalmanager.file.controller;
 
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -29,8 +29,12 @@ public class FileController {
 
     @GetMapping(value = "/avatar/{userId}", produces = MediaType.APPLICATION_OCTET_STREAM_VALUE)
     public ResponseEntity<byte[]> getAvatar(@PathVariable Long userId) {
-        byte[] fileBytes = fileService.downloadFile(EntityType.USER_AVATAR, userId);
-        return ResponseEntity.ok(fileBytes);
+        try {
+            byte[] fileBytes = fileService.downloadFile(EntityType.USER_AVATAR, userId);
+            return ResponseEntity.ok(fileBytes);
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+        }
     }
 
     @PreAuthorize("isAuthenticated()")
@@ -56,9 +60,12 @@ public class FileController {
     public ResponseEntity<byte[]> getEntityImage(
             @PathVariable EntityType entityType,
             @PathVariable Long entityId) {
-
-        byte[] fileBytes = fileService.downloadFile(entityType, entityId);
-        return ResponseEntity.ok(fileBytes);
+        try {
+            byte[] fileBytes = fileService.downloadFile(entityType, entityId);
+            return ResponseEntity.ok(fileBytes);
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+        }
     }
 
     @PreAuthorize("hasAnyAuthority('COMPANY', 'ADMIN')")

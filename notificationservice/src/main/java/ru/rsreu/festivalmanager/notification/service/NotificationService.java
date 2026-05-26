@@ -11,6 +11,9 @@ import ru.rsreu.festivalmanager.notification.entity.*;
 import ru.rsreu.festivalmanager.notification.repository.NotificationRepository;
 import ru.rsreu.festivalmanager.common.util.CryptoUtil;
 
+import java.util.List;
+import java.util.Map;
+
 @Slf4j
 @Service
 @RequiredArgsConstructor
@@ -18,6 +21,14 @@ public class NotificationService {
     private final NotificationRepository notificationRepository;
     private final EmailService emailService;
     private final CryptoUtil cryptoUtil;
+
+    private static final Map<String, List<NotificationType>> ROLE_TYPES = Map.of(
+        "ROLE_COMPANY",  List.of(NotificationType.APPROVING_COMPANY, NotificationType.REJECTING_COMPANY,
+                                  NotificationType.APPROVING_FESTIVAL, NotificationType.REJECTING_FESTIVAL),
+        "ROLE_ADMIN",    List.of(NotificationType.RESUBMITTING_APPLICATION),
+        "ROLE_USER",     List.of(NotificationType.INVITING_TEAM),
+        "ROLE_CURATOR",  List.of(NotificationType.INVITING_TEAM)
+    );
 
     @Transactional
     public void processCompanyResult(CompanyResultMsg msg) {
@@ -100,20 +111,24 @@ public class NotificationService {
         notification.setCreatedAt(msg.getUpdatedAt());
 
         NotificationData data = new NotificationData();
-        data.setApplicationId(msg.getEntityId());
+        data.setApplicationId(msg.getApplicationId());
+        if ("FESTIVAL_APPLICATION".equals(msg.getType())) {
+            data.setFestivalLocationId(msg.getEntityId());
+        }
 
         notification.setData(data);
         notificationRepository.save(notification);
     }
 
     @Transactional(readOnly = true)
-    public Page<NotificationResponse> getUserNotifications(Long userId, Boolean isRead, Pageable pageable) {
+    public Page<NotificationResponse> getUserNotifications(Long userId, String role, Boolean isRead, Pageable pageable) {
+        List<NotificationType> types = ROLE_TYPES.getOrDefault(role, List.of());
         Page<Notification> notifications;
 
         if (isRead == null) {
-            notifications = notificationRepository.findAllByTargetUserId(userId, pageable);
+            notifications = notificationRepository.findAllByTargetUserIdAndNotificationTypeIn(userId, types, pageable);
         } else {
-            notifications = notificationRepository.findAllByTargetUserIdAndIsRead(userId, isRead, pageable);
+            notifications = notificationRepository.findAllByTargetUserIdAndIsReadAndNotificationTypeIn(userId, isRead, types, pageable);
         }
 
         return notifications.map(this::mapToResponse);
@@ -137,8 +152,9 @@ public class NotificationService {
     }
 
     @Transactional(readOnly = true)
-    public long getUnreadCount(Long userId) {
-        return notificationRepository.countByTargetUserIdAndIsRead(userId, false);
+    public long getUnreadCount(Long userId, String role) {
+        List<NotificationType> types = ROLE_TYPES.getOrDefault(role, List.of());
+        return notificationRepository.countByTargetUserIdAndIsReadAndNotificationTypeIn(userId, false, types);
     }
 
     @Transactional
@@ -165,6 +181,7 @@ public class NotificationService {
                     .companyId(data.getCompanyId())
                     .companyEmail(data.getCompanyEmail())
                     .festivalLocationId(data.getFestivalLocationId())
+                    .applicationId(data.getApplicationId())
                     .comment(data.getComment())
                     .eventId(data.getEventId())
                     .eventName(data.getEventName())

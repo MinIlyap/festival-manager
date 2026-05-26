@@ -198,7 +198,7 @@
 
 .switchBtnActive {
   background: var(--accent-primary);
-  color: #0D0F14;
+  color: #fff;
 }
 
 /* Collapsible section */

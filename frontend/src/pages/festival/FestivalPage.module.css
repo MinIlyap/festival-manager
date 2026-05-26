@@ -1,3 +1,42 @@
+/* ── Admin review bar ────────────────────────────────────────────────────── */
+
+.adminReviewBar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  background: color-mix(in srgb, var(--accent-warn) 8%, var(--bg-surface));
+  border: 1.5px solid color-mix(in srgb, var(--accent-warn) 35%, transparent);
+  border-radius: var(--radius-md);
+  padding: 14px 20px;
+  margin-bottom: var(--space-xl);
+  flex-wrap: wrap;
+}
+
+.adminReviewBarInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.adminReviewBarTitle {
+  font-family: var(--font-heading);
+  font-weight: 700;
+  font-size: 15px;
+  color: var(--text-primary);
+}
+
+.adminReviewBarSub {
+  font-size: 13px;
+  color: var(--text-muted);
+}
+
+.adminReviewBarActions {
+  display: flex;
+  gap: 10px;
+  flex-shrink: 0;
+}
+
 /* ── Hero ──────────────────────────────────────────────────────────────────── */
 
 .hero {
@@ -25,7 +64,7 @@
 .heroBgGradient {
   position: absolute;
   inset: 0;
-  background: linear-gradient(135deg, #1a1f2e 0%, #0d0f14 100%);
+  background: linear-gradient(135deg, #2a3050 0%, #1a1f2e 100%);
 }
 
 .heroOverlay {
@@ -67,8 +106,8 @@
 
 .heroMeta {
   display: flex;
-  flex-wrap: wrap;
-  gap: 16px;
+  flex-direction: column;
+  gap: 5px;
 }
 
 .heroMetaItem {
@@ -79,8 +118,12 @@
   color: rgba(255, 255, 255, 0.65);
 }
 
+.heroMetaIndented {
+  padding-left: 20px;
+}
+
 .heroMetaAddress {
-  color: rgba(255, 255, 255, 0.4);
+  color: rgba(255, 255, 255, 0.5);
 }
 
 .heroOrgs {
@@ -147,7 +190,7 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 12px 8px;
+  padding: 10px 8px;
   background: var(--bg-elevated);
   border: none;
   border-right: 1px solid var(--border-default);
@@ -155,7 +198,7 @@
   cursor: pointer;
   font-family: var(--font-heading);
   transition: background 0.15s, color 0.15s;
-  gap: 3px;
+  gap: 2px;
 }
 
 .dayTab:last-child {
@@ -172,36 +215,21 @@
   color: #fff;
 }
 
+.dayTabDate {
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1.3;
+}
+
 .dayTabNum {
-  font-size: 10px;
-  font-weight: 700;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1.3;
   opacity: 0.6;
 }
 
 .dayTabActive .dayTabNum {
-  opacity: 0.8;
-}
-
-.dayTabDate {
-  font-size: 13px;
-  font-weight: 600;
-}
-
-.dayTabBadge {
-  font-size: 10px;
-  font-weight: 700;
-  background: rgba(255, 255, 255, 0.25);
-  border-radius: 100px;
-  padding: 1px 6px;
-  line-height: 1.5;
-  margin-top: 2px;
-}
-
-.dayTab:not(.dayTabActive) .dayTabBadge {
-  background: color-mix(in srgb, var(--accent-primary) 18%, transparent);
-  color: var(--accent-primary);
+  opacity: 0.75;
 }
 
 /* ── Section tabs: Мероприятия / Стенды ──────────────────────────────────── */
@@ -240,11 +268,11 @@
 }
 
 .sectionTabCount {
-  background: rgba(255, 255, 255, 0.22);
-  font-size: 11px;
+  background: rgba(255, 255, 255, 0.25);
+  font-size: 13px;
   font-weight: 700;
   border-radius: 100px;
-  padding: 1px 7px;
+  padding: 2px 9px;
   line-height: 1.5;
 }
 
@@ -285,7 +313,7 @@
 .itemCard:hover {
   border-color: var(--accent-primary);
   transform: translateY(-2px);
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
+  box-shadow: var(--shadow-md);
 }
 
 .itemCardPhoto {

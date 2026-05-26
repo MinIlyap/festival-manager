@@ -28,6 +28,7 @@ public class ApplicationKafkaProducer {
                 .updatedAt(event.updatedAt())
                 .companyId(event.companyId())
                 .festivalLocationId(event.festivalLocationId())
+                .targetUser(event.type() == ApplicationType.FESTIVAL_APPLICATION ? event.senderId() : null)
                 .build();
 
         String topic = event.type() == ApplicationType.COMPANY_APPLICATION
@@ -54,6 +55,7 @@ public class ApplicationKafkaProducer {
                 .agentId(event.agentId())
                 .type(event.type())
                 .entityId(event.entityId())
+                .applicationId(event.applicationId())
                 .updatedAt(event.updatedAt())
                 .build();
 

@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
 import { Plus, Trophy } from 'lucide-react';
@@ -8,17 +9,100 @@ import Button from '../../components/ui/Button';
 import EmptyState from '../../components/ui/EmptyState';
 import Spinner from '../../components/ui/Spinner';
 import { festivalApi } from '../../api/festival';
+import { applicationApi } from '../../api/application';
+import type { Festival, Application } from '../../types';
 import styles from './CompanyPages.module.css';
 
-const statusLabel: Record<string, string> = { DRAFT: 'Черновик', PENDING: 'На рассмотрении', APPROVED: 'Одобрен', REJECTED: 'Отклонён' };
-const statusBadge: Record<string, 'draft' | 'pending' | 'approved' | 'rejected'> = { DRAFT: 'draft', PENDING: 'pending', APPROVED: 'approved', REJECTED: 'rejected' };
+type EffectiveStatus = 'DRAFT' | 'PENDING' | 'REJECTED' | 'APPROVED';
+
+function getEffectiveStatus(festival: Festival, apps: Application[]): { status: EffectiveStatus; app: Application | undefined } {
+  const app = apps.find(
+    a => a.applicationType === 'FESTIVAL_APPLICATION' && String(a.data?.festivalLocationId) === String(festival.id)
+  );
+  if (!app) return { status: 'DRAFT', app: undefined };
+  return { status: app.applicationStatus as EffectiveStatus, app };
+}
+
+function FestivalCard({ festival, apps }: { festival: Festival; apps: Application[] }) {
+  const navigate = useNavigate();
+  const [imgErr, setImgErr] = useState(false);
+
+  const { status, app } = getEffectiveStatus(festival, apps);
+
+  const badgeStatus: Record<EffectiveStatus, 'draft' | 'pending' | 'rejected' | 'approved'> = {
+    DRAFT: 'draft', PENDING: 'pending', REJECTED: 'rejected', APPROVED: 'approved',
+  };
+  const badgeLabel: Record<EffectiveStatus, string> = {
+    DRAFT: 'Черновик', PENDING: 'На рассмотрении', REJECTED: 'Отклонена', APPROVED: 'Опубликован',
+  };
+
+  return (
+    <Card hoverable={false} padding="none">
+      <div className={styles.festCover}>
+        {!imgErr
+          ? <img src={`/api/files/FESTIVAL_LOCATION/${festival.id}`} alt={festival.name} onError={() => setImgErr(true)} />
+          : <div className={styles.festCoverPlaceholder}><Trophy size={28} /></div>
+        }
+        {status !== 'APPROVED' && (
+          <Badge status={badgeStatus[status]} className={styles.statusBadge}>{badgeLabel[status]}</Badge>
+        )}
+        {status === 'APPROVED' && (
+          <Badge status="approved" className={styles.statusBadge}>Опубликован</Badge>
+        )}
+      </div>
+
+      <div className={styles.festBody}>
+        <h3 className={styles.festName}>{festival.name}</h3>
+        <p className={styles.festDate}>{festival.startDate?.split('-').reverse().join('.')} — {festival.endDate?.split('-').reverse().join('.')}</p>
+
+        {status === 'REJECTED' && app?.data?.comment && (
+          <details style={{ marginTop: 6 }}>
+            <summary style={{ fontSize: 12, color: 'var(--accent-danger)', cursor: 'pointer', userSelect: 'none' }}>
+              Причина отказа
+            </summary>
+            <p style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 4, lineHeight: 1.5 }}>
+              {app.data.comment}
+            </p>
+          </details>
+        )}
+
+        <div className={styles.festActions} style={{ marginTop: 8 }}>
+          <Button variant="secondary" size="sm" onClick={() => navigate(`/festival/${festival.id}`)}>
+            Просмотреть
+          </Button>
+
+          {status !== 'APPROVED' && (
+            <Button size="sm" onClick={() => navigate(`/company/festivals/${festival.id}/edit`)}>
+              Редактировать
+            </Button>
+          )}
+
+          {status === 'APPROVED' && (
+            <Button size="sm" onClick={() => navigate(`/company/festivals/${festival.id}/edit`)}>
+              Управление
+            </Button>
+          )}
+
+          </div>
+      </div>
+    </Card>
+  );
+}
 
 export default function CompanyFestivalsPage() {
   const navigate = useNavigate();
-  const { data: festivals, isLoading } = useQuery({
+
+  const { data: festivals, isLoading: festivalsLoading } = useQuery({
     queryKey: ['my-company-festivals'],
     queryFn: festivalApi.myCompanyFestivals,
   });
+
+  const { data: applications = [], isLoading: appsLoading } = useQuery({
+    queryKey: ['my-applications'],
+    queryFn: applicationApi.myApplications,
+  });
+
+  const isLoading = festivalsLoading || appsLoading;
 
   return (
     <Layout>
@@ -28,25 +112,12 @@ export default function CompanyFestivalsPage() {
       </div>
 
       {isLoading ? <Spinner centered /> :
-       !festivals?.length ? <EmptyState icon={Trophy} message="Нет фестивалей" action={{ label: 'Создать первый', onClick: () => navigate('/company/festivals/new') }} /> : (
+       !festivals?.length ? (
+         <EmptyState icon={Trophy} message="Нет фестивалей" action={{ label: 'Создать первый', onClick: () => navigate('/company/festivals/new') }} />
+       ) : (
         <div className={styles.grid}>
           {festivals.map(f => (
-            <Card key={f.id} hoverable padding="none">
-              <div className={styles.festCover}>
-                {f.coverUrl ? <img src={f.coverUrl} alt={f.name} /> : <div className={styles.festCoverPlaceholder}><Trophy size={28} /></div>}
-                <Badge status={statusBadge[f.status] ?? 'info'} className={styles.statusBadge}>{statusLabel[f.status]}</Badge>
-              </div>
-              <div className={styles.festBody}>
-                <h3 className={styles.festName}>{f.name}</h3>
-                <p className={styles.festDate}>{f.startDate?.split('-').reverse().join('.')} — {f.endDate?.split('-').reverse().join('.')}</p>
-                <div className={styles.festActions}>
-                  <Button variant="secondary" size="sm" onClick={() => navigate(`/festival/${f.id}`)}>Просмотреть</Button>
-                  <Button size="sm" onClick={() => navigate(`/company/festivals/${f.id}/edit`)}>
-                    {f.status === 'APPROVED' ? 'Управление' : 'Редактировать'}
-                  </Button>
-                </div>
-              </div>
-            </Card>
+            <FestivalCard key={f.id} festival={f} apps={applications} />
           ))}
         </div>
       )}

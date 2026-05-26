@@ -31,11 +31,12 @@ function formatDate(d: string) {
 
 function FestivalCard({ festival }: { festival: Festival }) {
   const navigate = useNavigate();
+  const [imgErr, setImgErr] = useState(false);
   return (
     <Card hoverable padding="none" onClick={() => navigate(`/festival/${festival.id}`)}>
       <div className={styles.cardCover}>
-        {festival.coverUrl
-          ? <img src={festival.coverUrl} alt={festival.name} />
+        {!imgErr
+          ? <img src={`/api/files/FESTIVAL_LOCATION/${festival.id}`} alt={festival.name} onError={() => setImgErr(true)} />
           : <div className={styles.cardCoverPlaceholder}><Trophy size={32} /></div>
         }
         <Badge status="info" className={styles.ageBadge}>{festival.ageRating}+</Badge>
@@ -43,7 +44,13 @@ function FestivalCard({ festival }: { festival: Festival }) {
       <div className={styles.cardBody}>
         <h3 className={styles.cardTitle}>{festival.name}</h3>
         <div className={styles.cardMeta}>
-          <span><MapPin size={12} /> {festival.cityName}{festival.platformName ? ` · ${festival.platformName}` : ''}</span>
+          <span>
+            <MapPin size={12} />
+            {festival.cityName}{festival.platformName ? ` · ${festival.platformName}` : ''}
+          </span>
+          {festival.address && (
+            <span className={styles.cardMetaIndent}>{festival.address}</span>
+          )}
           <span><Calendar size={12} /> {formatDate(festival.startDate)} — {formatDate(festival.endDate)}</span>
         </div>
         <Button variant="secondary" size="sm" fullWidth onClick={e => { e.stopPropagation(); navigate(`/festival/${festival.id}`); }}>
@@ -325,9 +332,9 @@ function StandsTab() {
 }
 
 const TABS = [
-  { key: 'festivals', label: '🎪 Фестивали' },
-  { key: 'events',    label: '🎮 Мероприятия' },
-  { key: 'stands',    label: '🪄 Стенды' },
+  { key: 'festivals', label: 'Фестивали' },
+  { key: 'events',    label: 'Мероприятия' },
+  { key: 'stands',    label: 'Стенды' },
 ];
 
 export default function HomePage() {

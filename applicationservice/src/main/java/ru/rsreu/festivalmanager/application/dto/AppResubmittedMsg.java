@@ -21,6 +21,9 @@ public class AppResubmittedMsg {
     @JsonProperty("entityId")
     private Long entityId;
 
+    @JsonProperty("application_id")
+    private Long applicationId;
+
     @JsonProperty("updated_at")
     @JsonSerialize(using = OffsetDateTimeSerializer.class)
     @JsonDeserialize(using = CustomOffsetDateTimeDeserializer.class)

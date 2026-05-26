@@ -83,6 +83,7 @@ public class ApplicationService {
                     application.getAgentId(),
                     application.getApplicationType().name(),
                     entityId,
+                    application.getId(),
                     application.getUpdatedAt()
             ));
             return;
@@ -120,6 +121,7 @@ public class ApplicationService {
                 application.getData().getComment(),
                 application.getData().getCompanyId(),
                 application.getData().getFestivalLocationId(),
+                application.getSenderId(),
                 application.getUpdatedAt()
         ));
     }

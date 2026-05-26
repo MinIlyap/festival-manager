@@ -1,7 +1,7 @@
 .page { display: grid; grid-template-columns: 240px 1fr; gap: var(--space-xl); align-items: start; }
 .sidebar { display: flex; flex-direction: column; align-items: center; gap: var(--space-md); background: var(--bg-surface); border: 1px solid var(--border-subtle); border-radius: var(--radius-lg); padding: var(--space-xl); }
 .avatarWrap { position: relative; }
-.avatarEdit { position: absolute; bottom: 0; right: 0; width: 28px; height: 28px; background: var(--accent-primary); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #0D0F14; cursor: pointer; border: 2px solid var(--bg-surface); }
+.avatarEdit { position: absolute; bottom: 0; right: 0; width: 28px; height: 28px; background: var(--accent-primary); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #fff; cursor: pointer; border: 2px solid var(--bg-surface); }
 .avatarDelete { position: absolute; bottom: 0; right: 32px; width: 28px; height: 28px; background: var(--accent-danger); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #fff; cursor: pointer; border: 2px solid var(--bg-surface); }
 .nickname { font-family: var(--font-heading); font-size: 18px; font-weight: 800; }
 .cityLabel { font-size: 13px; color: var(--text-muted); }

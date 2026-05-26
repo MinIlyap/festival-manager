@@ -1,8 +1,10 @@
 package ru.rsreu.festivalmanager.event.controller;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+import ru.rsreu.festivalmanager.event.client.FestivalServiceClient;
 import ru.rsreu.festivalmanager.event.repository.*;
 
 @RestController
@@ -13,6 +15,24 @@ public class EventAccessController {
     private final FestivalEventRepository festivalEventRepository;
     private final FestivalStandRepository festivalStandRepository;
     private final EventRewardRepository eventRewardRepository;
+    private final FestivalServiceClient festivalServiceClient;
+
+    @Value("${internal.system-token}")
+    private String systemToken;
+
+    private String getSystemToken() {
+        return "Bearer " + systemToken;
+    }
+
+    private boolean isFestivalOrganizer(Long festivalLocationId, Long companyId) {
+        try {
+            return Boolean.TRUE.equals(
+                    festivalServiceClient.isCompanyFestivalOrganizer(getSystemToken(), festivalLocationId, companyId)
+            );
+        } catch (Exception e) {
+            return false;
+        }
+    }
 
     @PreAuthorize("hasRole('INTERNAL')")
     @GetMapping("/{entityType}/{entityId}")
@@ -23,13 +43,23 @@ public class EventAccessController {
 
         return switch (entityType) {
             case "FESTIVAL_EVENT" -> festivalEventRepository.findById(entityId)
-                    .map(event -> event.getEventInstance().getCompanyId().equals(companyId))
+                    .map(event -> {
+                        if (event.getEventInstance().getCompanyId().equals(companyId)) return true;
+                        return isFestivalOrganizer(event.getFestivalLocationId(), companyId);
+                    })
                     .orElse(false);
             case "FESTIVAL_STAND" -> festivalStandRepository.findById(entityId)
-                    .map(stand -> stand.getStandInstance().getCompanyId().equals(companyId))
+                    .map(stand -> {
+                        if (stand.getStandInstance().getCompanyId().equals(companyId)) return true;
+                        return isFestivalOrganizer(stand.getFestivalLocationId(), companyId);
+                    })
                     .orElse(false);
             case "EVENT_REWARD" -> eventRewardRepository.findById(entityId)
-                    .map(reward -> reward.getFestivalEvent().getEventInstance().getCompanyId().equals(companyId))
+                    .map(reward -> {
+                        Long festivalLocationId = reward.getFestivalEvent().getFestivalLocationId();
+                        if (reward.getFestivalEvent().getEventInstance().getCompanyId().equals(companyId)) return true;
+                        return isFestivalOrganizer(festivalLocationId, companyId);
+                    })
                     .orElse(false);
             default -> false;
         };

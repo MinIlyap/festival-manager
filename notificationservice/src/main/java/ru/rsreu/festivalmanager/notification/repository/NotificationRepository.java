@@ -11,11 +11,11 @@ import ru.rsreu.festivalmanager.notification.entity.Notification;
 
 @Repository
 public interface NotificationRepository extends JpaRepository<Notification, Long> {
-    Page<Notification> findAllByTargetUserId(Long targetUserId, Pageable pageable);
+    Page<Notification> findAllByTargetUserIdAndNotificationTypeIn(Long targetUserId, java.util.List<ru.rsreu.festivalmanager.notification.entity.NotificationType> types, Pageable pageable);
 
-    Page<Notification> findAllByTargetUserIdAndIsRead(Long targetUserId, Boolean isRead, Pageable pageable);
+    Page<Notification> findAllByTargetUserIdAndIsReadAndNotificationTypeIn(Long targetUserId, Boolean isRead, java.util.List<ru.rsreu.festivalmanager.notification.entity.NotificationType> types, Pageable pageable);
 
-    long countByTargetUserIdAndIsRead(Long targetUserId, boolean isRead);
+    long countByTargetUserIdAndIsReadAndNotificationTypeIn(Long targetUserId, boolean isRead, java.util.List<ru.rsreu.festivalmanager.notification.entity.NotificationType> types);
 
     @Modifying
     @Query("UPDATE Notification n SET n.isRead = true WHERE n.targetUserId = :userId AND n.isRead = false")

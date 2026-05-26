@@ -8,6 +8,7 @@ import EmptyState from '../../components/ui/EmptyState';
 import { notificationApi } from '../../api/notification';
 import { useNotificationStore } from '../../store/notificationStore';
 import { eventApi } from '../../api/event';
+import { festivalApi } from '../../api/festival';
 import type { Notification, NotificationType } from '../../types';
 import styles from './NotificationsPage.module.css';
 
@@ -29,18 +30,28 @@ const titleMap: Record<NotificationType, string> = {
   RESUBMITTING_APPLICATION: 'Повторная заявка на рассмотрение',
 };
 
-function renderMessage(n: Notification): React.ReactNode {
+function FestivalLink({ id, to }: { id: number; to?: string }) {
+  const { data } = useQuery({
+    queryKey: ['festival', id],
+    queryFn: () => festivalApi.getById(String(id)),
+    staleTime: 5 * 60 * 1000,
+  });
+  return (
+    <Link to={to ?? `/festival/${id}`} className={styles.link}>
+      «{data?.name ?? `#${id}`}»
+    </Link>
+  );
+}
+
+
+function NotificationMessage({ n }: { n: Notification }) {
   const d = n.data;
   switch (n.type) {
     case 'APPROVING_FESTIVAL':
       return (
         <>
-          Ваша заявка на создание фестиваля{' '}
-          {d?.festivalLocationId ? (
-            <Link to={`/festival/${d.festivalLocationId}`} className={styles.link}>
-              «{d.festivalName || `#${d.festivalLocationId}`}»
-            </Link>
-          ) : null}{' '}
+          Ваша заявка на утверждение фестиваля{' '}
+          {d?.festivalLocationId ? <FestivalLink id={d.festivalLocationId} /> : null}{' '}
           была одобрена
         </>
       );
@@ -48,12 +59,8 @@ function renderMessage(n: Notification): React.ReactNode {
     case 'REJECTING_FESTIVAL':
       return (
         <>
-          Ваша заявка на создание фестиваля{' '}
-          {d?.festivalLocationId ? (
-            <Link to={`/festival/${d.festivalLocationId}`} className={styles.link}>
-              «{d.festivalName || `#${d.festivalLocationId}`}»
-            </Link>
-          ) : null}{' '}
+          Ваша заявка на утверждение фестиваля{' '}
+          {d?.festivalLocationId ? <FestivalLink id={d.festivalLocationId} /> : null}{' '}
           была отклонена{d?.comment ? `. Причина: ${d.comment}` : ''}
         </>
       );
@@ -91,21 +98,18 @@ function renderMessage(n: Notification): React.ReactNode {
     case 'RESUBMITTING_APPLICATION':
       return (
         <>
-          Заявка
-          {d?.applicationId ? (
-            <>
-              {' '}
-              <Link to={`/admin/applications/${d.applicationId}`} className={styles.link}>
-                №{d.applicationId}
-              </Link>
-            </>
+          Повторно поступила заявка на рассмотрение фестиваля{' '}
+          {d?.festivalLocationId ? (
+            <FestivalLink
+              id={d.festivalLocationId}
+              to={`/festival/${d.festivalLocationId}${d?.applicationId ? `?adminReview=${d.applicationId}` : ''}`}
+            />
           ) : null}
-          , которую вы ранее рассматривали, была повторно подана на рассмотрение
         </>
       );
 
     default:
-      return 'Новое уведомление';
+      return <>Новое уведомление</>;
   }
 }
 
@@ -178,7 +182,7 @@ export default function NotificationsPage() {
                 </div>
                 <div className={styles.itemContent}>
                   <p className={styles.itemTitle}>{titleMap[n.type] ?? 'Уведомление'}</p>
-                  <p className={styles.itemMsg}>{renderMessage(n)}</p>
+                  <p className={styles.itemMsg}><NotificationMessage n={n} /></p>
                   <p className={styles.itemTime}>{new Date(n.createdAt).toLocaleString('ru-RU')}</p>
                   {n.type === 'INVITING_TEAM' && n.data?.commandId && (
                     <div className={styles.itemActions}>

@@ -6,7 +6,7 @@ export const applicationApi = {
     api.post<Application>('/application/festival-applications', { festivalId }).then(r => r.data),
 
   myApplications: () =>
-    api.get<Application[]>('/application/festival-applications/my').then(r => r.data),
+    api.get<Page<Application>>('/application/my', { params: { size: 100 } }).then(r => r.data.content),
 
   adminList: (params?: { type?: string; status?: string; page?: number; size?: number }) =>
     api.get<Page<Application>>('/application/admin/all', { params }).then(r => r.data),

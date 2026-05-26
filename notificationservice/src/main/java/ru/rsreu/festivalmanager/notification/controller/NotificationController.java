@@ -8,6 +8,7 @@ import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 import ru.rsreu.festivalmanager.notification.dto.NotificationResponse;
 import ru.rsreu.festivalmanager.notification.service.NotificationService;
@@ -25,7 +26,12 @@ public class NotificationController {
             @RequestParam(required = false) Boolean isRead,
             @PageableDefault(size = 20, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable) {
 
-        return ResponseEntity.ok(notificationService.getUserNotifications(userId, isRead, pageable));
+        String role = SecurityContextHolder.getContext().getAuthentication()
+                .getAuthorities().stream()
+                .findFirst()
+                .map(a -> a.getAuthority())
+                .orElse("ROLE_USER");
+        return ResponseEntity.ok(notificationService.getUserNotifications(userId, role, isRead, pageable));
     }
 
     @GetMapping("/{id}")
@@ -57,6 +63,11 @@ public class NotificationController {
     @GetMapping("/unread-count")
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<Long> getUnreadCount(@AuthenticationPrincipal Long userId) {
-        return ResponseEntity.ok(notificationService.getUnreadCount(userId));
+        String role = SecurityContextHolder.getContext().getAuthentication()
+                .getAuthorities().stream()
+                .findFirst()
+                .map(a -> a.getAuthority())
+                .orElse("ROLE_USER");
+        return ResponseEntity.ok(notificationService.getUnreadCount(userId, role));
     }
 }

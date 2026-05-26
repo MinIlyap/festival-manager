@@ -121,6 +121,11 @@
   gap: 4px;
 }
 
+.cardMetaIndent {
+  padding-left: 16px;
+  color: var(--text-muted) !important;
+}
+
 .eventCardHeader {
   display: flex;
   gap: var(--space-sm);

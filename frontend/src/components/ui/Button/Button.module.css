@@ -25,10 +25,10 @@
 /* Variants */
 .primary {
   background: var(--accent-primary);
-  color: #0D0F14;
+  color: #fff;
 }
 .primary:hover:not(:disabled) {
-  background: #f0b545;
+  background: #4338CA;
   box-shadow: 0 0 16px var(--accent-glow);
 }
 
