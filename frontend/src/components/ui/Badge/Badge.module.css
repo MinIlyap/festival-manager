@@ -5,9 +5,10 @@
   border-radius: 100px;
   font-size: 12px;
   font-weight: 600;
-  font-family: var(--font-heading);
+  font-family: var(--font-body);
   white-space: nowrap;
   letter-spacing: 0.02em;
+  font-variant-numeric: lining-nums tabular-nums;
 }
 
 .active   { background: rgba(46, 204, 113, 0.15); color: var(--accent-success); }

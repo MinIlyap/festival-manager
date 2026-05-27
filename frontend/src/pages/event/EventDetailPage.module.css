@@ -201,7 +201,7 @@
 .teamName {
   font-size: 17px;
   font-weight: 700;
-  font-family: var(--font-heading);
+  font-family: var(--font-body);
   color: var(--text-primary);
 }
 
@@ -362,7 +362,7 @@
 
 .teamNameLabel {
   font-weight: 700;
-  font-family: var(--font-heading);
+  font-family: var(--font-body);
   font-size: 15px;
   color: var(--text-primary);
 }

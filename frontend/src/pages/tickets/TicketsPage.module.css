@@ -43,7 +43,7 @@
 }
 
 .ticketFest {
-  font-family: var(--font-heading);
+  font-family: var(--font-body);
   font-size: 16px;
   font-weight: 700;
   color: var(--text-primary);

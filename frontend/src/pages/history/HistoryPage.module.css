@@ -2,5 +2,37 @@
 .content { margin-top: var(--space-lg); }
 .list { display: flex; flex-direction: column; gap: var(--space-sm); }
 .histItem { display: flex; gap: var(--space-md); align-items: center; }
-.histTitle { font-family: var(--font-heading); font-size: 15px; font-weight: 700; }
+.histTitle { font-family: var(--font-body); font-size: 15px; font-weight: 700; }
 .histSub { font-size: 13px; color: var(--text-muted); margin-top: 3px; }
+
+.awardThumb {
+  width: 48px;
+  height: 48px;
+  border-radius: var(--radius-sm);
+  object-fit: cover;
+  flex-shrink: 0;
+  border: 1px solid var(--border-subtle);
+}
+
+.awardEmoji {
+  font-size: 28px;
+  line-height: 1;
+  flex-shrink: 0;
+  width: 48px;
+  text-align: center;
+}
+
+.awardGroups { display: flex; flex-direction: column; gap: var(--space-xl); }
+.awardGroup { display: flex; flex-direction: column; gap: var(--space-sm); }
+.awardGroupHeader {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-family: var(--font-body);
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--text-secondary);
+  padding-bottom: var(--space-sm);
+  border-bottom: 1px solid var(--border-subtle);
+  font-variant-numeric: lining-nums tabular-nums;
+}

@@ -17,9 +17,9 @@ function Logo() {
     <Link to="/home" className={styles.logo}>
       <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
         <circle cx="16" cy="16" r="15" fill="var(--accent-primary)" />
-        <text x="16" y="22" textAnchor="middle" fontFamily="'Bebas Neue', sans-serif" fontSize="18" fill="#fff" fontWeight="bold">F</text>
+        <text x="16" y="22" textAnchor="middle" fontFamily="'Bebas Neue', sans-serif" fontSize="18" fill="#fff" fontWeight="bold">Ф</text>
       </svg>
-      <span className={styles.logoText}>FestivalHub</span>
+      <span className={styles.logoText}>ФестХаб</span>
     </Link>
   );
 }

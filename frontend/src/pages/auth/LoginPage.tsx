@@ -60,9 +60,9 @@ export default function LoginPage() {
           <div className={styles.logoBig}>
             <svg width="64" height="64" viewBox="0 0 32 32" fill="none">
               <circle cx="16" cy="16" r="15" fill="var(--accent-primary)" />
-              <text x="16" y="22" textAnchor="middle" fontFamily="'Bebas Neue', sans-serif" fontSize="18" fill="#fff" fontWeight="bold">F</text>
+              <text x="16" y="22" textAnchor="middle" fontFamily="'Bebas Neue', sans-serif" fontSize="18" fill="#fff" fontWeight="bold">Ф</text>
             </svg>
-            <span className={styles.logoName}>FestivalHub</span>
+            <span className={styles.logoName}>ФестХаб</span>
           </div>
           <h1 className={styles.slogan}>Управляй фестивалями<br />легко и эффективно</h1>
           <p className={styles.sloganSub}>Единая платформа для организаторов, участников и кураторов игровых фестивалей</p>

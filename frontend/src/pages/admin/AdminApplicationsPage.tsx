@@ -56,7 +56,7 @@ function AppRow({ app }: { app: Application }) {
             {isCompany ? <Building2 size={22} /> : <CalendarDays size={22} />}
           </div>
           <div>
-            <p style={{ fontFamily: 'var(--font-heading)', fontWeight: 700, fontSize: 16, color: 'var(--text-primary)' }}>
+            <p style={{ fontFamily: 'var(--font-body)', fontWeight: 700, fontSize: 16, color: 'var(--text-primary)' }}>
               {title}
             </p>
             <p style={{ fontSize: 13, color: 'var(--text-muted)', marginTop: 4 }}>

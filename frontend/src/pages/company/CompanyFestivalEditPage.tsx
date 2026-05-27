@@ -695,7 +695,7 @@ export default function CompanyFestivalEditPage() {
 
                   <div className={styles.field}>
                     <label>Описание</label>
-                    <input value={infoDesc} onChange={e => setInfoDesc(e.target.value)} placeholder="Описание фестиваля" />
+                    <textarea value={infoDesc} onChange={e => setInfoDesc(e.target.value)} placeholder="Описание фестиваля" rows={4} />
                   </div>
 
                   <div className={styles.row}>
@@ -942,7 +942,7 @@ export default function CompanyFestivalEditPage() {
 
                   <div className={styles.field}>
                     <label>Описание *</label>
-                    <input value={newEventDesc} onChange={e => setNewEventDesc(e.target.value)} placeholder="Описание мероприятия" />
+                    <textarea value={newEventDesc} onChange={e => setNewEventDesc(e.target.value)} placeholder="Описание мероприятия" rows={3} />
                   </div>
 
                   <div className={styles.row}>
@@ -1057,7 +1057,7 @@ export default function CompanyFestivalEditPage() {
                           </div>
                           <div className={styles.field}>
                             <label>Описание *</label>
-                            <input value={editEventDesc} onChange={e => setEditEventDesc(e.target.value)} placeholder="Описание мероприятия" />
+                            <textarea value={editEventDesc} onChange={e => setEditEventDesc(e.target.value)} placeholder="Описание мероприятия" rows={3} />
                           </div>
                           <div className={styles.field}>
                             <label>Длительность (мин.)</label>
@@ -1308,7 +1308,7 @@ export default function CompanyFestivalEditPage() {
                     </div>
                     <div className={styles.field}>
                       <label>Описание *</label>
-                      <input value={newStandDesc} onChange={e => setNewStandDesc(e.target.value)} placeholder="Описание стенда" />
+                      <textarea value={newStandDesc} onChange={e => setNewStandDesc(e.target.value)} placeholder="Описание стенда" rows={3} />
                     </div>
                   </div>
 
@@ -1387,7 +1387,7 @@ export default function CompanyFestivalEditPage() {
                           </div>
                           <div className={styles.field}>
                             <label>Описание *</label>
-                            <input value={editStandDesc} onChange={e => setEditStandDesc(e.target.value)} placeholder="Описание стенда" />
+                            <textarea value={editStandDesc} onChange={e => setEditStandDesc(e.target.value)} placeholder="Описание стенда" rows={3} />
                           </div>
 
                           {/* Organizer company search */}
@@ -1508,7 +1508,7 @@ export default function CompanyFestivalEditPage() {
                                       </div>
                                       <div className={styles.field}>
                                         <label>Описание *</label>
-                                        <input value={editProductDesc} onChange={e => setEditProductDesc(e.target.value)} placeholder="Описание товара" />
+                                        <textarea value={editProductDesc} onChange={e => setEditProductDesc(e.target.value)} placeholder="Описание товара" rows={3} />
                                       </div>
                                       <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
                                         <Button size="sm" variant="secondary" onClick={() => setEditingProductId(null)}>Отмена</Button>
@@ -1554,7 +1554,7 @@ export default function CompanyFestivalEditPage() {
                           </div>
                           <div className={styles.field}>
                             <label>Описание *</label>
-                            <input value={productDesc} onChange={e => setProductDesc(e.target.value)} placeholder="Описание товара" />
+                            <textarea value={productDesc} onChange={e => setProductDesc(e.target.value)} placeholder="Описание товара" rows={3} />
                           </div>
                           <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
                             <Button size="sm" loading={addProductMutation.isPending}
@@ -1634,7 +1634,7 @@ export default function CompanyFestivalEditPage() {
                   </div>
                   <div className={styles.field}>
                     <label>Описание *</label>
-                    <input placeholder="Описание типа билета" value={ticketDesc} onChange={e => setTicketDesc(e.target.value)} />
+                    <textarea placeholder="Описание типа билета" value={ticketDesc} onChange={e => setTicketDesc(e.target.value)} rows={3} />
                   </div>
                   <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
                     <Button size="sm" loading={addTicketMutation.isPending}
@@ -1683,7 +1683,7 @@ export default function CompanyFestivalEditPage() {
                             </div>
                             <div className={styles.field}>
                               <label>Описание *</label>
-                              <input value={editTicketDesc} onChange={e => setEditTicketDesc(e.target.value)} placeholder="Описание типа билета" />
+                              <textarea value={editTicketDesc} onChange={e => setEditTicketDesc(e.target.value)} placeholder="Описание типа билета" rows={3} />
                             </div>
                           </div>
                           <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end' }}>

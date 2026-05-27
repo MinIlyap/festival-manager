@@ -45,7 +45,7 @@ export default function CompanyApplicationsPage() {
               <Card key={app.id} hoverable padding="md" onClick={() => navigate(`/festival/${app.festivalId}`)}>
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16 }}>
                   <div>
-                    <p style={{ fontFamily: 'var(--font-heading)', fontWeight: 700, fontSize: 16 }}>{app.festivalName}</p>
+                    <p style={{ fontFamily: 'var(--font-body)', fontWeight: 700, fontSize: 16 }}>{app.festivalName}</p>
                     <p style={{ fontSize: 13, color: 'var(--text-muted)', marginTop: 4 }}>Подано: {new Date(app.createdAt).toLocaleDateString('ru-RU')}</p>
                     {app.rejectReason && (
                       <details style={{ marginTop: 8 }}>

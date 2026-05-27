@@ -197,6 +197,7 @@
   color: var(--text-secondary);
   cursor: pointer;
   font-family: var(--font-heading);
+  font-variant-numeric: lining-nums tabular-nums;
   transition: background 0.15s, color 0.15s;
   gap: 2px;
 }
@@ -253,6 +254,7 @@
   font-size: 14px;
   font-family: var(--font-heading);
   font-weight: 600;
+  font-variant-numeric: lining-nums tabular-nums;
   transition: color 0.15s, background 0.15s, border-color 0.15s;
 }
 
@@ -360,7 +362,7 @@
 }
 
 .itemCardName {
-  font-family: var(--font-heading);
+  font-family: var(--font-body);
   font-size: 15px;
   font-weight: 700;
   color: var(--text-primary);
@@ -533,7 +535,8 @@
   border-right: 1px solid var(--border-default);
   color: var(--text-secondary);
   cursor: pointer;
-  font-family: var(--font-heading);
+  font-family: var(--font-body);
+  font-variant-numeric: lining-nums tabular-nums;
   transition: background 0.15s, color 0.15s;
   gap: 2px;
 }

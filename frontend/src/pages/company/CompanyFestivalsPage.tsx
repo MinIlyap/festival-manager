@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
-import { Plus, Trophy } from 'lucide-react';
+import { Plus, Trophy, BarChart2 } from 'lucide-react';
 import Layout from '../../components/layout/Layout';
 import Card from '../../components/ui/Card';
 import Badge from '../../components/ui/Badge';
@@ -83,7 +83,14 @@ function FestivalCard({ festival, apps }: { festival: Festival; apps: Applicatio
             </Button>
           )}
 
-          </div>
+          <Button
+            variant="secondary"
+            size="sm"
+            onClick={() => navigate(`/company/festivals/${festival.id}/analytics`)}
+          >
+            <BarChart2 size={14} /> Аналитика
+          </Button>
+        </div>
       </div>
     </Card>
   );

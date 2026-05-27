@@ -30,10 +30,11 @@
 }
 
 .logoName {
-  font-family: var(--font-display);
+  font-family: var(--font-heading);
   font-size: 36px;
+  font-weight: 800;
   color: var(--text-primary);
-  letter-spacing: 0.04em;
+  letter-spacing: 0.03em;
 }
 
 .slogan {

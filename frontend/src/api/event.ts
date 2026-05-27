@@ -397,6 +397,20 @@ export const eventApi = {
   myCompanyEvents: () =>
     api.get<RawFestivalEventResponse[]>('/events/my/created').then(r => r.data.map(mapEvent)),
 
+  // GET /events/my/rewards — rewards distributed to the current user
+  myRewards: () =>
+    api.get<Array<{
+      festivalLocationId: number;
+      rewards: Array<{
+        eventRewardId: number;
+        eventName: string;
+        rewardName: string;
+        description?: string;
+        place?: number;
+        pointNumber?: number;
+      }>;
+    }>>('/events/my/rewards').then(r => r.data),
+
   // GET /user/users/search?nickname=xxx — used for invite flow
   searchUserByNickname: (nickname: string) =>
     api.get(`/user/users/search`, { params: { nickname } }).then(r => r.data),

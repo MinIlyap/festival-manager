@@ -32,6 +32,7 @@ import CompanyFestivalEditPage from './pages/company/CompanyFestivalEditPage';
 import CompanyApplicationsPage from './pages/company/CompanyApplicationsPage';
 import CompanyEventsPage from './pages/company/CompanyEventsPage';
 import CompanyAwardDistributionPage from './pages/company/CompanyAwardDistributionPage';
+import CompanyFestivalAnalyticsPage from './pages/company/CompanyFestivalAnalyticsPage';
 
 // ADMIN
 import AdminProfilePage from './pages/admin/AdminProfilePage';
@@ -105,6 +106,7 @@ export default function App() {
           <Route path="/company/applications" element={<CompanyApplicationsPage />} />
           <Route path="/company/events" element={<CompanyEventsPage />} />
           <Route path="/company/events/:eventId/distribute" element={<CompanyAwardDistributionPage />} />
+          <Route path="/company/festivals/:id/analytics" element={<CompanyFestivalAnalyticsPage />} />
         </Route>
 
         {/* ADMIN routes */}

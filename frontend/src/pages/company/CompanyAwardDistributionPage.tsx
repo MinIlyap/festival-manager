@@ -392,7 +392,6 @@ export default function CompanyAwardDistributionPage() {
                           onDragStart={e => { e.stopPropagation(); setDraggingKey(item.key); setDraggingFromSlot(place); }}
                           onDragEnd={() => { setDraggingKey(null); setDraggingFromSlot(null); }}
                         >
-                          <GripVertical size={12} className={styles.grip} />
                           <span>{item.label}</span>
                         </div>
                       ) : (
