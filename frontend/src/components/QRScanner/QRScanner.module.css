@@ -19,3 +19,26 @@
 .scanner canvas {
   display: none !important;
 }
+
+/* ── Error state ─────────────────────────────────────────────────────────── */
+
+.errorState {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  padding: 32px 16px;
+  text-align: center;
+}
+
+.errorIcon {
+  color: var(--text-muted);
+}
+
+.errorText {
+  font-size: 14px;
+  color: var(--text-muted);
+  line-height: 1.5;
+  max-width: 280px;
+  margin: 0;
+}

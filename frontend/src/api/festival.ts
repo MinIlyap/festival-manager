@@ -64,6 +64,7 @@ interface RawTicketResponse {
   ticket_type: string;
   quantity: number;
   final_price: string | number;
+  start_date?: string;
   expiry_date: string;
 }
 
@@ -111,7 +112,7 @@ function mapTicket(t: RawTicketResponse, status: 'ACTIVE' | 'EXPIRED'): Ticket {
     festivalName: t.festival_name,
     ticketTypeName: t.ticket_type,
     price: Number(t.final_price) || 0,
-    startDate: '',
+    startDate: t.start_date ?? '',
     endDate: t.expiry_date,
     number: `TKT-${t.ticket_id}`,
     status,
@@ -344,6 +345,23 @@ export const festivalApi = {
   // GET /festival/{id} — lightweight name lookup (via public endpoint)
   getFestivalName: (festivalLocationId: string) =>
     api.get<{ name: string }>(`/festival/${festivalLocationId}`).then(r => r.data.name as string),
+
+  // GET /festival/{id} — basic info (name, city, platform) used by ticket/reg cards
+  getFestivalBasicInfo: (id: string) =>
+    api.get<RawFestivalResponse>(`/festival/${id}`).then(r => ({
+      name: r.data.name,
+      cityName: r.data.city_name ?? '',
+      platformName: r.data.platform_name ?? '',
+      address: r.data.address ?? '',
+    })),
+
+  // GET /festival/{id} — lightweight fetch for name + visibility status
+  getFestivalInfo: (id: string) =>
+    api.get<RawFestivalResponse>(`/festival/${id}`).then(r => ({
+      id,
+      name: r.data.name,
+      isVisible: r.data.is_visible ?? false,
+    })),
 
   // POST /files/FESTIVAL_LOCATION/{festivalId}
   uploadPhoto: async (festivalId: string, file: File) => {

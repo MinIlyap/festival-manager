@@ -1,0 +1,13 @@
+databaseChangeLog:
+  - changeSet:
+      id: 003-add-ticket-start-date
+      author: ilyap
+      changes:
+        - addColumn:
+            tableName: tickets
+            columns:
+              - column:
+                  name: start_date
+                  type: DATETIME
+                  constraints:
+                    nullable: true

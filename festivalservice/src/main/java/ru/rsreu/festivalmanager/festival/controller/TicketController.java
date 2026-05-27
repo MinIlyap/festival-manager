@@ -82,6 +82,14 @@ public class TicketController {
         return ResponseEntity.ok(ticketService.getParticipantsForFestival(festivalLocationId));
     }
 
+    @GetMapping("/validate-curator-access")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<Boolean> validateCuratorAccess(
+            @RequestParam Long curatorId,
+            @RequestParam Long userId) {
+        return ResponseEntity.ok(ticketService.validateCuratorAccessToUser(curatorId, userId));
+    }
+
     @PreAuthorize("hasRole('COMPANY')")
     @DeleteMapping("/instances/{instanceId}")
     public ResponseEntity<Void> deleteTicketInstance(

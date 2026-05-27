@@ -25,6 +25,9 @@ public class Ticket {
     @JoinColumn(name = "ticket_type_instance_id", nullable = false)
     private TicketTypeInstance ticketTypeInstance;
 
+    @Column(name = "start_date")
+    private LocalDateTime startDate;
+
     @Column(name = "expiry_date", nullable = false)
     private LocalDateTime expiryDate;
 

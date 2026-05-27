@@ -45,6 +45,16 @@ public class CommandController {
         return ResponseEntity.ok("Вы успешно присоединились к команде");
     }
 
+    @PostMapping("/{commandId}/leave")
+    @PreAuthorize("hasRole('USER')")
+    public ResponseEntity<String> leaveCommand(
+            @PathVariable Long commandId,
+            @AuthenticationPrincipal Long userId) {
+
+        commandService.leaveCommand(commandId, userId);
+        return ResponseEntity.ok("Вы покинули команду");
+    }
+
     @DeleteMapping("/{commandId}")
     @PreAuthorize("hasRole('USER')")
     public ResponseEntity<String> disbandCommand(

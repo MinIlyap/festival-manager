@@ -3,13 +3,14 @@ import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import {
   MapPin, Calendar, Trophy, Store, Ticket, AlertCircle,
-  Clock, Users, ChevronRight, CheckCircle, Building2, Check, X, Info,
+  Clock, Users, ChevronRight, CheckCircle, XCircle, Building2, Check, X, Info, QrCode,
 } from 'lucide-react';
 import Layout from '../../components/layout/Layout';
 import Badge from '../../components/ui/Badge';
 import Button from '../../components/ui/Button';
 import Modal from '../../components/ui/Modal';
 import Spinner from '../../components/ui/Spinner';
+import QRScanner from '../../components/QRScanner';
 import { festivalApi } from '../../api/festival';
 import { eventApi } from '../../api/event';
 import { userApi } from '../../api/user';
@@ -170,6 +171,8 @@ export default function FestivalPage() {
   const [hasCover, setHasCover] = useState(true);
   const [rejectModal, setRejectModal] = useState(false);
   const [rejectReason, setRejectReason] = useState('');
+  const [scanModal, setScanModal] = useState(false);
+  const [scanResult, setScanResult] = useState<'valid' | 'invalid' | null>(null);
 
   const { data: festival, isLoading } = useQuery({
     queryKey: ['festival', id],
@@ -385,10 +388,17 @@ export default function FestivalPage() {
             </div>
           )}
 
-          {hasTickets && (
+          {hasTickets && role !== 'CURATOR' && (
             <div className={styles.heroBuyBtn}>
               <Button onClick={() => setBuyModal(true)} size="lg">
                 <Ticket size={16} /> Купить билет
+              </Button>
+            </div>
+          )}
+          {role === 'CURATOR' && (
+            <div className={styles.heroBuyBtn}>
+              <Button onClick={() => { setScanResult(null); setScanModal(true); }} size="lg" variant="secondary">
+                <QrCode size={16} /> Сканировать билеты
               </Button>
             </div>
           )}
@@ -493,6 +503,52 @@ export default function FestivalPage() {
               Отклонить
             </Button>
           </div>
+        </div>
+      </Modal>
+
+      {/* ── Curator scanner modal ── */}
+      <Modal
+        open={scanModal}
+        onClose={() => { setScanModal(false); setScanResult(null); }}
+        title="Сканировать билеты"
+        size="sm"
+      >
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+          {scanResult === null ? (
+            <>
+              <p style={{ fontSize: 14, color: 'var(--text-muted)', textAlign: 'center', margin: 0 }}>
+                Наведите камеру на QR-код билета участника
+              </p>
+              <QRScanner
+                onScan={token => {
+                  festivalApi.verifyTicketQr(token, id!)
+                    .then(res => setScanResult(res.status === 'SUCCESS' ? 'valid' : 'invalid'))
+                    .catch(() => setScanResult('invalid'));
+                }}
+              />
+            </>
+          ) : (
+            <div style={{ textAlign: 'center', padding: '16px 0' }}>
+              {scanResult === 'valid' ? (
+                <>
+                  <CheckCircle size={56} style={{ color: 'var(--accent-success)', margin: '0 auto' }} />
+                  <p style={{ fontSize: 20, fontWeight: 700, marginTop: 14, color: 'var(--accent-success)' }}>
+                    Билет действителен
+                  </p>
+                </>
+              ) : (
+                <>
+                  <XCircle size={56} style={{ color: 'var(--accent-danger)', margin: '0 auto' }} />
+                  <p style={{ fontSize: 20, fontWeight: 700, marginTop: 14, color: 'var(--accent-danger)' }}>
+                    Недействительный билет
+                  </p>
+                </>
+              )}
+              <Button style={{ marginTop: 20 }} onClick={() => setScanResult(null)}>
+                Сканировать ещё
+              </Button>
+            </div>
+          )}
         </div>
       </Modal>
 

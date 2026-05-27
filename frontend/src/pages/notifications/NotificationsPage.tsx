@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
 import { Bell, CheckCircle, XCircle, Users, Check, AlertCircle } from 'lucide-react';
@@ -113,9 +114,12 @@ function NotificationMessage({ n }: { n: Notification }) {
   }
 }
 
+type InviteResult = 'accepted' | 'rejected';
+
 export default function NotificationsPage() {
   const qc = useQueryClient();
   const reset = useNotificationStore(s => s.reset);
+  const [inviteResults, setInviteResults] = useState<Record<string, InviteResult>>({});
 
   const { data, isLoading } = useQuery({
     queryKey: ['notifications'],
@@ -136,13 +140,22 @@ export default function NotificationsPage() {
   });
 
   const acceptMutation = useMutation({
-    mutationFn: (inviteId: string) => eventApi.acceptInvite(inviteId),
-    onSuccess: () => qc.invalidateQueries({ queryKey: ['notifications'] }),
+    mutationFn: ({ commandId }: { notifId: string; commandId: string }) =>
+      eventApi.acceptInvite(commandId),
+    onSuccess: (_, { notifId }) => {
+      setInviteResults(prev => ({ ...prev, [notifId]: 'accepted' }));
+      qc.invalidateQueries({ queryKey: ['notifications'] });
+      qc.invalidateQueries({ queryKey: ['event-commands'] });
+    },
   });
 
   const rejectMutation = useMutation({
-    mutationFn: (inviteId: string) => eventApi.rejectInvite(inviteId),
-    onSuccess: () => qc.invalidateQueries({ queryKey: ['notifications'] }),
+    mutationFn: ({ commandId }: { notifId: string; commandId: string }) =>
+      eventApi.rejectInvite(commandId),
+    onSuccess: (_, { notifId }) => {
+      setInviteResults(prev => ({ ...prev, [notifId]: 'rejected' }));
+      qc.invalidateQueries({ queryKey: ['notifications'] });
+    },
   });
 
   const notifications = data?.content ?? [];
@@ -170,6 +183,10 @@ export default function NotificationsPage() {
           {notifications.map(n => {
             const Icon = iconMap[n.type] ?? Bell;
             const typeClass = n.type.toLowerCase().replace(/_/g, '-');
+            const inviteResult = inviteResults[n.id];
+            const isProcessing =
+              (acceptMutation.isPending && acceptMutation.variables?.notifId === n.id) ||
+              (rejectMutation.isPending && rejectMutation.variables?.notifId === n.id);
             return (
               <div
                 key={n.id}
@@ -185,14 +202,35 @@ export default function NotificationsPage() {
                   <p className={styles.itemMsg}><NotificationMessage n={n} /></p>
                   <p className={styles.itemTime}>{new Date(n.createdAt).toLocaleString('ru-RU')}</p>
                   {n.type === 'INVITING_TEAM' && n.data?.commandId && (
-                    <div className={styles.itemActions}>
-                      <Button size="sm" onClick={e => { e.stopPropagation(); acceptMutation.mutate(String(n.data!.commandId)); }}>
-                        Принять
-                      </Button>
-                      <Button size="sm" variant="danger" onClick={e => { e.stopPropagation(); rejectMutation.mutate(String(n.data!.commandId)); }}>
-                        Отклонить
-                      </Button>
-                    </div>
+                    inviteResult ? (
+                      <p className={inviteResult === 'accepted' ? styles.inviteAccepted : styles.inviteRejected}>
+                        {inviteResult === 'accepted' ? 'Приглашение принято' : 'Приглашение отклонено'}
+                      </p>
+                    ) : (
+                      <div className={styles.itemActions}>
+                        <Button
+                          size="sm"
+                          loading={isProcessing}
+                          onClick={e => {
+                            e.stopPropagation();
+                            acceptMutation.mutate({ notifId: n.id, commandId: String(n.data!.commandId) });
+                          }}
+                        >
+                          Принять
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="danger"
+                          loading={isProcessing}
+                          onClick={e => {
+                            e.stopPropagation();
+                            rejectMutation.mutate({ notifId: n.id, commandId: String(n.data!.commandId) });
+                          }}
+                        >
+                          Отклонить
+                        </Button>
+                      </div>
+                    )
                   )}
                 </div>
               </div>

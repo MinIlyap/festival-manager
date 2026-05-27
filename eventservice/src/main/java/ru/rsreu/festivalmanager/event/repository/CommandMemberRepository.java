@@ -22,4 +22,6 @@ public interface CommandMemberRepository extends JpaRepository<CommandMember, Co
     void deleteAllByCommandMemberId_Command_Id(Long commandId);
 
     List<CommandMember> findAllByCommandMemberId_Command_Id(Long commandId);
+
+    void deleteByCommandMemberId_UserIdAndCommandMemberId_Command_Id(Long userId, Long commandId);
 }

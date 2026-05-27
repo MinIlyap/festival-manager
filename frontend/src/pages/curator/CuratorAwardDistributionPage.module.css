@@ -1,0 +1,410 @@
+.page {
+  max-width: 1060px;
+  margin: 0 auto;
+  padding-bottom: var(--space-2xl);
+}
+
+/* ── nav ── */
+.back {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--text-muted);
+  font-size: 0.875rem;
+  padding: 0;
+  margin-bottom: var(--space-lg);
+  transition: color 0.15s;
+}
+.back:hover { color: var(--accent-primary); }
+
+/* ── header ── */
+.header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-md);
+  margin-bottom: var(--space-sm);
+}
+
+.title {
+  font-family: var(--font-display);
+  font-size: 1.6rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin: 0 0 var(--space-xs);
+}
+
+.headerBadges {
+  display: flex;
+  gap: var(--space-xs);
+  flex-wrap: wrap;
+}
+
+.counter {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  flex-shrink: 0;
+}
+
+.counterDone {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--accent-success, #10b981);
+}
+
+.counterPending {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--accent-primary);
+}
+
+.counterLabel {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}
+
+.hint {
+  font-size: 0.875rem;
+  color: var(--text-muted);
+  margin: 0 0 var(--space-xl);
+}
+
+/* ── two-column layout ── */
+.layout {
+  display: grid;
+  grid-template-columns: 280px 1fr;
+  gap: var(--space-lg);
+  align-items: start;
+}
+
+/* ── panel (shared) ── */
+.panel,
+.slotsPanel {
+  background: var(--bg-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-xl);
+  overflow: hidden;
+  transition: border-color 0.15s;
+}
+
+.panelOver {
+  border-color: var(--accent-primary);
+  box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.12);
+}
+
+.panelHead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 14px;
+  border-bottom: 1px solid var(--border-subtle);
+  background: var(--bg-elevated);
+}
+
+.panelTitle {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin: 0;
+}
+
+.panelBadge {
+  font-size: 12px;
+  font-weight: 600;
+  background: var(--bg-card);
+  border: 1px solid var(--border-subtle);
+  color: var(--text-muted);
+  padding: 2px 8px;
+  border-radius: 999px;
+}
+
+/* ── participants list ── */
+.itemList {
+  padding: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-height: 80px;
+  max-height: 520px;
+  overflow-y: auto;
+}
+
+.listEmpty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: var(--space-lg);
+  color: var(--accent-success, #10b981);
+  font-size: 13px;
+  font-weight: 500;
+  text-align: center;
+  min-height: 100px;
+}
+
+/* ── draggable item (in list or in slot) ── */
+.dragItem {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 10px;
+  background: var(--bg-elevated);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  cursor: grab;
+  font-size: 13px;
+  color: var(--text-primary);
+  user-select: none;
+  transition: background 0.12s, box-shadow 0.12s;
+}
+
+.dragItem:hover {
+  background: var(--bg-card);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+}
+
+.dragItem.dragging,
+.placedItem.dragging {
+  opacity: 0.4;
+  cursor: grabbing;
+}
+
+.grip {
+  color: var(--text-muted);
+  flex-shrink: 0;
+  cursor: grab;
+}
+
+.teamIcon {
+  color: var(--accent-primary);
+  flex-shrink: 0;
+  margin-left: auto;
+}
+
+/* ── slots table ── */
+.slotList {
+  padding: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  max-height: 580px;
+  overflow-y: auto;
+}
+
+.slot {
+  display: flex;
+  align-items: center;
+  gap: var(--space-md);
+  padding: 8px 10px;
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  background: var(--bg-elevated);
+  transition: border-color 0.12s, background 0.12s;
+  min-height: 52px;
+}
+
+/* ── prize slot accents ── */
+.slotPrize {
+  background: rgba(79, 70, 229, 0.03);
+}
+
+.slotGold {
+  border-left: 3px solid #f59e0b;
+  background: rgba(245, 158, 11, 0.04);
+}
+
+.slotSilver {
+  border-left: 3px solid #94a3b8;
+  background: rgba(148, 163, 184, 0.04);
+}
+
+.slotBronze {
+  border-left: 3px solid #cd7f32;
+  background: rgba(205, 127, 50, 0.04);
+}
+
+.slotOver {
+  border-color: var(--accent-primary) !important;
+  background: rgba(79, 70, 229, 0.06) !important;
+  box-shadow: 0 0 0 2px rgba(79, 70, 229, 0.15);
+}
+
+/* ── slot label (left part) ── */
+.slotLabel {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 140px;
+  flex-shrink: 0;
+}
+
+.medal { font-size: 1.2rem; line-height: 1; }
+
+.placeNum {
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--bg-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: 50%;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-muted);
+  flex-shrink: 0;
+}
+
+.slotInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.slotOrdinal {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.slotReward {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  font-size: 11px;
+  color: var(--text-muted);
+}
+
+/* ── drop zone ── */
+.dropZone {
+  flex: 1;
+  min-height: 36px;
+  display: flex;
+  align-items: center;
+}
+
+.dropHint {
+  font-size: 12px;
+  color: var(--text-muted);
+  font-style: italic;
+  padding: 6px 8px;
+  border: 1px dashed var(--border-subtle);
+  border-radius: var(--radius-sm);
+  width: 100%;
+  text-align: center;
+  transition: border-color 0.12s, color 0.12s;
+}
+
+.dropHintOver {
+  border-color: var(--accent-primary);
+  color: var(--accent-primary);
+  background: rgba(79, 70, 229, 0.04);
+  font-style: normal;
+  font-weight: 500;
+}
+
+/* ── placed item (inside a slot) ── */
+.placedItem {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 10px;
+  background: var(--bg-card);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-sm);
+  cursor: grab;
+  font-size: 13px;
+  color: var(--text-primary);
+  user-select: none;
+  width: 100%;
+  transition: background 0.12s;
+}
+.placedItem:hover { background: var(--bg-elevated); }
+
+/* ── footer ── */
+.footer {
+  margin-top: var(--space-xl);
+  display: flex;
+  align-items: center;
+  gap: var(--space-md);
+  flex-wrap: wrap;
+}
+
+.errorMsg {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  color: var(--accent-danger);
+  background: rgba(239, 68, 68, 0.08);
+  padding: 8px 12px;
+  border-radius: var(--radius-md);
+  border: 1px solid rgba(239, 68, 68, 0.2);
+}
+
+.noPrizesMsg {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  color: var(--text-muted);
+  background: var(--bg-elevated);
+  padding: 8px 12px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-subtle);
+  margin: 0;
+}
+
+.hintMsg {
+  font-size: 13px;
+  color: var(--text-muted);
+  margin: 0;
+}
+
+/* ── empty / success states ── */
+.emptyState,
+.successState {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-2xl) 0;
+  text-align: center;
+  gap: var(--space-md);
+}
+
+.emptyIcon { color: var(--text-muted); }
+
+.emptyText {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin: 0;
+}
+
+.emptySubtext {
+  font-size: 0.875rem;
+  color: var(--text-muted);
+  margin: 0;
+}
+
+.successIcon { color: var(--accent-success, #10b981); }
+
+.successTitle {
+  font-family: var(--font-display);
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin: 0;
+}
+
+.successText {
+  font-size: 0.9rem;
+  color: var(--text-muted);
+  margin: 0;
+}

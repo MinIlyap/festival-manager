@@ -3,3 +3,5 @@ databaseChangeLog:
       file: db/changelog/changes/001-add-festivals-and-relative-tables.yaml
   - include:
       file: db/changelog/changes/002-add-tickets.yaml
+  - include:
+      file: db/changelog/changes/003-add-ticket-start-date.yaml

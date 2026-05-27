@@ -108,7 +108,7 @@ function StandCard({ stand }: { stand: Stand }) {
   const [imgErr, setImgErr] = useState(false);
   const typeLabels: Record<string, string> = { COMMERCIAL: 'Коммерческий', DEMONSTRATION: 'Демонстрационный', TRADE: 'Торговый', DEMO: 'Демонстрационный' };
   return (
-    <Card hoverable padding="none" onClick={() => navigate(`/stand/${stand.id}`)}>
+    <Card hoverable padding="none" onClick={() => navigate(`/stand/${stand.id}`, { state: { stand } })}>
       <div className={styles.cardCover}>
         {!imgErr
           ? <img src={`/api/files/FESTIVAL_STAND/${stand.id}`} alt={stand.name} onError={() => setImgErr(true)} />
@@ -188,7 +188,7 @@ function FestivalsTab() {
       ) : (
         <>
           <div className={styles.grid}>
-            {data.content.map((f, i) => (
+            {[...data.content].sort((a, b) => a.startDate.localeCompare(b.startDate)).map((f, i) => (
               <motion.div key={f.id} initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.05 }}>
                 <FestivalCard festival={f} />
               </motion.div>
@@ -252,7 +252,7 @@ function EventsTab() {
     <div>
       {filters}
       <div className={styles.grid}>
-        {data.content.map((e, i) => (
+        {[...data.content].sort((a, b) => a.startDate.localeCompare(b.startDate)).map((e, i) => (
           <motion.div key={e.id} initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.05 }}>
             <EventCard event={e} />
           </motion.div>
@@ -312,7 +312,7 @@ function StandsTab() {
         : (
           <>
             <div className={styles.grid}>
-              {(data?.content ?? []).map((s, i) => (
+              {[...(data?.content ?? [])].sort((a, b) => a.startDate.localeCompare(b.startDate)).map((s, i) => (
                 <motion.div key={s.id} initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.05 }}>
                   <StandCard stand={s} />
                 </motion.div>

@@ -85,6 +85,13 @@ public class CommandService {
             throw new IllegalStateException("Пользователь уже состоит в другой команде на этом мероприятии");
         }
 
+        // Проверяем, не переполнена ли команда
+        Integer maxPeople = command.getFestivalEvent().getEventInstance().getMaxPeopleCommand();
+        long currentMembers = commandMemberRepository.countByCommandMemberId_Command_id(commandId);
+        if (maxPeople != null && currentMembers >= maxPeople) {
+            throw new IllegalStateException("Команда уже укомплектована");
+        }
+
         // Отправляем в Kafka
         CommandInviteEvent event = CommandInviteEvent.builder()
                 .festivalEventId(command.getFestivalEvent().getId())
@@ -127,6 +134,22 @@ public class CommandService {
         // Добавляем участника
         CommandMember member = new CommandMember(new CommandMemberId(command, userId));
         commandMemberRepository.save(member);
+    }
+
+    @Transactional
+    public void leaveCommand(Long commandId, Long userId) {
+        Command command = commandRepository.findById(commandId)
+                .orElseThrow(() -> new IllegalArgumentException("Команда не найдена"));
+
+        if (command.getCreatorId().equals(userId)) {
+            throw new IllegalStateException("Создатель не может покинуть команду — расформируйте её");
+        }
+
+        if (!commandMemberRepository.existsByCommandMemberId_UserIdAndCommandMemberId_Command_Id(userId, commandId)) {
+            throw new IllegalStateException("Вы не состоите в этой команде");
+        }
+
+        commandMemberRepository.deleteByCommandMemberId_UserIdAndCommandMemberId_Command_Id(userId, commandId);
     }
 
     @Transactional

@@ -1,5 +1,6 @@
 package ru.rsreu.festivalmanager.event.dto;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -11,11 +12,18 @@ import java.time.OffsetDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 public class CommandInviteEvent {
+    @JsonProperty("festival_event_id")
     private Long festivalEventId;
+    @JsonProperty("event_name")
     private String eventName;
+    @JsonProperty("command_id")
     private Long commandId;
+    @JsonProperty("command_name")
     private String commandName;
-    private Long relatedUser; // Тот, кого приглашают
-    private Long senderId;    // Тот, кто приглашает
+    @JsonProperty("related_user")
+    private Long relatedUser;
+    @JsonProperty("sender_id")
+    private Long senderId;
+    @JsonProperty("created_at")
     private OffsetDateTime createdAt;
 }

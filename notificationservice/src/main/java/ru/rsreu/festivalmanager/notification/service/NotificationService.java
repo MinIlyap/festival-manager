@@ -11,6 +11,7 @@ import ru.rsreu.festivalmanager.notification.entity.*;
 import ru.rsreu.festivalmanager.notification.repository.NotificationRepository;
 import ru.rsreu.festivalmanager.common.util.CryptoUtil;
 
+import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.Map;
 
@@ -90,7 +91,7 @@ public class NotificationService {
         notification.setNotificationType(NotificationType.INVITING_TEAM);
         notification.setTargetUserId(msg.getRelatedUserId());
         notification.setRead(false);
-        notification.setCreatedAt(msg.getCreatedAt());
+        notification.setCreatedAt(msg.getCreatedAt() != null ? msg.getCreatedAt() : OffsetDateTime.now());
 
         NotificationData data = new NotificationData();
         data.setEventId(msg.getEventId());

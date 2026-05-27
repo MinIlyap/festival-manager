@@ -8,6 +8,8 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import ru.rsreu.festivalmanager.user.dto.*;
 import ru.rsreu.festivalmanager.user.service.UserService;
+import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/user")
@@ -87,5 +89,17 @@ public class UserController {
     @PreAuthorize("hasAnyRole('INTERNAL', 'CURATOR', 'ADMIN')")
     public ResponseEntity<BlacklistStatusResponse> getBlackListStatus(@PathVariable Long userId) {
         return ResponseEntity.ok(userService.getMyBlacklistStatus(userId));
+    }
+
+    @GetMapping("/users/search")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<List<Map<String, Object>>> searchUsers(@RequestParam String nickname) {
+        return ResponseEntity.ok(userService.searchUsersByNickname(nickname));
+    }
+
+    @GetMapping("/users/{id}")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<Map<String, Object>> getUserById(@PathVariable Long id) {
+        return ResponseEntity.ok(userService.getUserPublicInfo(id));
     }
 }

@@ -358,13 +358,32 @@ export const eventApi = {
     }).then(r => r.data),
 
   // POST /events/commands/{commandId}/invite?targetUserId=xxx
-  inviteToTeam: (commandId: string, targetUserId: string) =>
+  inviteToTeam: (commandId: string, targetUserId: number) =>
     api.post(`/events/commands/${commandId}/invite`, null, {
-      params: { targetUserId: Number(targetUserId) },
+      params: { targetUserId },
     }).then(r => r.data),
 
-  acceptInvite: (_inviteId: string) => Promise.resolve(),
-  rejectInvite: (_inviteId: string) => Promise.resolve(),
+  acceptInvite: (commandId: string) =>
+    api.post(`/events/commands/${commandId}/join`).then(r => r.data),
+
+  rejectInvite: (_commandId: string) => Promise.resolve(),
+
+  leaveTeam: (commandId: string) =>
+    api.post(`/events/commands/${commandId}/leave`).then(r => r.data),
+
+  disbandTeam: (commandId: string) =>
+    api.delete(`/events/commands/${commandId}`).then(r => r.data),
+
+  getEventParticipants: (eventId: string) =>
+    api.get<number[]>(`/events/${eventId}/info/participants`).then(r => r.data),
+
+  getEventCommands: (eventId: string) =>
+    api.get<Array<{ commandId: number; commandName: string; creatorId: number; memberUserIds: number[] }>>(
+      `/events/${eventId}/info/commands`
+    ).then(r => r.data),
+
+  getEventParticipantsWithoutCommand: (eventId: string) =>
+    api.get<number[]>(`/events/${eventId}/info/participants/without-command`).then(r => r.data),
 
   // POST /qr/events/festival-event/{festivalEventId}/verify — COMPANY verifies event QR
   verifyEventQr: (token: string, festivalEventId = '0') =>
@@ -436,6 +455,9 @@ export const eventApi = {
 
   distributeRewardToUsers: (eventRewardId: string, userIds: number[]) =>
     api.post(`/events/rewards/${eventRewardId}/distribute/users`, { userIds }).then(r => r.data),
+
+  distributeRewardToCommand: (eventRewardId: string, commandId: number) =>
+    api.post(`/events/rewards/${eventRewardId}/distribute/commands/${commandId}`).then(r => r.data),
 
   // POST /files/FESTIVAL_STAND/{standId}
   uploadStandPhoto: async (standId: string, file: File) => {

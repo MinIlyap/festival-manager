@@ -7,4 +7,5 @@ import ru.rsreu.festivalmanager.user.entity.AppUser;
 @Repository
 public interface AppUserRepository extends JpaRepository<AppUser, Long> {
     boolean existsByNickname(String nickname);
+    java.util.List<AppUser> findByNicknameContainingIgnoreCase(String nickname);
 }

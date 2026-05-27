@@ -19,3 +19,5 @@
 .link:hover { opacity: 0.8; }
 .itemTime { font-size: 12px; color: var(--text-muted); }
 .itemActions { display: flex; gap: var(--space-sm); margin-top: var(--space-sm); }
+.inviteAccepted { font-size: 13px; font-weight: 600; color: var(--accent-success); margin: var(--space-sm) 0 0; }
+.inviteRejected { font-size: 13px; font-weight: 600; color: var(--accent-danger); margin: var(--space-sm) 0 0; }

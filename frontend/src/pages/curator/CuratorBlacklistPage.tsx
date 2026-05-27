@@ -1,6 +1,6 @@
 import { useState, useCallback } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { ShieldBan, QrCode, X, ChevronLeft, AlertTriangle } from 'lucide-react';
+import { ShieldBan, QrCode, ChevronLeft, AlertTriangle, Search, CheckCircle, XCircle, UserX, MapPin, Calendar, Trophy } from 'lucide-react';
 import Layout from '../../components/layout/Layout';
 import Card from '../../components/ui/Card';
 import Button from '../../components/ui/Button';
@@ -14,35 +14,46 @@ import type { Festival, FestivalParticipant } from '../../types';
 import styles from './CuratorBlacklistPage.module.css';
 
 const BLACKLIST_REASONS = [
-  'Нарушение правил фестиваля',
   'Агрессивное поведение',
-  'Употребление запрещённых веществ',
-  'Повреждение имущества',
+  'Порча имущества фестиваля',
+  'Нахождение в состоянии опьянения',
+  'Кража или мошенничество',
+  'Несанкционированный доступ в закрытые зоны',
   'Другое',
 ];
 
+type ScanFeedback = 'found' | 'not-found' | 'error' | null;
+
+function fmtDate(iso: string) {
+  return new Date(iso).toLocaleDateString('ru-RU', { day: 'numeric', month: 'short', year: 'numeric' });
+}
+
 function FestivalCard({ festival, onClick }: { festival: Festival; onClick: () => void }) {
   const [imgErr, setImgErr] = useState(false);
+  const location = [festival.cityName, festival.platformName].filter(Boolean).join(' · ');
+
   return (
-    <button className={styles.festivalCard} onClick={onClick}>
+    <div className={styles.festivalCard} onClick={onClick} role="button" tabIndex={0}
+         onKeyDown={e => e.key === 'Enter' && onClick()}>
       <div className={styles.festivalCover}>
         {!imgErr ? (
-          <img
-            src={`/api/files/FESTIVAL_LOCATION/${festival.id}`}
-            alt={festival.name}
-            onError={() => setImgErr(true)}
-          />
+          <img src={`/api/files/FESTIVAL_LOCATION/${festival.id}`} alt={festival.name} onError={() => setImgErr(true)} />
         ) : (
-          <div className={styles.festivalCoverPlaceholder}>
-            <ShieldBan size={32} />
-          </div>
+          <div className={styles.festivalCoverPlaceholder}><Trophy size={32} /></div>
         )}
       </div>
       <div className={styles.festivalCardBody}>
         <p className={styles.festivalCardName}>{festival.name}</p>
-        <p className={styles.festivalCardCity}>{festival.city}</p>
+        <div className={styles.festivalCardMeta}>
+          {location && (
+            <span className={styles.festivalCardMetaRow}><MapPin size={11} /> {location}</span>
+          )}
+          <span className={styles.festivalCardMetaRow}>
+            <Calendar size={11} /> {fmtDate(festival.startDate)} — {fmtDate(festival.endDate)}
+          </span>
+        </div>
       </div>
-    </button>
+    </div>
   );
 }
 
@@ -57,8 +68,10 @@ export default function CuratorBlacklistPage() {
 
   const [selectedFestival, setSelectedFestival] = useState<Festival | null>(null);
   const [showScanner, setShowScanner] = useState(false);
+  const [scanFeedback, setScanFeedback] = useState<ScanFeedback>(null);
   const [targetUser, setTargetUser] = useState<FestivalParticipant | null>(null);
   const [form, setForm] = useState<BlacklistFormState>({ reasonIndex: 0, customReason: '', days: 1 });
+  const [search, setSearch] = useState('');
 
   const { data: festivals, isLoading: festivalsLoading } = useQuery({
     queryKey: ['curatorFestivals'],
@@ -83,14 +96,23 @@ export default function CuratorBlacklistPage() {
   const handleScan = useCallback((token: string) => {
     if (!selectedFestival) return;
     setShowScanner(false);
-    festivalApi.verifyTicketQr(token, selectedFestival.id).then(res => {
-      if (res.status === 'SUCCESS' && res.user_id) {
-        const found = participants?.find(p => p.userId === res.user_id);
-        if (found) {
-          setTargetUser(found);
+    setScanFeedback(null);
+    festivalApi.verifyTicketQr(token, selectedFestival.id)
+      .then(res => {
+        if (res.status === 'SUCCESS' && res.user_id) {
+          const found = (participants ?? []).find(p => p.userId === res.user_id);
+          if (found) {
+            setTargetUser(found);
+            setForm({ reasonIndex: 0, customReason: '', days: 1 });
+            setScanFeedback('found');
+          } else {
+            setScanFeedback('not-found');
+          }
+        } else {
+          setScanFeedback('error');
         }
-      }
-    }).catch(() => {});
+      })
+      .catch(() => setScanFeedback('error'));
   }, [selectedFestival, participants]);
 
   const handleSubmit = () => {
@@ -98,10 +120,14 @@ export default function CuratorBlacklistPage() {
     const reason = form.reasonIndex === BLACKLIST_REASONS.length - 1
       ? form.customReason.trim()
       : BLACKLIST_REASONS[form.reasonIndex];
-    if (!reason) return;
-    if (form.days < 1) return;
+    if (!reason || form.days < 1) return;
     addMutation.mutate({ userId: targetUser.userId, reason, days: form.days });
   };
+
+  const filtered = (participants ?? []).filter(p =>
+    !search || p.nickname.toLowerCase().includes(search.toLowerCase()),
+  );
+  const bannedCount = (participants ?? []).filter(p => p.inBlacklist).length;
 
   if (festivalsLoading) return <Layout><Spinner centered /></Layout>;
 
@@ -112,12 +138,12 @@ export default function CuratorBlacklistPage() {
           <>
             <h1 className={styles.title}>Чёрный список</h1>
             <p className={styles.subtitle}>Выберите фестиваль для управления участниками</p>
-            {!festivals?.length ? (
-              <EmptyState icon={ShieldBan} message="Нет фестивалей" description="Вы не являетесь куратором ни одного фестиваля" />
+            {!festivals?.filter(f => f.status === 'APPROVED').length ? (
+              <EmptyState icon={ShieldBan} message="Нет фестивалей" description="Вы не являетесь куратором ни одного опубликованного фестиваля" />
             ) : (
               <div className={styles.festivalGrid}>
-                {festivals.map(f => (
-                  <FestivalCard key={f.id} festival={f} onClick={() => setSelectedFestival(f)} />
+                {(festivals ?? []).filter(f => f.status === 'APPROVED').map(f => (
+                  <FestivalCard key={f.id} festival={f} onClick={() => { setSelectedFestival(f); setScanFeedback(null); setSearch(''); }} />
                 ))}
               </div>
             )}
@@ -125,12 +151,17 @@ export default function CuratorBlacklistPage() {
         ) : (
           <>
             <div className={styles.header}>
-              <button className={styles.back} onClick={() => { setSelectedFestival(null); setShowScanner(false); }}>
+              <button className={styles.back} onClick={() => { setSelectedFestival(null); setShowScanner(false); setScanFeedback(null); }}>
                 <ChevronLeft size={18} /> Назад
               </button>
               <div className={styles.headerMain}>
-                <h1 className={styles.title}>{selectedFestival.name}</h1>
-                <Button variant="ghost" size="sm" onClick={() => setShowScanner(s => !s)}>
+                <div>
+                  <h1 className={styles.title}>{selectedFestival.name}</h1>
+                  {bannedCount > 0 && (
+                    <p className={styles.bannedSummary}><UserX size={14} /> {bannedCount} в чёрном списке</p>
+                  )}
+                </div>
+                <Button variant={showScanner ? 'danger' : 'secondary'} size="sm" onClick={() => { setShowScanner(s => !s); setScanFeedback(null); }}>
                   <QrCode size={16} /> {showScanner ? 'Скрыть сканер' : 'Сканировать QR'}
                 </Button>
               </div>
@@ -143,34 +174,77 @@ export default function CuratorBlacklistPage() {
               </Card>
             )}
 
+            {scanFeedback === 'not-found' && (
+              <div className={[styles.scanAlert, styles.scanAlertWarn].join(' ')}>
+                <AlertTriangle size={16} /> Участник не найден в списке этого фестиваля
+              </div>
+            )}
+            {scanFeedback === 'error' && (
+              <div className={[styles.scanAlert, styles.scanAlertError].join(' ')}>
+                <XCircle size={16} /> Недействительный или нераспознанный QR-код
+              </div>
+            )}
+            {scanFeedback === 'found' && (
+              <div className={[styles.scanAlert, styles.scanAlertOk].join(' ')}>
+                <CheckCircle size={16} /> Участник найден — заполните форму ниже
+              </div>
+            )}
+
             {participantsLoading ? (
               <Spinner centered />
             ) : !participants?.length ? (
               <EmptyState icon={ShieldBan} message="Нет участников" description="На этот фестиваль пока не куплено ни одного билета" />
             ) : (
-              <div className={styles.participantList}>
-                {participants.map(p => (
-                  <div key={p.userId} className={[styles.participantRow, p.inBlacklist ? styles.banned : ''].join(' ')}>
-                    <div className={styles.participantInfo}>
-                      <span className={styles.participantNickname}>{p.nickname}</span>
-                      {p.inBlacklist && (
-                        <span className={styles.bannedBadge}>ЧС</span>
-                      )}
-                      {p.inBlacklist && p.blacklistReason && (
-                        <span className={styles.bannedReason}>
-                          {p.blacklistReason}
-                          {p.blacklistUntil && ` · до ${new Date(p.blacklistUntil).toLocaleDateString('ru-RU')}`}
-                        </span>
+              <>
+                <div className={styles.searchRow}>
+                  <div className={styles.searchWrap}>
+                    <Search size={15} className={styles.searchIcon} />
+                    <input
+                      className={styles.searchInput}
+                      placeholder="Поиск по никнейму..."
+                      value={search}
+                      onChange={e => setSearch(e.target.value)}
+                    />
+                  </div>
+                  <span className={styles.countLabel}>{participants.length} участников</span>
+                </div>
+
+                <div className={styles.participantList}>
+                  {filtered.map(p => (
+                    <div key={p.userId} className={[styles.participantRow, p.inBlacklist ? styles.banned : ''].join(' ')}>
+                      <div className={styles.participantLeft}>
+                        <div className={[styles.avatar, p.inBlacklist ? styles.avatarBanned : ''].join(' ')}>
+                          {p.nickname[0]?.toUpperCase() ?? '?'}
+                        </div>
+                        <div className={styles.participantInfo}>
+                          <span className={styles.participantNickname}>{p.nickname}</span>
+                          {p.inBlacklist && (
+                            <div className={styles.banDetails}>
+                              <span className={styles.bannedBadge}>ЧС</span>
+                              {p.blacklistReason && (
+                                <span className={styles.bannedReason}>{p.blacklistReason}</span>
+                              )}
+                              {p.blacklistUntil && (
+                                <span className={styles.bannedUntil}>
+                                  до {new Date(p.blacklistUntil).toLocaleDateString('ru-RU')}
+                                </span>
+                              )}
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                      {!p.inBlacklist && (
+                        <Button size="sm" variant="danger" onClick={() => { setTargetUser(p); setForm({ reasonIndex: 0, customReason: '', days: 1 }); setScanFeedback(null); }}>
+                          <ShieldBan size={13} /> В ЧС
+                        </Button>
                       )}
                     </div>
-                    {!p.inBlacklist && (
-                      <Button size="sm" variant="danger" onClick={() => { setTargetUser(p); setForm({ reasonIndex: 0, customReason: '', days: 1 }); }}>
-                        Занести в ЧС
-                      </Button>
-                    )}
-                  </div>
-                ))}
-              </div>
+                  ))}
+                  {filtered.length === 0 && (
+                    <p className={styles.noResults}>Ничего не найдено</p>
+                  )}
+                </div>
+              </>
             )}
           </>
         )}
@@ -179,7 +253,7 @@ export default function CuratorBlacklistPage() {
       <Modal
         open={!!targetUser}
         onClose={() => setTargetUser(null)}
-        title={`Занести в чёрный список: ${targetUser?.nickname}`}
+        title={`Чёрный список: ${targetUser?.nickname}`}
         size="md"
       >
         <div className={styles.modalBody}>
@@ -191,7 +265,7 @@ export default function CuratorBlacklistPage() {
           <p className={styles.fieldLabel}>Причина</p>
           <div className={styles.reasonList}>
             {BLACKLIST_REASONS.map((r, i) => (
-              <label key={i} className={styles.reasonOption}>
+              <label key={i} className={[styles.reasonOption, form.reasonIndex === i ? styles.reasonSelected : ''].join(' ')}>
                 <input
                   type="radio"
                   name="reason"
@@ -224,9 +298,7 @@ export default function CuratorBlacklistPage() {
           />
 
           <div className={styles.modalActions}>
-            <Button variant="ghost" onClick={() => setTargetUser(null)}>
-              Отмена
-            </Button>
+            <Button variant="ghost" onClick={() => setTargetUser(null)}>Отмена</Button>
             <Button
               variant="danger"
               loading={addMutation.isPending}

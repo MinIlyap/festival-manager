@@ -27,6 +27,9 @@ public class TicketResponse {
     @JsonProperty("final_price")
     private BigDecimal finalPrice;
 
+    @JsonProperty("start_date")
+    private LocalDateTime startDate;
+
     @JsonProperty("expiry_date")
     private LocalDateTime expiryDate;
 }

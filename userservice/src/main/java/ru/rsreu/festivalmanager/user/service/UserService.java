@@ -16,6 +16,7 @@ import ru.rsreu.festivalmanager.common.util.CryptoUtil;
 import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
 import java.util.List;
+import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
@@ -137,6 +138,20 @@ public class UserService {
         if (request.getPassportNumber() != null) user.setPassportNumberHash(cryptoUtil.encrypt(request.getPassportNumber()));
 
         userRepository.save(user);
+    }
+
+    public Map<String, Object> getUserPublicInfo(Long id) {
+        AppUser user = userRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Пользователь не найден"));
+        return Map.of("id", user.getId(), "nickname", user.getNickname());
+    }
+
+    public List<Map<String, Object>> searchUsersByNickname(String nickname) {
+        return userRepository.findByNicknameContainingIgnoreCase(nickname)
+                .stream()
+                .limit(10)
+                .map(u -> Map.<String, Object>of("id", u.getId(), "nickname", u.getNickname()))
+                .toList();
     }
 
     private void validateSensitiveDataAgainstBlacklist(String phone, String seria, String number) {

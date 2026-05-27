@@ -21,10 +21,9 @@ public class RewardController {
     private final RewardService rewardService;
 
     @GetMapping("/by-event/{festivalEventId}")
-    @PreAuthorize("hasRole('COMPANY')")
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<List<EventRewardResponse>> getRewardsByEvent(
-            @PathVariable Long festivalEventId,
-            @AuthenticationPrincipal Long companyId) {
+            @PathVariable Long festivalEventId) {
 
         return ResponseEntity.ok(rewardService.getRewardsByEvent(festivalEventId));
     }

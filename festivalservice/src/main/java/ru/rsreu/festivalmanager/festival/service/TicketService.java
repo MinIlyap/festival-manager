@@ -13,6 +13,7 @@ import ru.rsreu.festivalmanager.festival.entity.ticket.*;
 import ru.rsreu.festivalmanager.festival.entity.festival.FestivalInstance;
 import ru.rsreu.festivalmanager.festival.entity.ticket.Ticket;
 import ru.rsreu.festivalmanager.festival.entity.ticket.TicketTypeInstance;
+import ru.rsreu.festivalmanager.festival.entity.festival.FestivalCurator;
 import ru.rsreu.festivalmanager.festival.repository.*;
 
 import java.math.BigDecimal;
@@ -35,6 +36,7 @@ public class TicketService {
     private final FestivalCompanyRepository festivalCompanyRepository;
     private final FestivalInstanceRepository festivalInstanceRepository;
     private final FestivalLocationRepository festivalLocationRepository;
+    private final FestivalCuratorRepository festivalCuratorRepository;
     private final UserServiceClient userClient;
 
     @Value("${internal.system-token}")
@@ -190,7 +192,8 @@ public class TicketService {
                 .ticketTypeInstance(ticketTypeInstance)
                 .quantity(request.getQuantity())
                 .finalPrice(finalPrice)
-                .expiryDate(java.time.LocalDateTime.of(lockedInstance.getDateEnd(), lockedInstance.getTimeEnd()))
+                .startDate(LocalDateTime.of(lockedInstance.getDateStart(), lockedInstance.getTimeStart()))
+                .expiryDate(LocalDateTime.of(lockedInstance.getDateEnd(), lockedInstance.getTimeEnd()))
                 .createdAt(OffsetDateTime.now())
                 .build();
 
@@ -247,6 +250,7 @@ public class TicketService {
                     .ticketType(t.getTicketTypeInstance().getTicketType().getName())
                     .quantity(t.getQuantity())
                     .finalPrice(t.getFinalPrice())
+                    .startDate(t.getStartDate())
                     .expiryDate(t.getExpiryDate())
                     .build();
 
@@ -292,5 +296,18 @@ public class TicketService {
                     .blacklistUntil(until)
                     .build();
         }).collect(Collectors.toList());
+    }
+
+    @Transactional(readOnly = true)
+    public boolean validateCuratorAccessToUser(Long curatorId, Long userId) {
+        List<FestivalCurator> curatorFestivals = festivalCuratorRepository
+                .findAllByFestivalCuratorId_CuratorId(curatorId);
+        for (FestivalCurator fc : curatorFestivals) {
+            Long festivalLocationId = fc.getFestivalCuratorId().getFestivalLocation().getId();
+            if (ticketRepository.existsByUserIdAndTicketTypeInstance_FestivalLocation_Id(userId, festivalLocationId)) {
+                return true;
+            }
+        }
+        return false;
     }
 }

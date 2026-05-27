@@ -39,4 +39,7 @@ export const userApi = {
 
   searchByNickname: (nickname: string) =>
     api.get<{ id: number; nickname: string }[]>('/user/users/search', { params: { nickname } }).then(r => r.data),
+
+  getUserById: (id: number) =>
+    api.get<{ id: number; nickname: string }>(`/user/users/${id}`).then(r => r.data),
 };
