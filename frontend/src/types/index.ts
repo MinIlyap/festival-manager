@@ -210,6 +210,21 @@ export interface BlacklistEntry {
   until?: string;
 }
 
+export interface FestivalParticipant {
+  userId: number;
+  nickname: string;
+  inBlacklist: boolean;
+  blacklistReason?: string;
+  blacklistUntil?: string;
+}
+
+export interface QrVerifyResponse {
+  status: 'SUCCESS' | 'EXPIRED' | 'FORGED' | 'INVALID' | 'LOCATION_MISMATCH';
+  target_id?: number;
+  location_id?: number;
+  user_id?: number;
+}
+
 export interface Page<T> {
   content: T[];
   totalElements: number;

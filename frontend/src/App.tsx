@@ -44,6 +44,7 @@ import CuratorFestivalsPage from './pages/curator/CuratorFestivalsPage';
 import CuratorHistoryPage from './pages/curator/CuratorHistoryPage';
 import CuratorTicketsPage from './pages/curator/CuratorTicketsPage';
 import CuratorScannerPage from './pages/curator/CuratorScannerPage';
+import CuratorBlacklistPage from './pages/curator/CuratorBlacklistPage';
 
 function NotificationPoller() {
   const { accessToken } = useAuthStore();
@@ -119,6 +120,7 @@ export default function App() {
           <Route path="/curator/history" element={<CuratorHistoryPage />} />
           <Route path="/curator/tickets" element={<CuratorTicketsPage />} />
           <Route path="/curator/scanner" element={<CuratorScannerPage />} />
+          <Route path="/curator/blacklist" element={<CuratorBlacklistPage />} />
         </Route>
 
         {/* Fallback */}

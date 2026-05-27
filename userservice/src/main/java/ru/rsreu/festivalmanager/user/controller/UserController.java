@@ -82,4 +82,10 @@ public class UserController {
     public ResponseEntity<Boolean> checkBlackListStatus(@PathVariable Long userId) {
         return ResponseEntity.ok(userService.checkUserBlackListStatus(userId));
     }
+
+    @GetMapping("/blacklist/status/{userId}")
+    @PreAuthorize("hasAnyRole('INTERNAL', 'CURATOR', 'ADMIN')")
+    public ResponseEntity<BlacklistStatusResponse> getBlackListStatus(@PathVariable Long userId) {
+        return ResponseEntity.ok(userService.getMyBlacklistStatus(userId));
+    }
 }

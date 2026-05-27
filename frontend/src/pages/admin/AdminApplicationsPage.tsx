@@ -1,9 +1,11 @@
+import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
 import { ClipboardList, Building2, CalendarDays } from 'lucide-react';
 import Layout from '../../components/layout/Layout';
 import Card from '../../components/ui/Card';
 import Badge from '../../components/ui/Badge';
+import Tabs from '../../components/ui/Tabs';
 import EmptyState from '../../components/ui/EmptyState';
 import Spinner from '../../components/ui/Spinner';
 import { applicationApi } from '../../api/application';
@@ -69,6 +71,8 @@ function AppRow({ app }: { app: Application }) {
 }
 
 export default function AdminApplicationsPage() {
+  const [tab, setTab] = useState<'company' | 'festival'>('company');
+
   const { data, isLoading } = useQuery({
     queryKey: ['admin-applications'],
     queryFn: () => applicationApi.adminList({ status: 'PENDING', page: 0, size: 50 }),
@@ -76,14 +80,30 @@ export default function AdminApplicationsPage() {
 
   if (isLoading) return <Layout><Spinner centered /></Layout>;
 
+  const all = data?.content ?? [];
+  const companyApps = all.filter(a => a.applicationType === 'COMPANY_APPLICATION');
+  const festivalApps = all.filter(a => a.applicationType === 'FESTIVAL_APPLICATION');
+  const shown = tab === 'company' ? companyApps : festivalApps;
+
   return (
     <Layout>
       <h1 className={styles.title}>Заявки на рассмотрении</h1>
-      {!data?.content.length ? (
-        <EmptyState icon={ClipboardList} message="Нет заявок на рассмотрении" />
+      <Tabs
+        tabs={[
+          { key: 'company',  label: <span style={{ display: 'flex', alignItems: 'center', gap: 6 }}><Building2 size={15} />Заявки на компанию</span> },
+          { key: 'festival', label: <span style={{ display: 'flex', alignItems: 'center', gap: 6 }}><CalendarDays size={15} />Заявки на фестиваль</span> },
+        ]}
+        activeKey={tab}
+        onChange={k => setTab(k as 'company' | 'festival')}
+      />
+      {!shown.length ? (
+        <EmptyState
+          icon={tab === 'company' ? Building2 : CalendarDays}
+          message={tab === 'company' ? 'Нет заявок на регистрацию компаний' : 'Нет заявок на фестивали'}
+        />
       ) : (
         <div className={styles.list} style={{ marginTop: 'var(--space-lg)' }}>
-          {data.content.map(app => (
+          {shown.map(app => (
             <AppRow key={app.id} app={app} />
           ))}
         </div>

@@ -12,6 +12,8 @@ import ru.rsreu.festivalmanager.festival.service.TicketService;
 
 import java.util.List;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("/ticket")
 @RequiredArgsConstructor
@@ -71,6 +73,13 @@ public class TicketController {
 
         ticketService.updateTicketTypeInstance(instanceId, request.getDescription(), request.getPrice(), companyId);
         return ResponseEntity.ok().build();
+    }
+
+    @GetMapping("/participants/{festivalLocationId}")
+    @PreAuthorize("hasRole('CURATOR')")
+    public ResponseEntity<List<FestivalParticipantDto>> getParticipants(
+            @PathVariable Long festivalLocationId) {
+        return ResponseEntity.ok(ticketService.getParticipantsForFestival(festivalLocationId));
     }
 
     @PreAuthorize("hasRole('COMPANY')")

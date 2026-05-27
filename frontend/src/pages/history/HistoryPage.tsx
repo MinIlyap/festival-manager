@@ -33,9 +33,9 @@ export default function HistoryPage() {
       <h1 className={styles.title}>История</h1>
       <Tabs
         tabs={[
-          { key: 'festivals', label: '🎪 Посещённые фестивали' },
-          { key: 'events',    label: '🎮 Мероприятия' },
-          { key: 'awards',    label: '🏆 Награды' },
+          { key: 'festivals', label: 'Посещённые фестивали' },
+          { key: 'events',    label: 'Мероприятия' },
+          { key: 'awards',    label: 'Награды' },
         ]}
         activeKey={tab}
         onChange={setTab}

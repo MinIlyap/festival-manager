@@ -178,6 +178,7 @@ export const eventApi = {
         name: r.rewardName,
         description: r.description,
         place: r.place ?? 0,
+        photoUrl: `/api/files/EVENT_REWARD/${r.eventRewardId}`,
         eventId: id,
       }));
       return event;
@@ -448,6 +449,19 @@ export const eventApi = {
   // DELETE /files/FESTIVAL_STAND/{standId}
   deleteStandPhoto: (standId: string) =>
     api.delete(`/files/FESTIVAL_STAND/${standId}`).then(r => r.data),
+
+  // POST /files/PRODUCT_INSTANCE/{productInstanceId}
+  uploadProductPhoto: async (productInstanceId: number, file: File) => {
+    const bytes = await file.arrayBuffer();
+    await api.post(`/files/PRODUCT_INSTANCE/${productInstanceId}`, bytes, {
+      headers: { 'Content-Type': 'application/octet-stream' },
+    });
+    return `/api/files/PRODUCT_INSTANCE/${productInstanceId}`;
+  },
+
+  // DELETE /files/PRODUCT_INSTANCE/{productInstanceId}
+  deleteProductPhoto: (productInstanceId: number) =>
+    api.delete(`/files/PRODUCT_INSTANCE/${productInstanceId}`).then(r => r.data),
 
   // POST /files/EVENT_REWARD/{rewardId}
   uploadRewardPhoto: async (rewardId: string, file: File) => {

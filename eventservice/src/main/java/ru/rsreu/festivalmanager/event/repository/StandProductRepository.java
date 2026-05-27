@@ -12,4 +12,5 @@ import java.util.Optional;
 public interface StandProductRepository extends JpaRepository<StandProduct, StandProductId> {
     List<StandProduct> findAllByStandProductId_FestivalStand_Id(Long festivalStandId);
     Optional<StandProduct> findByStandProductId_FestivalStand_IdAndStandProductId_ProductInstance_Id(Long festivalStandId, Long productInstanceId);
+    Optional<StandProduct> findFirstByStandProductId_ProductInstance_Id(Long productInstanceId);
 }

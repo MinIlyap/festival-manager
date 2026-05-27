@@ -1,5 +1,5 @@
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { Bell, User, History, Ticket, Building2, CalendarDays, LayoutList, ClipboardList, Star, LogOut, QrCode } from 'lucide-react';
+import { Bell, User, History, Ticket, Building2, CalendarDays, LayoutList, ClipboardList, Star, LogOut, QrCode, ShieldBan } from 'lucide-react';
 import { useAuthStore } from '../../../store/authStore';
 import { useNotificationStore } from '../../../store/notificationStore';
 import { authApi } from '../../../api/auth';
@@ -66,8 +66,9 @@ export default function Header() {
       { icon: Star,    label: 'Фестивали',       to: '/curator/festivals' },
       { icon: History, label: 'История',          to: '/curator/history' },
       { icon: Ticket,  label: 'Билеты',           to: '/curator/tickets' },
-      { icon: QrCode,  label: 'Сканер',           to: '/curator/scanner' },
-      { icon: Bell,    label: 'Уведомления',     to: '/notifications', badge: unread },
+      { icon: QrCode,   label: 'Сканер',        to: '/curator/scanner' },
+      { icon: ShieldBan, label: 'Чёрный список', to: '/curator/blacklist' },
+      { icon: Bell,     label: 'Уведомления',   to: '/notifications', badge: unread },
     );
   }
 

@@ -126,6 +126,21 @@
   color: var(--text-muted) !important;
 }
 
+.festivalBadge {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--accent-primary);
+  background: rgba(79, 70, 229, 0.08);
+  border-radius: var(--radius-sm);
+  padding: 2px 7px;
+  display: inline-block;
+  align-self: flex-start;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
+}
+
 .eventCardHeader {
   display: flex;
   gap: var(--space-sm);

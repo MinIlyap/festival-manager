@@ -24,6 +24,18 @@ public class InternalFestivalController {
         return ResponseEntity.ok(festivalService.getFestivalLocationIdsByCity(cityId));
     }
 
+    @GetMapping("/visible-ids")
+    @PreAuthorize("hasRole('INTERNAL')")
+    public ResponseEntity<List<Long>> getAllVisibleFestivalLocationIds() {
+        return ResponseEntity.ok(festivalService.getAllVisibleFestivalLocationIds());
+    }
+
+    @GetMapping("/{festivalLocationId}/name")
+    @PreAuthorize("hasRole('INTERNAL')")
+    public ResponseEntity<String> getFestivalName(@PathVariable Long festivalLocationId) {
+        return ResponseEntity.ok(festivalService.getFestivalName(festivalLocationId));
+    }
+
     @GetMapping("/{festivalLocationId}/visibility")
     @PreAuthorize("hasRole('INTERNAL')")
     public ResponseEntity<Boolean> isFestivalVisible(@PathVariable Long festivalLocationId) {

@@ -12,6 +12,11 @@ import java.util.List;
 @FeignClient(name = "festival-service", url = "http://localhost:8085")
 public interface FestivalServiceClient {
 
+    @GetMapping("/internal/festivals/visible-ids")
+    List<Long> getAllVisibleFestivalLocationIds(
+            @RequestHeader("Authorization") String token
+    );
+
     @GetMapping("/internal/festivals/city/{cityId}")
     List<Long> getFestivalLocationIdsByCity(
             @RequestHeader("Authorization") String token,

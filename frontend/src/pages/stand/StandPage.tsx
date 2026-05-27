@@ -10,6 +10,19 @@ import { eventApi } from '../../api/event';
 import type { Stand } from '../../types';
 import styles from './StandPage.module.css';
 
+function ProductPhoto({ id, name }: { id: number; name: string }) {
+  const [err, setErr] = useState(false);
+  if (err) return null;
+  return (
+    <img
+      src={`/api/files/PRODUCT_INSTANCE/${id}`}
+      alt={name}
+      className={styles.productPhoto}
+      onError={() => setErr(true)}
+    />
+  );
+}
+
 interface StandLocationState {
   stand?: Stand;
   festivalName?: string;
@@ -101,6 +114,7 @@ export default function StandPage() {
             <div className={styles.productsGrid}>
               {products.map(p => (
                 <Card key={p.productInstanceId} padding="md">
+                  <ProductPhoto id={p.productInstanceId} name={p.productName} />
                   <p className={styles.productName}>{p.productName}</p>
                   {p.description && <p className={styles.productDesc}>{p.description}</p>}
                   <div className={styles.productFooter}>

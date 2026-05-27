@@ -20,4 +20,7 @@ public class TicketTypeInstanceResponse {
 
     @JsonProperty("price")
     private BigDecimal price;
+
+    @JsonProperty("remaining")
+    private Integer remaining;
 }

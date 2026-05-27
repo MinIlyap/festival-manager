@@ -12,6 +12,9 @@ public class TicketResponse {
     @JsonProperty("ticket_id")
     private Long ticketId;
 
+    @JsonProperty("festival_location_id")
+    private Long festivalLocationId;
+
     @JsonProperty("festival_name")
     private String festivalName;
 

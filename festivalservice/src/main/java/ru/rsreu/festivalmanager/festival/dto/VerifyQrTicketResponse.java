@@ -23,4 +23,7 @@ public class VerifyQrTicketResponse {
 
     @JsonProperty("location_id")
     private Long locationId;
+
+    @JsonProperty("user_id")
+    private Long userId;
 }

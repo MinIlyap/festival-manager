@@ -23,4 +23,7 @@ public interface TicketRepository extends JpaRepository<Ticket, Long> {
     );
 
     boolean existsByTicketTypeInstanceId(Long instanceId);
+
+    @Query("SELECT DISTINCT t.userId FROM Ticket t WHERE t.ticketTypeInstance.festivalLocation.id = :festivalLocationId")
+    List<Long> findDistinctUserIdsByFestivalLocationId(@Param("festivalLocationId") Long festivalLocationId);
 }

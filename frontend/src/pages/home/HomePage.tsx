@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { motion } from 'framer-motion';
@@ -18,10 +18,10 @@ import styles from './HomePage.module.css';
 
 function useDebounce<T>(value: T, delay: number): T {
   const [d, setD] = useState(value);
-  useState(() => {
+  useEffect(() => {
     const t = setTimeout(() => setD(value), delay);
     return () => clearTimeout(t);
-  });
+  }, [value, delay]);
   return d;
 }
 
@@ -61,44 +61,71 @@ function FestivalCard({ festival }: { festival: Festival }) {
   );
 }
 
+function FestivalNameBadge({ festivalId }: { festivalId: string }) {
+  const { data } = useQuery({
+    queryKey: ['festival-name', festivalId],
+    queryFn: () => festivalApi.getFestivalName(festivalId),
+    staleTime: 10 * 60 * 1000,
+    enabled: !!festivalId,
+  });
+  if (!data) return null;
+  return <p className={styles.festivalBadge}>{data}</p>;
+}
+
 function EventCard({ event }: { event: FestivalEvent }) {
   const navigate = useNavigate();
-  const typeLabels: Record<string, string> = { TOURNAMENT: 'Турнир', QUEST: 'Квест', MASTERCLASS: 'Мастер-класс', DEMO: 'Демонстрация' };
+  const [imgErr, setImgErr] = useState(false);
+  const typeLabels: Record<string, string> = {
+    TOURNAMENT: 'Турнир', QUEST: 'Квест', MASTERCLASS: 'Мастер-класс',
+    MASTER_CLASS: 'Мастер-класс', DEMO: 'Демонстрация', DEMONSTRATION: 'Демонстрация',
+  };
   return (
-    <Card hoverable padding="md" onClick={() => navigate(`/event/${event.id}`)}>
-      <div className={styles.eventCardHeader}>
-        <Badge status="info">{typeLabels[event.type] ?? event.type}</Badge>
-        <Badge status={event.format === 'SOLO' ? 'active' : 'draft'}>{event.format === 'SOLO' ? 'Одиночное' : 'Командное'}</Badge>
+    <Card hoverable padding="none" onClick={() => navigate(`/event/${event.id}`)}>
+      <div className={styles.cardCover}>
+        {!imgErr
+          ? <img src={`/api/files/FESTIVAL_EVENT/${event.id}`} alt={event.name} onError={() => setImgErr(true)} />
+          : <div className={styles.cardCoverPlaceholder}><Trophy size={32} /></div>
+        }
+        <Badge status="info" className={styles.ageBadge}>{typeLabels[event.type] ?? event.type}</Badge>
       </div>
-      <h3 className={styles.cardTitle} style={{ marginTop: 8 }}>{event.name}</h3>
-      <div className={styles.cardMeta}>
-        <span><Calendar size={12} /> {formatDate(event.startDate)}</span>
-        {event.companyName && <span>{event.companyName}</span>}
+      <div className={styles.cardBody}>
+        {event.festivalId && <FestivalNameBadge festivalId={event.festivalId} />}
+        <h3 className={styles.cardTitle}>{event.name}</h3>
+        <div className={styles.cardMeta}>
+          <span><Calendar size={12} /> {formatDate(event.startDate)}</span>
+          {event.companyName && <span>{event.companyName}</span>}
+          <Badge status={event.format === 'SOLO' ? 'active' : 'draft'}>
+            {event.format === 'SOLO' ? 'Одиночное' : 'Командное'}
+          </Badge>
+        </div>
       </div>
-      <Button variant="ghost" size="sm" fullWidth onClick={e => { e.stopPropagation(); navigate(`/event/${event.id}`); }}>
-        Подробнее
-      </Button>
     </Card>
   );
 }
 
 function StandCard({ stand }: { stand: Stand }) {
-  const typeLabels: Record<string, string> = { TRADE: 'Торговый', DEMO: 'Демонстрационный' };
+  const navigate = useNavigate();
+  const [imgErr, setImgErr] = useState(false);
+  const typeLabels: Record<string, string> = { COMMERCIAL: 'Коммерческий', DEMONSTRATION: 'Демонстрационный', TRADE: 'Торговый', DEMO: 'Демонстрационный' };
   return (
-    <Card hoverable padding="none">
+    <Card hoverable padding="none" onClick={() => navigate(`/stand/${stand.id}`)}>
       <div className={styles.cardCover}>
-        {stand.photoUrl
-          ? <img src={stand.photoUrl} alt={stand.name} />
+        {!imgErr
+          ? <img src={`/api/files/FESTIVAL_STAND/${stand.id}`} alt={stand.name} onError={() => setImgErr(true)} />
           : <div className={styles.cardCoverPlaceholder}><Store size={32} /></div>
         }
+        <Badge status={stand.type === 'COMMERCIAL' || stand.type === 'TRADE' ? 'active' : 'info'} className={styles.ageBadge}>
+          {typeLabels[stand.type] ?? stand.type}
+        </Badge>
       </div>
       <div className={styles.cardBody}>
+        {stand.festivalId && <FestivalNameBadge festivalId={stand.festivalId} />}
         <h3 className={styles.cardTitle}>{stand.name}</h3>
-        <Badge status={stand.type === 'TRADE' ? 'active' : 'info'}>{typeLabels[stand.type]}</Badge>
-        <div className={styles.cardMeta} style={{ marginTop: 8 }}>
-          {stand.companyName && <span>{stand.companyName}</span>}
-          {stand.festivalName && <span>{stand.festivalName}{stand.eventName ? ` · ${stand.eventName}` : ''}</span>}
-        </div>
+        {stand.companyName && (
+          <div className={styles.cardMeta}>
+            <span>{stand.companyName}</span>
+          </div>
+        )}
       </div>
     </Card>
   );
@@ -200,65 +227,37 @@ function EventsTab() {
   });
 
   const hasFilters = search || city || dateFrom || eventType;
-  const grouped = (data?.content ?? []).reduce<Record<string, FestivalEvent[]>>((acc, e) => {
-    const k = e.festivalName || 'Мероприятия';
-    if (!acc[k]) acc[k] = [];
-    acc[k].push(e);
-    return acc;
-  }, {});
+  const filters = (
+    <div className={styles.filters}>
+      <div className={styles.searchWrap}>
+        <Search size={16} className={styles.searchIcon} />
+        <input className={styles.searchInput} placeholder="Поиск..." value={search} onChange={e => setSearch(e.target.value)} />
+      </div>
+      <div className={styles.filterCity}>
+        <CityCombobox value={city} onChange={setCity} placeholder="Город" />
+      </div>
+      <input type="date" className={styles.datePicker} value={dateFrom} onChange={e => setDateFrom(e.target.value)} title="Дата начала" />
+      <select className={styles.filterSelect} value={eventType} onChange={e => setEventType(e.target.value)}>
+        {EVENT_TYPES.map(t => <option key={t.value} value={t.value}>{t.label}</option>)}
+      </select>
+      {hasFilters && <Button variant="ghost" size="sm" onClick={() => { setSearch(''); setCity(null); setDateFrom(''); setEventType(''); }}><X size={14} /> Сбросить</Button>}
+    </div>
+  );
 
-  if (isLoading) return <Spinner centered />;
+  if (isLoading) return <>{filters}<Spinner centered /></>;
 
-  if (!data?.content.length) {
-    return (
-      <>
-        <div className={styles.filters}>
-          <div className={styles.searchWrap}>
-            <Search size={16} className={styles.searchIcon} />
-            <input className={styles.searchInput} placeholder="Поиск..." value={search} onChange={e => setSearch(e.target.value)} />
-          </div>
-          <div className={styles.filterCity}>
-            <CityCombobox value={city} onChange={setCity} placeholder="Город" />
-          </div>
-          <input type="date" className={styles.datePicker} value={dateFrom} onChange={e => setDateFrom(e.target.value)} title="Дата начала" />
-          <select className={styles.filterSelect} value={eventType} onChange={e => setEventType(e.target.value)}>
-            {EVENT_TYPES.map(t => <option key={t.value} value={t.value}>{t.label}</option>)}
-          </select>
-          {hasFilters && <Button variant="ghost" size="sm" onClick={() => { setSearch(''); setCity(null); setDateFrom(''); setEventType(''); }}><X size={14} /> Сбросить</Button>}
-        </div>
-        <EmptyState icon={Trophy} message="Мероприятий нет" description={hasFilters ? 'Попробуйте изменить фильтры' : 'Пока нет доступных мероприятий'} />
-      </>
-    );
-  }
+  if (!data?.content.length) return <>{filters}<EmptyState icon={Trophy} message="Мероприятий нет" description={hasFilters ? 'Попробуйте изменить фильтры' : 'Пока нет доступных мероприятий'} /></>;
 
   return (
     <div>
-      <div className={styles.filters}>
-        <div className={styles.searchWrap}>
-          <Search size={16} className={styles.searchIcon} />
-          <input className={styles.searchInput} placeholder="Поиск..." value={search} onChange={e => setSearch(e.target.value)} />
-        </div>
-        <div className={styles.filterCity}>
-          <CityCombobox value={city} onChange={setCity} placeholder="Город" />
-        </div>
-        <input type="date" className={styles.datePicker} value={dateFrom} onChange={e => setDateFrom(e.target.value)} title="Дата начала" />
-        <select className={styles.filterSelect} value={eventType} onChange={e => setEventType(e.target.value)}>
-          {EVENT_TYPES.map(t => <option key={t.value} value={t.value}>{t.label}</option>)}
-        </select>
-        {hasFilters && <Button variant="ghost" size="sm" onClick={() => { setSearch(''); setCity(null); setDateFrom(''); setEventType(''); }}><X size={14} /> Сбросить</Button>}
+      {filters}
+      <div className={styles.grid}>
+        {data.content.map((e, i) => (
+          <motion.div key={e.id} initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.05 }}>
+            <EventCard event={e} />
+          </motion.div>
+        ))}
       </div>
-      {Object.entries(grouped).map(([fest, events]) => (
-        <div key={fest} className={styles.group}>
-          <h3 className={styles.groupTitle}>{fest}</h3>
-          <div className={styles.grid}>
-            {events.map((e, i) => (
-              <motion.div key={e.id} initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.05 }}>
-                <EventCard event={e} />
-              </motion.div>
-            ))}
-          </div>
-        </div>
-      ))}
       {!data.last && (
         <div className={styles.loadMore}>
           <Button variant="secondary" onClick={() => setPage(p => p + 1)}>Загрузить ещё</Button>

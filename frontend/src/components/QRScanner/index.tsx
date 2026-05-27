@@ -1,36 +1,53 @@
 import { useEffect, useRef } from 'react';
-import { Html5QrcodeScanner } from 'html5-qrcode';
+import { Html5Qrcode } from 'html5-qrcode';
 import styles from './QRScanner.module.css';
 
 interface QRScannerProps {
   onScan: (result: string) => void;
-  onError?: (err: string) => void;
 }
 
-export default function QRScanner({ onScan, onError }: QRScannerProps) {
-  const ref = useRef<Html5QrcodeScanner | null>(null);
+let idCounter = 0;
+
+export default function QRScanner({ onScan }: QRScannerProps) {
+  const containerRef = useRef<HTMLDivElement>(null);
+  const scannerRef = useRef<Html5Qrcode | null>(null);
+  const onScanRef = useRef(onScan);
+
+  useEffect(() => { onScanRef.current = onScan; });
 
   useEffect(() => {
-    const scanner = new Html5QrcodeScanner(
-      'qr-scanner-region',
-      { fps: 10, qrbox: { width: 250, height: 250 }, rememberLastUsedCamera: true },
-      false
-    );
-    ref.current = scanner;
+    const divId = `qr-scanner-${++idCounter}`;
+    const container = containerRef.current;
+    if (!container) return;
+    container.id = divId;
 
-    scanner.render(
-      (text) => { onScan(text); scanner.pause(); },
-      (err) => { onError?.(err); }
-    );
+    const scanner = new Html5Qrcode(divId);
+    scannerRef.current = scanner;
+
+    scanner
+      .start(
+        { facingMode: 'environment' },
+        { fps: 10, qrbox: { width: 240, height: 240 } },
+        (text) => {
+          onScanRef.current(text);
+          scanner.pause();
+        },
+        undefined,
+      )
+      .catch(err => console.warn('QR scanner start failed:', err));
 
     return () => {
-      scanner.clear().catch(() => {});
+      scanner
+        .stop()
+        .catch(() => {})
+        .finally(() => { scanner.clear().catch(() => {}); });
+      scannerRef.current = null;
     };
-  }, [onScan, onError]);
+  }, []);
 
   return (
     <div className={styles.wrap}>
-      <div id="qr-scanner-region" className={styles.scanner} />
+      <div ref={containerRef} className={styles.scanner} />
     </div>
   );
 }

@@ -54,11 +54,18 @@ public class FestivalQrService {
             Long tokenTicketId = claims.get("ticket_id", Long.class);
             Long tokenFestLocId = claims.get("fest_loc_id", Long.class);
 
+            Long tokenUserId = null;
+            try {
+                String subject = claims.getSubject();
+                if (subject != null) tokenUserId = Long.parseLong(subject);
+            } catch (NumberFormatException ignored) {}
+
             if (!festivalLocationId.equals(tokenFestLocId)) {
                 return VerifyQrTicketResponse.builder()
                         .status(VerifyQrTicketResponse.VerificationStatus.LOCATION_MISMATCH)
                         .targetId(tokenTicketId)
                         .locationId(tokenFestLocId)
+                        .userId(tokenUserId)
                         .build();
             }
 
@@ -66,6 +73,7 @@ public class FestivalQrService {
                     .status(VerifyQrTicketResponse.VerificationStatus.SUCCESS)
                     .targetId(tokenTicketId)
                     .locationId(tokenFestLocId)
+                    .userId(tokenUserId)
                     .build();
 
         } catch (ExpiredJwtException e) {

@@ -506,6 +506,69 @@
   margin-top: 3px;
 }
 
+.remainingLabel {
+  font-size: 11px;
+  color: var(--text-muted);
+  margin-top: 3px;
+}
+
+.dayCircles {
+  display: flex;
+  gap: 0;
+  margin: 4px 0;
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  border: 1.5px solid var(--border-default);
+}
+
+.dayCircle {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 10px 8px;
+  background: var(--bg-elevated);
+  border: none;
+  border-right: 1px solid var(--border-default);
+  color: var(--text-secondary);
+  cursor: pointer;
+  font-family: var(--font-heading);
+  transition: background 0.15s, color 0.15s;
+  gap: 2px;
+}
+
+.dayCircle:last-child {
+  border-right: none;
+}
+
+.dayCircle:hover:not(.dayCircleSelected) {
+  background: color-mix(in srgb, var(--accent-primary) 8%, var(--bg-elevated));
+  color: var(--text-primary);
+}
+
+.dayCircleSelected {
+  background: var(--accent-primary);
+  color: #fff;
+}
+
+.dayCircleNum {
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 1.3;
+  opacity: 0.6;
+}
+
+.dayCircleDate {
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1.3;
+}
+
+.dayCircleSelected .dayCircleNum {
+  opacity: 0.75;
+}
+
 .ticketChoicePrice {
   font-family: var(--font-mono);
   font-size: 15px;
@@ -516,11 +579,20 @@
 }
 
 .buyTotal {
-  text-align: right;
+  display: flex;
+  align-items: baseline;
+  justify-content: flex-end;
+  gap: 8px;
   font-size: 14px;
   color: var(--text-secondary);
   padding-top: 4px;
   border-top: 1px solid var(--border-subtle);
+}
+
+.buyTotalCalc {
+  font-size: 12px;
+  color: var(--text-muted);
+  margin-right: auto;
 }
 
 .buyTotal strong {

@@ -91,6 +91,21 @@
   flex-wrap: wrap;
 }
 
+.registerWrap {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 4px;
+}
+
+.registerHint {
+  font-size: 12px;
+  color: var(--text-muted);
+  text-align: right;
+  max-width: 200px;
+  line-height: 1.3;
+}
+
 /* ── Main grid ────────────────────────────────────────────────────────────── */
 
 .grid {
@@ -223,8 +238,17 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 3px;
+  gap: 5px;
   min-width: 64px;
+  flex-shrink: 0;
+}
+
+.rewardPhotoThumb {
+  width: 52px;
+  height: 52px;
+  border-radius: var(--radius-sm);
+  object-fit: cover;
+  flex-shrink: 0;
 }
 
 .rewardMedalIcon {
@@ -253,14 +277,6 @@
 .rewardDesc {
   font-size: 13px;
   color: var(--text-muted);
-}
-
-.rewardPhoto {
-  width: 52px;
-  height: 52px;
-  border-radius: var(--radius-sm);
-  object-fit: cover;
-  flex-shrink: 0;
 }
 
 /* ── Responsive ───────────────────────────────────────────────────────────── */

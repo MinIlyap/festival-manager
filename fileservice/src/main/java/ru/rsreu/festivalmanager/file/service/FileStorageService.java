@@ -62,7 +62,7 @@ public class FileStorageService {
         String bucketName = switch (type) {
             case USER_AVATAR, COMPANY_LOGO -> "avatars";
             case FESTIVAL_LOCATION -> "festivals";
-            case FESTIVAL_EVENT, FESTIVAL_STAND -> "events";
+            case FESTIVAL_EVENT, FESTIVAL_STAND, PRODUCT_INSTANCE -> "events";
             case EVENT_REWARD -> "rewards";
             default -> throw new IllegalArgumentException("Неизвестный тип сущности");
         };
@@ -149,7 +149,7 @@ public class FileStorageService {
 
         boolean hasAccess = switch (type) {
             case FESTIVAL_LOCATION -> festivalClient.checkAccess(getSystemToken(), type.name(), entityId, creatorId);
-            case FESTIVAL_EVENT, FESTIVAL_STAND, EVENT_REWARD -> eventClient.checkAccess(getSystemToken(), type.name(), entityId, creatorId);
+            case FESTIVAL_EVENT, FESTIVAL_STAND, EVENT_REWARD, PRODUCT_INSTANCE -> eventClient.checkAccess(getSystemToken(), type.name(), entityId, creatorId);
             default -> false;
         };
 

@@ -93,7 +93,7 @@ export default function TicketsPage() {
     <Layout>
       <h1 className={styles.title}>Мои билеты и регистрации</h1>
       <Tabs
-        tabs={[{ key: 'tickets', label: '🎫 Билеты на фестивали' }, { key: 'regs', label: '🎮 Регистрации на мероприятия' }]}
+        tabs={[{ key: 'tickets', label: 'Билеты на фестивали' }, { key: 'regs', label: 'Регистрации на мероприятия' }]}
         activeKey={tab}
         onChange={setTab}
       />

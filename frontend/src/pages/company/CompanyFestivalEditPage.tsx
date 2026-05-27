@@ -12,6 +12,20 @@ import { eventApi, type EventReward, type StandProduct } from '../../api/event';
 import DictCombobox, { type DictItem } from '../../components/DictCombobox';
 import styles from './CompanyPages.module.css';
 
+function PhotoImg({ src }: { src: string }) {
+  const [show, setShow] = useState(false);
+  const [err, setErr] = useState(false);
+  if (err) return null;
+  return (
+    <img
+      src={src}
+      onLoad={() => setShow(true)}
+      onError={() => setErr(true)}
+      style={{ width: '100%', maxHeight: 140, objectFit: 'cover', borderRadius: 8, marginBottom: 8, display: show ? 'block' : 'none' }}
+    />
+  );
+}
+
 const TABS = [
   { key: 'info',      label: 'Общая информация',      icon: Info },
   { key: 'companies', label: 'Компании-организаторы',  icon: Building2 },
@@ -571,6 +585,36 @@ export default function CompanyFestivalEditPage() {
   const deleteStandPhotoMutation = useMutation({
     mutationFn: () => eventApi.deleteStandPhoto(photoStandRowId!),
     onSuccess: () => setPhotoKey(k => k + 1),
+  });
+
+  // ── Reward photo management ─────────────────────────────────────────────────
+  const [photoRewardId, setPhotoRewardId] = useState<string | null>(null);
+  const [rewardPhotoKey, setRewardPhotoKey] = useState(0);
+  const rewardPhotoFileRef = useRef<HTMLInputElement>(null);
+
+  const uploadRewardPhotoMutation = useMutation({
+    mutationFn: (file: File) => eventApi.uploadRewardPhoto(photoRewardId!, file),
+    onSuccess: () => setRewardPhotoKey(k => k + 1),
+  });
+
+  const deleteRewardPhotoMutation = useMutation({
+    mutationFn: () => eventApi.deleteRewardPhoto(photoRewardId!),
+    onSuccess: () => setRewardPhotoKey(k => k + 1),
+  });
+
+  // ── Product photo management ────────────────────────────────────────────────
+  const [photoProductId, setPhotoProductId] = useState<number | null>(null);
+  const [productPhotoKey, setProductPhotoKey] = useState(0);
+  const productPhotoFileRef = useRef<HTMLInputElement>(null);
+
+  const uploadProductPhotoMutation = useMutation({
+    mutationFn: (file: File) => eventApi.uploadProductPhoto(photoProductId!, file),
+    onSuccess: () => setProductPhotoKey(k => k + 1),
+  });
+
+  const deleteProductPhotoMutation = useMutation({
+    mutationFn: () => eventApi.deleteProductPhoto(photoProductId!),
+    onSuccess: () => setProductPhotoKey(k => k + 1),
   });
 
   // ── Festival Photos ──────────────────────────────────────────────────────────
@@ -1139,19 +1183,43 @@ export default function CompanyFestivalEditPage() {
                                 .slice()
                                 .sort((a: EventReward, b: EventReward) => (a.place ?? 99) - (b.place ?? 99))
                                 .map((rew: EventReward) => (
-                                  <div key={rew.eventRewardId} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '8px 0', borderBottom: '1px solid var(--border-subtle)' }}>
-                                    <div style={{ flex: 1 }}>
-                                      <span style={{ fontWeight: 600, marginRight: 8 }}>
-                                        {rew.place != null ? `${ordinalRu(rew.place)} · ` : ''}
-                                      </span>
-                                      <span>{rew.rewardName}</span>
-                                      {rew.description && <span style={{ color: 'var(--text-muted)', fontSize: 12, marginLeft: 6 }}>— {rew.description}</span>}
+                                  <div key={rew.eventRewardId} style={{ borderBottom: '1px solid var(--border-subtle)' }}>
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '8px 0' }}>
+                                      <div style={{ flex: 1 }}>
+                                        <span style={{ fontWeight: 600, marginRight: 8 }}>
+                                          {rew.place != null ? `${ordinalRu(rew.place)} · ` : ''}
+                                        </span>
+                                        <span>{rew.rewardName}</span>
+                                        {rew.description && <span style={{ color: 'var(--text-muted)', fontSize: 12, marginLeft: 6 }}>— {rew.description}</span>}
+                                      </div>
+                                      <Button size="sm" variant="secondary"
+                                        onClick={() => setPhotoRewardId(photoRewardId === String(rew.eventRewardId) ? null : String(rew.eventRewardId))}>
+                                        <Image size={13} />
+                                      </Button>
+                                      <Button size="sm" variant="danger"
+                                        loading={deleteRewardMutation.isPending}
+                                        onClick={() => deleteRewardMutation.mutate(String(rew.eventRewardId))}>
+                                        <Trash2 size={13} />
+                                      </Button>
                                     </div>
-                                    <Button size="sm" variant="danger"
-                                      loading={deleteRewardMutation.isPending}
-                                      onClick={() => deleteRewardMutation.mutate(String(rew.eventRewardId))}>
-                                      <Trash2 size={13} />
-                                    </Button>
+                                    {photoRewardId === String(rew.eventRewardId) && (
+                                      <div style={{ paddingBottom: 10 }}>
+                                        <PhotoImg
+                                          key={rewardPhotoKey}
+                                          src={`/api/files/EVENT_REWARD/${rew.eventRewardId}?k=${rewardPhotoKey}`}
+                                        />
+                                        <div style={{ display: 'flex', gap: 8 }}>
+                                          <Button size="sm" loading={uploadRewardPhotoMutation.isPending} onClick={() => rewardPhotoFileRef.current?.click()}>
+                                            <Image size={13} /> Загрузить фото
+                                          </Button>
+                                          <input ref={rewardPhotoFileRef} type="file" accept="image/*" style={{ display: 'none' }}
+                                            onChange={e => { const f = e.target.files?.[0]; if (f) { uploadRewardPhotoMutation.mutate(f); e.target.value = ''; } }} />
+                                          <Button size="sm" variant="danger" loading={deleteRewardPhotoMutation.isPending} onClick={() => deleteRewardPhotoMutation.mutate()}>
+                                            <Trash2 size={13} />
+                                          </Button>
+                                        </div>
+                                      </div>
+                                    )}
                                   </div>
                                 ))}
                             </div>
@@ -1371,6 +1439,10 @@ export default function CompanyFestivalEditPage() {
                                         {sp.description ? ` · ${sp.description}` : ''}
                                       </p>
                                     </div>
+                                    <Button size="sm" variant="secondary"
+                                      onClick={() => setPhotoProductId(photoProductId === sp.productInstanceId ? null : sp.productInstanceId)}>
+                                      <Image size={13} />
+                                    </Button>
                                     <Button size="sm" variant="secondary" onClick={() => {
                                       if (editingProductId === sp.productInstanceId) {
                                         setEditingProductId(null);
@@ -1389,6 +1461,24 @@ export default function CompanyFestivalEditPage() {
                                       <Trash2 size={13} />
                                     </Button>
                                   </div>
+                                  {photoProductId === sp.productInstanceId && (
+                                    <div style={{ padding: '8px 0 10px', borderBottom: '1px solid var(--border-subtle)' }}>
+                                      <PhotoImg
+                                        key={productPhotoKey}
+                                        src={`/api/files/PRODUCT_INSTANCE/${sp.productInstanceId}?k=${productPhotoKey}`}
+                                      />
+                                      <div style={{ display: 'flex', gap: 8 }}>
+                                        <Button size="sm" loading={uploadProductPhotoMutation.isPending} onClick={() => productPhotoFileRef.current?.click()}>
+                                          <Image size={13} /> Загрузить фото
+                                        </Button>
+                                        <input ref={productPhotoFileRef} type="file" accept="image/*" style={{ display: 'none' }}
+                                          onChange={e => { const f = e.target.files?.[0]; if (f) { uploadProductPhotoMutation.mutate(f); e.target.value = ''; } }} />
+                                        <Button size="sm" variant="danger" loading={deleteProductPhotoMutation.isPending} onClick={() => deleteProductPhotoMutation.mutate()}>
+                                          <Trash2 size={13} />
+                                        </Button>
+                                      </div>
+                                    </div>
+                                  )}
                                   {editingProductId === sp.productInstanceId && (
                                     <div className={styles.form} style={{ padding: '12px 0 4px' }}>
                                       <div className={styles.row}>

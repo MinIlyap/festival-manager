@@ -1,16 +1,21 @@
 .wrap {
   display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: var(--space-md);
+  justify-content: center;
 }
 
 .scanner {
   width: 100%;
-  max-width: 400px;
+  max-width: 360px;
+  border-radius: var(--radius-md);
+  overflow: hidden;
 }
 
-/* Override html5-qrcode default styles */
 .scanner video {
+  width: 100% !important;
   border-radius: var(--radius-md) !important;
+  display: block;
+}
+
+.scanner canvas {
+  display: none !important;
 }

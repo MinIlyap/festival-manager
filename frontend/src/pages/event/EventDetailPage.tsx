@@ -13,8 +13,22 @@ import Modal from '../../components/ui/Modal';
 import Spinner from '../../components/ui/Spinner';
 import QRModal from '../../components/QRModal';
 import { eventApi } from '../../api/event';
+import { festivalApi } from '../../api/festival';
 import { useAuthStore } from '../../store/authStore';
 import styles from './EventDetailPage.module.css';
+
+function RewardPhoto({ url, name }: { url?: string; name: string }) {
+  const [err, setErr] = useState(false);
+  if (!url || err) return <Medal size={22} className={styles.rewardMedalIcon} />;
+  return (
+    <img
+      src={url}
+      alt={name}
+      className={styles.rewardPhotoThumb}
+      onError={() => setErr(true)}
+    />
+  );
+}
 
 const TYPE_LABEL: Record<string, string> = {
   TOURNAMENT:    'Турнир',
@@ -66,8 +80,18 @@ export default function EventDetailPage() {
     enabled: !!accessToken,
   });
 
+  const { data: myTickets } = useQuery({
+    queryKey: ['my-tickets'],
+    queryFn: festivalApi.myTickets,
+    enabled: !!accessToken && (role === 'USER' || role === 'CURATOR'),
+  });
+
   const myReg = (myRegs ?? []).find(r => r.eventId === id);
   const hasCommandId = !!(myReg as unknown as { commandId?: string })?.commandId;
+
+  const hasValidTicket = (myTickets ?? []).some(
+    t => t.status === 'ACTIVE' && event && t.festivalId === event.festivalId,
+  );
 
   const registerMutation = useMutation({
     mutationFn: () => eventApi.register(id!),
@@ -101,7 +125,18 @@ export default function EventDetailPage() {
 
   const isTeam = event.format === 'TEAM';
   const isPast = new Date(event.endDate) < new Date();
-  const canRegister = !!accessToken && !myReg && !isPast && (role === 'USER' || role === 'CURATOR');
+  const canRegister = !!accessToken && !myReg && !isPast && (role === 'USER' || role === 'CURATOR') && hasValidTicket;
+  const registerDisabledReason = !accessToken
+    ? 'Войдите в аккаунт'
+    : isPast
+    ? 'Мероприятие уже завершено'
+    : myReg
+    ? null
+    : role !== 'USER' && role !== 'CURATOR'
+    ? 'Регистрация доступна только для пользователей'
+    : !hasValidTicket
+    ? 'Необходим действующий билет на фестиваль'
+    : null;
 
   return (
     <Layout>
@@ -148,10 +183,20 @@ export default function EventDetailPage() {
               <QrCode size={15} /> Мой QR
             </Button>
           )}
-          {canRegister && (
-            <Button loading={registerMutation.isPending} onClick={() => registerMutation.mutate()}>
-              Зарегистрироваться
-            </Button>
+          {!myReg && !isPast && (
+            <div className={styles.registerWrap}>
+              <Button
+                loading={registerMutation.isPending}
+                disabled={!canRegister}
+                onClick={() => canRegister && registerMutation.mutate()}
+                title={registerDisabledReason ?? undefined}
+              >
+                Зарегистрироваться
+              </Button>
+              {registerDisabledReason && (
+                <p className={styles.registerHint}>{registerDisabledReason}</p>
+              )}
+            </div>
           )}
         </div>
       </div>
@@ -243,7 +288,7 @@ export default function EventDetailPage() {
                 .map(r => (
                   <div key={r.id} className={styles.rewardRow}>
                     <div className={styles.rewardPlace}>
-                      <Medal size={16} className={styles.rewardMedalIcon} />
+                      <RewardPhoto url={r.photoUrl} name={r.name} />
                       <span className={styles.rewardPlaceLabel}>
                         {PLACE_LABELS[r.place] ?? `${r.place} место`}
                       </span>
@@ -254,9 +299,6 @@ export default function EventDetailPage() {
                         <p className={styles.rewardDesc}>{r.description}</p>
                       )}
                     </div>
-                    {r.photoUrl && (
-                      <img src={r.photoUrl} alt={r.name} className={styles.rewardPhoto} />
-                    )}
                   </div>
                 ))}
             </div>

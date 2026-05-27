@@ -59,6 +59,7 @@ interface RawFestivalResponse {
 
 interface RawTicketResponse {
   ticket_id: number;
+  festival_location_id?: number;
   festival_name: string;
   ticket_type: string;
   quantity: number;
@@ -71,6 +72,7 @@ interface RawTicketTypeInstanceResponse {
   name: string;
   description?: string;
   price: number;
+  remaining?: number;
 }
 
 interface RawUserTicketsResponse {
@@ -105,7 +107,7 @@ function mapFestival(f: RawFestivalResponse): Festival {
 function mapTicket(t: RawTicketResponse, status: 'ACTIVE' | 'EXPIRED'): Ticket {
   return {
     id: String(t.ticket_id),
-    festivalId: '',
+    festivalId: t.festival_location_id ? String(t.festival_location_id) : '',
     festivalName: t.festival_name,
     ticketTypeName: t.ticket_type,
     price: Number(t.final_price) || 0,
@@ -185,7 +187,7 @@ export const festivalApi = {
         description: t.description,
         price: Number(t.price) || 0,
         quantity: 0,
-        remaining: 0,
+        remaining: t.remaining ?? 0,
       }));
       festival.companies = (organizersRes.data ?? []).map(o => ({
         id: String(o.company_id),
@@ -327,13 +329,21 @@ export const festivalApi = {
   myCuratorFestivals: () =>
     api.get<RawFestivalResponse[]>('/festival/curator/my').then(r => r.data.map(mapFestival)),
 
+  // GET /ticket/participants/{festivalLocationId} — CURATOR gets festival participants
+  getParticipants: (festivalLocationId: string) =>
+    api.get<import('../types').FestivalParticipant[]>(`/ticket/participants/${festivalLocationId}`).then(r => r.data),
+
   // POST /qr/festivals/location/{locationId}/verify — CURATOR verifies ticket QR
   verifyTicketQr: (token: string, locationId = '0') =>
-    api.post(`/qr/festivals/location/${locationId}/verify`, { token }).then(r => r.data),
+    api.post<import('../types').QrVerifyResponse>(`/qr/festivals/location/${locationId}/verify`, { token }).then(r => r.data),
 
   // POST /qr/festivals/ticket/{ticketId}/generate — USER generates ticket QR
   generateTicketQr: (ticketId: string) =>
     api.post(`/qr/festivals/ticket/${ticketId}/generate`).then(r => r.data),
+
+  // GET /festival/{id} — lightweight name lookup (via public endpoint)
+  getFestivalName: (festivalLocationId: string) =>
+    api.get<{ name: string }>(`/festival/${festivalLocationId}`).then(r => r.data.name as string),
 
   // POST /files/FESTIVAL_LOCATION/{festivalId}
   uploadPhoto: async (festivalId: string, file: File) => {

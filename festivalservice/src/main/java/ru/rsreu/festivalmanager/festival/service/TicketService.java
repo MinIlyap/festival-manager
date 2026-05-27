@@ -21,6 +21,7 @@ import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
 import java.time.Period;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 @Slf4j
@@ -203,13 +204,21 @@ public class TicketService {
 
     @Transactional(readOnly = true)
     public List<TicketTypeInstanceResponse> getTicketTypeInstancesByFestival(Long festivalLocationId) {
-        return ticketTypeInstanceRepository.findByFestivalLocation_Id(festivalLocationId)
-                .stream()
+        List<TicketTypeInstance> instances = ticketTypeInstanceRepository.findByFestivalLocation_Id(festivalLocationId);
+        if (instances.isEmpty()) return Collections.emptyList();
+
+        FestivalInstance festivalInstance = instances.get(0).getFestivalLocation().getFestivalInstance();
+        int maxPeople = festivalInstance.getMaxPeopleNumber() != null ? festivalInstance.getMaxPeopleNumber() : 0;
+        int soldTickets = ticketRepository.sumSoldTicketsByFestivalInstanceId(festivalInstance.getId());
+        int remaining = Math.max(0, maxPeople - soldTickets);
+
+        return instances.stream()
                 .map(tti -> TicketTypeInstanceResponse.builder()
                         .id(tti.getId())
                         .name(tti.getTicketType().getName())
                         .description(tti.getDescription())
                         .price(tti.getPrice())
+                        .remaining(remaining)
                         .build())
                 .collect(Collectors.toList());
     }
@@ -233,6 +242,7 @@ public class TicketService {
         for (Ticket t : allTickets) {
             TicketResponse tr = TicketResponse.builder()
                     .ticketId(t.getId())
+                    .festivalLocationId(t.getTicketTypeInstance().getFestivalLocation().getId())
                     .festivalName(t.getTicketTypeInstance().getFestivalLocation().getFestivalInstance().getFestival().getName())
                     .ticketType(t.getTicketTypeInstance().getTicketType().getName())
                     .quantity(t.getQuantity())
@@ -251,5 +261,36 @@ public class TicketService {
                 .validTickets(validTickets)
                 .expiredTickets(expiredTickets)
                 .build();
+    }
+
+    @Transactional(readOnly = true)
+    public List<FestivalParticipantDto> getParticipantsForFestival(Long festivalLocationId) {
+        List<Long> userIds = ticketRepository.findDistinctUserIdsByFestivalLocationId(festivalLocationId);
+
+        return userIds.stream().map(userId -> {
+            String nickname = null;
+            try {
+                UserProfileDto profile = userClient.getUserProfile(getSystemToken(), userId);
+                nickname = profile.getNickname();
+            } catch (Exception ignored) {}
+
+            boolean inBlacklist = false;
+            String reason = null;
+            String until = null;
+            try {
+                BlacklistStatusDto status = userClient.getBlacklistStatus(getSystemToken(), userId);
+                inBlacklist = status.isInBlacklist();
+                reason = status.getReason();
+                until = status.getUntil();
+            } catch (Exception ignored) {}
+
+            return FestivalParticipantDto.builder()
+                    .userId(userId)
+                    .nickname(nickname != null ? nickname : "Пользователь #" + userId)
+                    .inBlacklist(inBlacklist)
+                    .blacklistReason(reason)
+                    .blacklistUntil(until)
+                    .build();
+        }).collect(Collectors.toList());
     }
 }

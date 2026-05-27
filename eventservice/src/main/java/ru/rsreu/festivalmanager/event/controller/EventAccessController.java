@@ -6,6 +6,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import ru.rsreu.festivalmanager.event.client.FestivalServiceClient;
 import ru.rsreu.festivalmanager.event.repository.*;
+import ru.rsreu.festivalmanager.event.entity.stand.StandProduct;
 
 @RestController
 @RequestMapping("/internal/access/events")
@@ -15,6 +16,7 @@ public class EventAccessController {
     private final FestivalEventRepository festivalEventRepository;
     private final FestivalStandRepository festivalStandRepository;
     private final EventRewardRepository eventRewardRepository;
+    private final StandProductRepository standProductRepository;
     private final FestivalServiceClient festivalServiceClient;
 
     @Value("${internal.system-token}")
@@ -58,6 +60,14 @@ public class EventAccessController {
                     .map(reward -> {
                         Long festivalLocationId = reward.getFestivalEvent().getFestivalLocationId();
                         if (reward.getFestivalEvent().getEventInstance().getCompanyId().equals(companyId)) return true;
+                        return isFestivalOrganizer(festivalLocationId, companyId);
+                    })
+                    .orElse(false);
+            case "PRODUCT_INSTANCE" -> standProductRepository.findFirstByStandProductId_ProductInstance_Id(entityId)
+                    .map(sp -> {
+                        Long festivalLocationId = sp.getStandProductId().getFestivalStand().getFestivalLocationId();
+                        Long standCompanyId = sp.getStandProductId().getFestivalStand().getStandInstance().getCompanyId();
+                        if (standCompanyId.equals(companyId)) return true;
                         return isFestivalOrganizer(festivalLocationId, companyId);
                     })
                     .orElse(false);

@@ -184,9 +184,9 @@ export default function RegisterPage() {
       <div className={styles.left}>
         <motion.div className={styles.leftContent} initial={{ opacity: 0, x: -30 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.6 }}>
           <div className={styles.logoBig}>
-            <svg width="64" height="64" viewBox="0 0 32 32">
-              <polygon points="16,3 29,27 3,27" fill="var(--accent-primary)" />
-              <text x="16" y="24" textAnchor="middle" fontFamily="'Bebas Neue'" fontSize="12" fill="#0D0F14" fontWeight="bold">F</text>
+            <svg width="64" height="64" viewBox="0 0 32 32" fill="none">
+              <circle cx="16" cy="16" r="15" fill="var(--accent-primary)" />
+              <text x="16" y="22" textAnchor="middle" fontFamily="'Bebas Neue', sans-serif" fontSize="18" fill="#fff" fontWeight="bold">F</text>
             </svg>
             <span className={styles.logoName}>FestivalHub</span>
           </div>

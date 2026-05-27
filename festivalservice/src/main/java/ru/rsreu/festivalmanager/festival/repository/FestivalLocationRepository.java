@@ -24,4 +24,10 @@ public interface FestivalLocationRepository extends JpaRepository<FestivalLocati
             @Param("endDate") LocalDate endDate);
 
     List<FestivalLocation> findAllByPlatformInstanceIdIn(List<Long> platformInstanceIds);
+
+    @Query("SELECT fl FROM FestivalLocation fl WHERE fl.festivalInstance.isVisible = true AND fl.platformInstanceId IN :platformInstanceIds")
+    List<FestivalLocation> findAllVisibleByPlatformInstanceIdIn(@Param("platformInstanceIds") List<Long> platformInstanceIds);
+
+    @Query("SELECT fl.id FROM FestivalLocation fl WHERE fl.festivalInstance.isVisible = true")
+    List<Long> findAllVisibleIds();
 }

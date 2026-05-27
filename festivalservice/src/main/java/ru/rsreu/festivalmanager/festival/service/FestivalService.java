@@ -292,18 +292,28 @@ public class FestivalService {
 
     @Transactional(readOnly = true)
     public List<Long> getFestivalLocationIdsByCity(Long cityId) {
-        // Идем в Location Service за площадками
         List<Long> platformIdsInCity = locationClient.getPlatformIdsByCity(getSystemToken(), cityId);
 
         if (platformIdsInCity.isEmpty()) {
             return Collections.emptyList();
         }
 
-        // Ищем все фестивали, которые проходят на этих площадках
-        return locationRepository.findAllByPlatformInstanceIdIn(platformIdsInCity)
+        return locationRepository.findAllVisibleByPlatformInstanceIdIn(platformIdsInCity)
                 .stream()
                 .map(FestivalLocation::getId)
                 .collect(Collectors.toList());
+    }
+
+    @Transactional(readOnly = true)
+    public List<Long> getAllVisibleFestivalLocationIds() {
+        return locationRepository.findAllVisibleIds();
+    }
+
+    @Transactional(readOnly = true)
+    public String getFestivalName(Long festivalLocationId) {
+        return locationRepository.findById(festivalLocationId)
+                .map(loc -> loc.getFestivalInstance().getFestival().getName())
+                .orElse(null);
     }
 
     @Transactional(readOnly = true)

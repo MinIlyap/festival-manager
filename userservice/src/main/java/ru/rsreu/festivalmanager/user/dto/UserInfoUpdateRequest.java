@@ -16,7 +16,7 @@ public class UserInfoUpdateRequest {
 
     private Long cityId;
 
-    @Pattern(regexp = "^\\+\\d{11,12}$", message = "Некорректный номер телефона")
+    @Pattern(regexp = "^\\d{11,12}$", message = "Некорректный номер телефона")
     private String phoneNumber;
 
     @Pattern(regexp = "^\\d{4}$", message = "Серия паспорта должна состоять из 4 цифр")

@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { useForm } from 'react-hook-form';
+import { useForm, Controller } from 'react-hook-form';
 import { Camera, Trash2, AlertCircle } from 'lucide-react';
 import Layout from '../../components/layout/Layout';
 import Avatar from '../../components/ui/Avatar';
@@ -15,6 +15,17 @@ import { authApi } from '../../api/auth';
 import { useAuthStore } from '../../store/authStore';
 import type { City } from '../../types';
 import styles from './ProfilePage.module.css';
+
+function formatPhoneDisplay(raw: string): string {
+  const d = raw.replace(/\D/g, '');
+  if (!d) return '';
+  const n = d.startsWith('8') ? '7' + d.slice(1) : d;
+  if (n.length <= 1) return `+${n}`;
+  if (n.length <= 4) return `+${n[0]} (${n.slice(1)}`;
+  if (n.length <= 7) return `+${n[0]} (${n.slice(1, 4)}) ${n.slice(4)}`;
+  if (n.length <= 9) return `+${n[0]} (${n.slice(1, 4)}) ${n.slice(4, 7)}-${n.slice(7)}`;
+  return `+${n[0]} (${n.slice(1, 4)}) ${n.slice(4, 7)}-${n.slice(7, 9)}-${n.slice(9, 11)}`;
+}
 
 interface ProfileFormValues {
   firstName: string;
@@ -56,7 +67,7 @@ export default function ProfilePage() {
     queryFn: userApi.checkBlacklist,
   });
 
-  const { register, handleSubmit, formState: { isSubmitting } } = useForm<ProfileFormValues>({
+  const { register, control, handleSubmit, formState: { isSubmitting } } = useForm<ProfileFormValues>({
     values: {
       firstName: user?.firstName ?? '',
       lastName: user?.lastName ?? '',
@@ -70,11 +81,12 @@ export default function ProfilePage() {
 
   const updateMutation = useMutation({
     mutationFn: async (data: ProfileFormValues) => {
+      const rawPhone = data.phoneNumber.replace(/\D/g, '') || undefined;
       await userApi.updateMe({
         firstName: data.firstName || undefined,
         lastName: data.lastName || undefined,
         middleName: data.middleName || undefined,
-        phoneNumber: data.phoneNumber || undefined,
+        phoneNumber: rawPhone,
         passportSeries: data.passportSeries || undefined,
         passportNumber: data.passportNumber || undefined,
         cityId: city?.id,
@@ -183,7 +195,19 @@ export default function ProfilePage() {
               <div className={styles.row}>
                 <div className={styles.field}>
                   <label>Телефон</label>
-                  <input {...register('phoneNumber')} placeholder="+7 999 123-45-67" />
+                  <Controller
+                    name="phoneNumber"
+                    control={control}
+                    render={({ field }) => (
+                      <input
+                        value={formatPhoneDisplay(field.value)}
+                        onChange={e => field.onChange(e.target.value.replace(/\D/g, '').slice(0, 11))}
+                        onBlur={field.onBlur}
+                        placeholder="+7 (999) 123-45-67"
+                        inputMode="tel"
+                      />
+                    )}
+                  />
                 </div>
                 <div className={styles.field}>
                   <label>Город</label>

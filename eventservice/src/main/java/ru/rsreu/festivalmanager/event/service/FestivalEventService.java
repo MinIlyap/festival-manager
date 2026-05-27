@@ -46,13 +46,16 @@ public class FestivalEventService {
     public Page<FestivalEventResponse> searchFestivalEvents(
             String name, Long cityId, LocalDate startDate, LocalDate endDate, EventType type, Pageable pageable) {
 
-        List<Long> festivalLocationIds = null;
+        List<Long> festivalLocationIds;
 
         if (cityId != null) {
             festivalLocationIds = festivalServiceClient.getFestivalLocationIdsByCity(getSystemToken(), cityId);
-            if (festivalLocationIds.isEmpty()) {
-                return Page.empty(pageable);
-            }
+        } else {
+            festivalLocationIds = festivalServiceClient.getAllVisibleFestivalLocationIds(getSystemToken());
+        }
+
+        if (festivalLocationIds.isEmpty()) {
+            return Page.empty(pageable);
         }
 
         return festivalEventRepository.searchWithFilters(name, startDate, endDate, festivalLocationIds, type, pageable)

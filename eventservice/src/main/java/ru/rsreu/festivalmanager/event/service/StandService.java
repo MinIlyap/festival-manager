@@ -180,13 +180,16 @@ public class StandService {
 
     @Transactional(readOnly = true)
     public Page<FestivalStandResponse> searchStands(String name, Long cityId, LocalDate dateStart, StandType type, Pageable pageable) {
-        List<Long> locationIds = null;
+        List<Long> locationIds;
 
         if (cityId != null) {
             locationIds = festivalServiceClient.getFestivalLocationIdsByCity(getSystemToken(), cityId);
-            if (locationIds.isEmpty()) {
-                return Page.empty(pageable);
-            }
+        } else {
+            locationIds = festivalServiceClient.getAllVisibleFestivalLocationIds(getSystemToken());
+        }
+
+        if (locationIds.isEmpty()) {
+            return Page.empty(pageable);
         }
 
         return festivalStandRepository.searchStands(name, locationIds, type, dateStart, pageable)

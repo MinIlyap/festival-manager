@@ -3,7 +3,7 @@ import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import {
   MapPin, Calendar, Trophy, Store, Ticket, AlertCircle,
-  Clock, Users, ChevronRight, CheckCircle, Building2, Check, X,
+  Clock, Users, ChevronRight, CheckCircle, Building2, Check, X, Info,
 } from 'lucide-react';
 import Layout from '../../components/layout/Layout';
 import Badge from '../../components/ui/Badge';
@@ -52,6 +52,11 @@ function fmtDayFull(iso: string) {
   return new Date(iso + 'T00:00:00').toLocaleDateString('ru-RU', {
     weekday: 'short', day: 'numeric', month: 'short',
   });
+}
+
+function fmtDayShort(iso: string) {
+  const d = new Date(iso + 'T00:00:00');
+  return d.toLocaleDateString('ru-RU', { day: 'numeric', month: 'short' }).replace('.', '');
 }
 
 function fmtTime(t?: string) {
@@ -160,6 +165,7 @@ export default function FestivalPage() {
   const [activeSection, setActiveSection] = useState<'events' | 'stands'>('events');
   const [buyModal, setBuyModal] = useState(false);
   const [selectedTicketId, setSelectedTicketId] = useState<string | null>(null);
+  const [selectedDays, setSelectedDays] = useState<Set<string>>(new Set());
   const [buySuccess, setBuySuccess] = useState(false);
   const [hasCover, setHasCover] = useState(true);
   const [rejectModal, setRejectModal] = useState(false);
@@ -189,15 +195,38 @@ export default function FestivalPage() {
     enabled: !!accessToken && (role === 'USER' || role === 'CURATOR'),
   });
 
+  const { data: myProfile } = useQuery({
+    queryKey: ['my-profile'],
+    queryFn: userApi.getMe,
+    enabled: !!accessToken && (role === 'USER' || role === 'CURATOR'),
+  });
+
   const isBlacklisted = blacklistStatus?.inBlacklist ?? false;
-  const canPay = !!accessToken && (role === 'USER' || role === 'CURATOR') && !isBlacklisted;
-  const payDisabledReason = !accessToken
-    ? 'Необходимо войти в аккаунт'
-    : role === 'ADMIN' || role === 'COMPANY'
-    ? 'Покупка билетов недоступна для компаний и администраторов'
-    : isBlacklisted
-    ? `Вы в чёрном списке${blacklistStatus?.until ? ` до ${fmtDateLong(blacklistStatus.until)}` : ''}`
-    : null;
+  const ageRating = festival?.ageRating ?? 0;
+
+  const payDisabledReason = useMemo(() => {
+    if (!accessToken) return 'Необходимо войти в аккаунт';
+    if (role === 'ADMIN' || role === 'COMPANY') return 'Покупка билетов недоступна для компаний и администраторов';
+    if (isBlacklisted) return `Вы в чёрном списке${blacklistStatus?.until ? ` до ${fmtDateLong(blacklistStatus.until)}` : ''}`;
+    if (myProfile) {
+      if (!myProfile.phoneNumber) return 'Укажите номер телефона в профиле';
+      if (myProfile.birthDate) {
+        const [y, m, d] = myProfile.birthDate.split('-').map(Number);
+        const birth = new Date(y, m - 1, d);
+        const today = new Date();
+        let age = today.getFullYear() - birth.getFullYear();
+        const monthDiff = today.getMonth() - birth.getMonth();
+        if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birth.getDate())) age--;
+        if (age < ageRating) return `Вам должно быть не менее ${ageRating} лет`;
+      }
+      if (ageRating >= 16 && (!myProfile.passportSeries || !myProfile.passportNumber)) {
+        return 'Укажите паспортные данные в профиле (требуется для фестивалей 16+)';
+      }
+    }
+    return null;
+  }, [accessToken, role, isBlacklisted, blacklistStatus, myProfile, ageRating]);
+
+  const canPay = !payDisabledReason;
 
   const days = useMemo(() => {
     if (!festival) return [];
@@ -266,7 +295,16 @@ export default function FestivalPage() {
   const closeBuyModal = () => {
     setBuyModal(false);
     setSelectedTicketId(null);
+    setSelectedDays(new Set());
     setBuySuccess(false);
+  };
+
+  const toggleDay = (day: string) => {
+    setSelectedDays(prev => {
+      const next = new Set(prev);
+      if (next.has(day)) next.delete(day); else next.add(day);
+      return next;
+    });
   };
 
   if (isLoading) return <Layout><Spinner centered /></Layout>;
@@ -472,11 +510,6 @@ export default function FestivalPage() {
           </div>
         ) : (
           <div className={styles.buyBody}>
-            <div className={styles.buyPeriod}>
-              <Calendar size={13} />
-              {fmtDateLong(festival.startDate)} — {fmtDateLong(festival.endDate)}
-            </div>
-
             <p className={styles.buyLabel}>Тип билета</p>
             <div className={styles.ticketChoices}>
               {festival.ticketTypes.map(tt => (
@@ -501,14 +534,48 @@ export default function FestivalPage() {
               ))}
             </div>
 
-            <div className={styles.buyTotal}>
-              Итого:{' '}
-              <strong>
-                {selectedTicket
-                  ? selectedTicket.price === 0 ? 'Бесплатно' : `${selectedTicket.price.toLocaleString('ru-RU')} ₽`
-                  : '—'}
-              </strong>
-            </div>
+            {days.length > 1 && (
+              <>
+                <p className={styles.buyLabel}>Дни посещения</p>
+                <div className={styles.dayCircles}>
+                  {days.map((day, i) => (
+                    <button
+                      key={day}
+                      type="button"
+                      className={[styles.dayCircle, selectedDays.has(day) ? styles.dayCircleSelected : ''].join(' ')}
+                      onClick={() => toggleDay(day)}
+                    >
+                      <span className={styles.dayCircleNum}>Д{i + 1}</span>
+                      <span className={styles.dayCircleDate}>{fmtDayShort(day)}</span>
+                    </button>
+                  ))}
+                </div>
+                {selectedDays.size > 0 && (
+                  <div className={styles.buyPeriod}>
+                    <Info size={12} />
+                    {fmtDateLong([...selectedDays].sort()[0])}{selectedDays.size > 1 ? ` — ${fmtDateLong([...selectedDays].sort().at(-1)!)}` : ''}
+                  </div>
+                )}
+              </>
+            )}
+
+            {(() => {
+              const daysCount = selectedDays.size > 0 ? selectedDays.size : 1;
+              const total = selectedTicket ? selectedTicket.price * daysCount : null;
+              return (
+                <div className={styles.buyTotal}>
+                  {selectedDays.size > 1 && selectedTicket && selectedTicket.price > 0 && (
+                    <span className={styles.buyTotalCalc}>
+                      {selectedTicket.price.toLocaleString('ru-RU')} ₽ × {daysCount} дн.
+                    </span>
+                  )}
+                  Итого:{' '}
+                  <strong>
+                    {total === null ? '—' : total === 0 ? 'Бесплатно' : `${total.toLocaleString('ru-RU')} ₽`}
+                  </strong>
+                </div>
+              );
+            })()}
 
             {payDisabledReason && (
               <div className={styles.payDisabledNotice}>
