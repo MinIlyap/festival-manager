@@ -7,6 +7,11 @@ const rewrite = (path: string) => path.replace(/^\/api/, '')
 // e.g. /api/qr/events before /api/events, /api/events before /api/event (unused but kept)
 export default defineConfig({
   plugins: [react()],
+  test: {
+    environment: 'jsdom',
+    globals: true,
+    setupFiles: ['./src/tests/setup.ts'],
+  },
   server: {
     port: 3000,
     proxy: {
