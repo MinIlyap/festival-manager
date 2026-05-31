@@ -64,7 +64,7 @@ export default function LoginPage() {
             </svg>
             <span className={styles.logoName}>ФестХаб</span>
           </div>
-          <h1 className={styles.slogan}>Управляй фестивалями<br />легко и эффективно</h1>
+          <h1 className={styles.slogan}>Управляйте фестивалями<br />легко и эффективно</h1>
           <p className={styles.sloganSub}>Единая платформа для организаторов, участников и кураторов игровых фестивалей</p>
         </motion.div>
         <div className={styles.meshGradient} />

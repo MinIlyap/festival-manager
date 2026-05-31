@@ -88,7 +88,7 @@ export default function AdminApplicationDetailPage() {
         <div>
           <h1 className={styles.title}>{typeLabels[app.applicationType] ?? app.applicationType}</h1>
           <p style={{ color: 'var(--text-muted)', marginTop: 4 }}>
-            Заявка #{app.id} · {new Date(app.createdAt).toLocaleDateString('ru-RU')}
+            Заявка №{app.id} · {new Date(app.createdAt).toLocaleDateString('ru-RU')}
           </p>
         </div>
         {isPending && (

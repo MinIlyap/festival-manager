@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
-import { Plus, Trophy, BarChart2 } from 'lucide-react';
+import { Plus, Trophy, BarChart2, MapPin } from 'lucide-react';
 import Layout from '../../components/layout/Layout';
 import Card from '../../components/ui/Card';
 import Badge from '../../components/ui/Badge';
@@ -54,6 +54,12 @@ function FestivalCard({ festival, apps }: { festival: Festival; apps: Applicatio
       <div className={styles.festBody}>
         <h3 className={styles.festName}>{festival.name}</h3>
         <p className={styles.festDate}>{festival.startDate?.split('-').reverse().join('.')} — {festival.endDate?.split('-').reverse().join('.')}</p>
+        {(festival.cityName || festival.platformName) && (
+          <p className={styles.festLocation}>
+            <MapPin size={11} />
+            {[festival.cityName, festival.platformName].filter(Boolean).join(', ')}
+          </p>
+        )}
 
         {status === 'REJECTED' && app?.data?.comment && (
           <details style={{ marginTop: 6 }}>

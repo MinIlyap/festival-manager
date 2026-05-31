@@ -7,7 +7,8 @@
 .statusBadge { position: absolute; top: 10px; right: 10px; }
 .festBody { padding: var(--space-md); }
 .festName { font-family: var(--font-body); font-size: 15px; font-weight: 700; margin-bottom: 4px; }
-.festDate { font-size: 12px; color: var(--text-muted); margin-bottom: var(--space-sm); }
+.festDate { font-size: 12px; color: var(--text-muted); margin-bottom: 2px; }
+.festLocation { display: flex; align-items: center; gap: 4px; font-size: 12px; color: var(--text-muted); margin-bottom: var(--space-sm); }
 .festActions { display: flex; gap: var(--space-sm); flex-wrap: wrap; }
 /* Edit page */
 .editLayout { display: grid; grid-template-columns: 220px 1fr; gap: var(--space-xl); align-items: start; }

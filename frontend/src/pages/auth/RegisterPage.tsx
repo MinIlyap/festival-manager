@@ -190,8 +190,8 @@ export default function RegisterPage() {
             </svg>
             <span className={styles.logoName}>ФестХаб</span>
           </div>
-          <h1 className={styles.slogan}>Присоединяйся<br />к сообществу</h1>
-          <p className={styles.sloganSub}>Участвуй в фестивалях, организуй события, находи команду</p>
+          <h1 className={styles.slogan}>Присоединяйтесь<br />к сообществу</h1>
+          <p className={styles.sloganSub}>Участвуйте в фестивалях, организуйте события, находите команду</p>
         </motion.div>
         <div className={styles.meshGradient} />
       </div>

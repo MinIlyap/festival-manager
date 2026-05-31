@@ -323,7 +323,7 @@ export default function FestivalPage() {
         <div className={styles.adminReviewBar}>
           <div className={styles.adminReviewBarInfo}>
             <span className={styles.adminReviewBarTitle}>Заявка на утверждение фестиваля</span>
-            <span className={styles.adminReviewBarSub}>Заявка #{adminReviewAppId} · {festival.name}</span>
+            <span className={styles.adminReviewBarSub}>Заявка №{adminReviewAppId} · {festival.name}</span>
           </div>
           <div className={styles.adminReviewBarActions}>
             <Button variant="danger" onClick={() => setRejectModal(true)}>

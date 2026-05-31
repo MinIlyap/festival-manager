@@ -60,7 +60,7 @@ function AppRow({ app }: { app: Application }) {
               {title}
             </p>
             <p style={{ fontSize: 13, color: 'var(--text-muted)', marginTop: 4 }}>
-              Заявка #{app.id} · {new Date(app.updatedAt).toLocaleString('ru-RU')}
+              Заявка №{app.id} · {new Date(app.updatedAt).toLocaleString('ru-RU')}
             </p>
           </div>
         </div>
@@ -87,7 +87,7 @@ export default function AdminApplicationsPage() {
 
   return (
     <Layout>
-      <h1 className={styles.title}>Заявки на рассмотрении</h1>
+      <h1 className={styles.title}>Заявки на рассмотрение</h1>
       <Tabs
         tabs={[
           { key: 'company',  label: <span style={{ display: 'flex', alignItems: 'center', gap: 6 }}><Building2 size={15} />Заявки на компанию</span> },

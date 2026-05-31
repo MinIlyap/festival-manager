@@ -50,7 +50,7 @@ function HistoryRow({ app, tab }: { app: Application; tab: string }) {
               {title}
             </p>
             <p style={{ fontSize: 13, color: 'var(--text-muted)', marginTop: 4 }}>
-              Заявка #{app.id} · {new Date(app.updatedAt).toLocaleString('ru-RU')}
+              Заявка №{app.id} · {new Date(app.updatedAt).toLocaleString('ru-RU')}
             </p>
             {app.data?.comment && tab === 'rejected' && (
               <p style={{ fontSize: 13, color: 'var(--accent-danger)', marginTop: 4 }}>

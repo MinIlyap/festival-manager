@@ -170,7 +170,7 @@ export default function CompanyFestivalAnalyticsPage() {
               return (
                 <div key={ev.name} className={styles.eventRow}>
                   <div className={styles.eventHead}>
-                    <span className={styles.eventRank}>#{i + 1}</span>
+                    <span className={styles.eventRank}>№{i + 1}</span>
                     <div>
                       <span className={styles.eventName}>{ev.name}</span>
                       <div className={styles.eventMeta}>
