@@ -26,3 +26,9 @@ crypto:
   secret-key: "MySuperSecretKey1234567890123456"
 server:
   port: 8084
+services:
+  festival:
+    url: http://localhost:8085
+kafka:
+  topics:
+    command-invite: COMMAND_INVITE_TOPIC

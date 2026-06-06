@@ -198,7 +198,6 @@ public class FestivalService {
                     authClient.assignCuratorRoles(getSystemToken(), curatorIds);
                 } catch (Exception e) {
                     log.error("Не удалось назначить роли кураторов для фестиваля {}: {}", festivalLocationId, e.getMessage());
-                    // Одобрение фестиваля не откатываем — роли куратора можно назначить повторно
                 }
             }
         }

@@ -26,3 +26,6 @@ crypto:
   secret-key: "MySuperSecretKey1234567890123456"
 server:
   port: 8083
+kafka:
+  topics:
+    company-application-request: COMPANY_APPLICATION_REQUEST_TOPIC

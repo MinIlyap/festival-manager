@@ -36,20 +36,16 @@ public class CommandService {
             throw new IllegalStateException("Это мероприятие не является командным");
         }
 
-        // 1. Проверяем, зарегистрирован ли создатель на само мероприятие
-        // (Используем твой объектный составной ключ!)
         UserEventRegistrationId regId = new UserEventRegistrationId(festivalEvent, creatorId);
         if (!registrationRepository.existsById(regId)) {
             throw new IllegalStateException("Вы должны быть зарегистрированы на мероприятие, чтобы создать команду");
         }
 
-        // 2. Проверяем, не состоит ли он уже в другой команде на этом мероприятии
         if (commandMemberRepository
                 .existsByCommandMemberId_UserIdAndCommandMemberId_Command_FestivalEvent_id(creatorId, festivalEventId)) {
             throw new IllegalStateException("Вы уже состоите в команде на этом мероприятии");
         }
 
-        // 3. Создаем команду
         Command command = Command.builder()
                 .festivalEvent(festivalEvent)
                 .name(commandName)
@@ -57,7 +53,6 @@ public class CommandService {
                 .build();
         command = commandRepository.save(command);
 
-        // 4. Добавляем создателя как первого участника
         CommandMember member = new CommandMember(new CommandMemberId(command, creatorId));
         commandMemberRepository.save(member);
 
@@ -69,30 +64,25 @@ public class CommandService {
         Command command = commandRepository.findById(commandId)
                 .orElseThrow(() -> new IllegalArgumentException("Команда не найдена"));
 
-        // Проверяем, имеет ли право отправитель приглашать (он должен быть участником команды)
         if (!commandMemberRepository.existsByCommandMemberId_UserIdAndCommandMemberId_Command_Id(senderId, commandId)) {
             throw new IllegalStateException("Вы не состоите в этой команде и не можете рассылать приглашения");
         }
 
-        // Проверяем, зарегистрирован ли приглашаемый на мероприятие
         UserEventRegistrationId regId = new UserEventRegistrationId(command.getFestivalEvent(), targetUserId);
         if (!registrationRepository.existsById(regId)) {
             throw new IllegalStateException("Пользователь еще не зарегистрирован на это мероприятие");
         }
 
-        // Проверяем, не в команде ли он уже
         if (commandMemberRepository.existsByCommandMemberId_UserIdAndCommandMemberId_Command_FestivalEvent_id(targetUserId, command.getFestivalEvent().getId())) {
             throw new IllegalStateException("Пользователь уже состоит в другой команде на этом мероприятии");
         }
 
-        // Проверяем, не переполнена ли команда
         Integer maxPeople = command.getFestivalEvent().getEventInstance().getMaxPeopleCommand();
         long currentMembers = commandMemberRepository.countByCommandMemberId_Command_id(commandId);
         if (maxPeople != null && currentMembers >= maxPeople) {
             throw new IllegalStateException("Команда уже укомплектована");
         }
 
-        // Отправляем в Kafka
         CommandInviteEvent event = CommandInviteEvent.builder()
                 .festivalEventId(command.getFestivalEvent().getId())
                 .eventName(command.getFestivalEvent().getEventInstance().getEvent().getName())
@@ -108,17 +98,14 @@ public class CommandService {
 
     @Transactional
     public void joinCommand(Long commandId, Long userId) {
-        // Блокируем команду от гонок данных, чтобы не превысить лимит
         Command command = commandRepository.findByIdForUpdate(commandId)
                 .orElseThrow(() -> new IllegalArgumentException("Команда не найдена"));
 
-        // Проверяем, зарегистрирован ли пользователь на мероприятие
         UserEventRegistrationId regId = new UserEventRegistrationId(command.getFestivalEvent(), userId);
         if (!registrationRepository.existsById(regId)) {
             throw new IllegalStateException("Вы должны быть зарегистрированы на мероприятие, чтобы вступить в команду");
         }
 
-        // Проверяем лимит
         Integer maxPeople = command.getFestivalEvent().getEventInstance().getMaxPeopleCommand();
         long currentMembers = commandMemberRepository.countByCommandMemberId_Command_id(commandId);
 
@@ -126,12 +113,10 @@ public class CommandService {
             throw new IllegalStateException("Команда полностью укомплектована");
         }
 
-        // Двойная защита: вдруг он уже принял другое приглашение, пока это висело
         if (commandMemberRepository.existsByCommandMemberId_UserIdAndCommandMemberId_Command_FestivalEvent_id(userId, command.getFestivalEvent().getId())) {
             throw new IllegalStateException("Вы уже состоите в команде на этом мероприятии");
         }
 
-        // Добавляем участника
         CommandMember member = new CommandMember(new CommandMemberId(command, userId));
         commandMemberRepository.save(member);
     }

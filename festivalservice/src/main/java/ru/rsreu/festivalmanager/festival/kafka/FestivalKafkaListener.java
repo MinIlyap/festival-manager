@@ -17,7 +17,7 @@ public class FestivalKafkaListener {
     private final FestivalService festivalService;
     private final ObjectMapper objectMapper;
 
-    @KafkaListener(topics = "FESTIVAL_APPLICATION_RESPONSE_TOPIC", groupId = "festival-service-group")
+    @KafkaListener(topics = "${kafka.topics.festival-application-response}", groupId = "${kafka.groups.festival}")
     public void listenApplicationResponse(String jsonMessage) throws JsonProcessingException {
         if (jsonMessage.startsWith("\"") && jsonMessage.endsWith("\"")) {
             jsonMessage = objectMapper.readValue(jsonMessage, String.class);

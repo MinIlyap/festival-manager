@@ -18,10 +18,8 @@ public class FestivalEventResponse {
     private Long festivalEventId;
     private Long festivalLocationId;
 
-    // Данные из словаря Event
     private String eventName;
 
-    // Данные из EventInstance
     private EventType type;
     private String description;
     private LocalDate dateStart;

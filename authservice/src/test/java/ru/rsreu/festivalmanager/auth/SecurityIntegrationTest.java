@@ -11,11 +11,6 @@ import static io.restassured.RestAssured.given;
 import static org.hamcrest.Matchers.*;
 import static org.junit.jupiter.api.Assertions.*;
 
-/**
- * Интеграционные тесты безопасности (раздел 3.3).
- * Требуют запущенных сервисов: authservice:8082, festivalservice:8085, applicationservice:8081.
- * Библиотеки: JUnit 5, REST Assured 5.3.
- */
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 public class SecurityIntegrationTest {
 
@@ -26,7 +21,6 @@ public class SecurityIntegrationTest {
     private static final String USER_EMAIL    = "bibu_duguvi34@yandex.ru";
     private static final String USER_PASSWORD = "Qwertry123456";
 
-    // JWT с истёкшим сроком действия (exp: 2020-01-01, подпись не совпадает с секретом)
     private static final String EXPIRED_JWT =
             "eyJhbGciOiJIUzI1NiJ9" +
             ".eyJzdWIiOiJ0ZXN0QHRlc3QuY29tIiwiaWQiOjEsInJvbGUiOiJVU0VSIiwi" +
@@ -34,8 +28,6 @@ public class SecurityIntegrationTest {
             ".invalid_signature_for_test";
 
     private static String userToken;
-
-    // ── setup ────────────────────────────────────────────────────────────────
 
     @BeforeAll
     static void setup() {
@@ -56,10 +48,6 @@ public class SecurityIntegrationTest {
                 .extract().jsonPath().getString("accessToken");
     }
 
-    // ── 3.3.1 ────────────────────────────────────────────────────────────────
-    // Тип: интеграционный
-    // Сценарий: обращение к защищённому эндпоинту без заголовка Authorization
-    // Ожидаемый результат: 401 Unauthorized
     @Test
     @Order(1)
     @DisplayName("3.3.1 — Запрос без токена возвращает 401 Unauthorized")
@@ -74,10 +62,6 @@ public class SecurityIntegrationTest {
                 .statusCode(401);
     }
 
-    // ── 3.3.2 ────────────────────────────────────────────────────────────────
-    // Тип: интеграционный
-    // Сценарий: пользователь с ролью USER обращается к admin-эндпоинту
-    // Ожидаемый результат: 403 Forbidden
     @Test
     @Order(2)
     @DisplayName("3.3.2 — Роль USER на admin-эндпоинте возвращает 403 Forbidden")
@@ -93,10 +77,6 @@ public class SecurityIntegrationTest {
                 .statusCode(403);
     }
 
-    // ── 3.3.3 ────────────────────────────────────────────────────────────────
-    // Тип: интеграционный
-    // Сценарий: запрос с истёкшим JWT-токеном
-    // Ожидаемый результат: 401 Unauthorized
     @Test
     @Order(3)
     @DisplayName("3.3.3 — Истёкший JWT-токен возвращает 401 Unauthorized")
@@ -112,10 +92,6 @@ public class SecurityIntegrationTest {
                 .statusCode(401);
     }
 
-    // ── 3.3.4 ────────────────────────────────────────────────────────────────
-    // Тип: интеграционный
-    // Сценарий: обновление токена с невалидным/истёкшим refreshToken
-    // Ожидаемый результат: сервер возвращает ошибку (400 / 401 / 403)
     @Test
     @Order(4)
     @DisplayName("3.3.4 — Невалидный refreshToken не выдаёт новый accessToken")
@@ -130,10 +106,6 @@ public class SecurityIntegrationTest {
                 .statusCode(anyOf(is(400), is(401), is(403)));
     }
 
-    // ── 3.3.5 ────────────────────────────────────────────────────────────────
-    // Тип: интеграционный
-    // Сценарий: внешний запрос к INTERNAL-эндпоинту без системного токена
-    // Ожидаемый результат: 403 Forbidden (роль INTERNAL не выдана)
     @Test
     @Order(5)
     @DisplayName("3.3.5 — Internal-эндпоинт без системного токена возвращает 403")

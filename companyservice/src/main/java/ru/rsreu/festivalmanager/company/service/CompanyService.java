@@ -32,12 +32,10 @@ public class CompanyService {
         if (existingByTin.isPresent() || existingByEmail.isPresent()) {
             company = existingByTin.orElseGet(existingByEmail::get);
 
-            // Если она уже одобрена (active/visible == true) — запрещаем
             if (company.isActive()) {
                 throw new IllegalArgumentException("Компания с такими данными уже существует и активна");
             }
 
-            // Если она неактивна — обновляем данные (вдруг исправили опечатку перед переподачей)
             company.setFullName(request.getFullName());
             company.setBrandName(request.getBrandName());
             company.setTin(request.getTin());
@@ -46,7 +44,6 @@ public class CompanyService {
             log.info("Обновление данных неактивной компании ID: {} перед повторной подачей", company.getId());
 
         } else {
-            // Если не нашли — создаем абсолютно новую
             company = new Company();
             company.setTin(request.getTin());
             company.setFullName(request.getFullName());
@@ -57,11 +54,8 @@ public class CompanyService {
             log.info("Создание новой неактивной компании");
         }
 
-        // Сохраняем в БД (либо insert, либо update)
         company = companyRepository.save(company);
 
-        // Отправляем событие в Kafka
-        // ВАЖНО: Мы добавляли email в DTO для Notification Service, не забудь его передать!
         eventPublisher.publishEvent(new CompanyEvents.CompanyAppRequestEvent(
                 company.getId(),
                 company.getFullName(),
@@ -73,14 +67,11 @@ public class CompanyService {
 
     @Transactional
     public void updateEmail(Long id, String newEmail) {
-        // Находим компанию
         Company company = companyRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Компания не найдена"));
 
-        // Обновляем email
         company.setEmail(newEmail);
 
-        // Сохраняем (Hibernate может сделать это автоматически при @Transactional, но save() надежнее для чтения)
         companyRepository.save(company);
     }
 

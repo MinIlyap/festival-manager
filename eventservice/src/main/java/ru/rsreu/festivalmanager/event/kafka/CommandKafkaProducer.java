@@ -2,6 +2,7 @@ package ru.rsreu.festivalmanager.event.kafka;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.event.TransactionPhase;
@@ -14,11 +15,13 @@ import ru.rsreu.festivalmanager.event.dto.CommandInviteEvent;
 public class CommandKafkaProducer {
 
     private final KafkaTemplate<String, Object> kafkaTemplate;
-    private static final String TOPIC_NAME = "COMMAND_INVITE_TOPIC";
+
+    @Value("${kafka.topics.command-invite}")
+    private String commandInviteTopic;
 
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     public void handleCommandInvite(CommandInviteEvent event) {
-        kafkaTemplate.send(TOPIC_NAME, event.getCommandId().toString(), event)
+        kafkaTemplate.send(commandInviteTopic, event.getCommandId().toString(), event)
                 .whenComplete((result, exception) -> {
                     if (exception != null) {
                         log.error("Ошибка отправки приглашения в команду {} в топик: ", event.getCommandId(), exception);

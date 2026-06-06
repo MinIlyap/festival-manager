@@ -1,12 +1,11 @@
 package ru.rsreu.festivalmanager.auth.client;
 
 import org.springframework.cloud.openfeign.FeignClient;
-import org.springframework.stereotype.Component;
 import org.springframework.web.bind.annotation.*;
 import ru.rsreu.festivalmanager.auth.dto.CompanyInfoDto;
 import ru.rsreu.festivalmanager.auth.dto.CompanyRegistrationRequest;
 
-@FeignClient(name = "company-service", url = "http://localhost:8083/company")
+@FeignClient(name = "company-service", url = "${services.company.url}")
 public interface CompanyServiceClient {
 
     @PostMapping

@@ -11,14 +11,12 @@ import java.util.List;
 
 @Repository
 public interface UserEventRegistrationRepository extends JpaRepository<UserEventRegistration, UserEventRegistrationId> {
-
     long countByUserEventRegistrationId_FestivalEvent_Id(Long festivalEventId);
 
     boolean existsByUserEventRegistrationId_FestivalEvent_IdAndUserEventRegistrationId_UserId(Long festivalEventId, Long userId);
 
     List<UserEventRegistration> findAllByUserEventRegistrationId_FestivalEvent_Id(Long festivalEventId);
 
-    // Магия Spring JPA + SQL: Найти тех, кто зарегистрирован, но НЕ состоит ни в одной команде на этом мероприятии
     @Query("SELECT r.userEventRegistrationId.userId FROM UserEventRegistration r " +
             "WHERE r.userEventRegistrationId.festivalEvent.id = :eventId " +
             "AND r.userEventRegistrationId.userId NOT IN " +

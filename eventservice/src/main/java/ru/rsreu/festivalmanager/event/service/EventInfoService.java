@@ -34,7 +34,6 @@ public class EventInfoService {
         List<Command> commands = commandRepository.findAllByFestivalEvent_Id(festivalEventId);
 
         return commands.stream().map(cmd -> {
-            // Благодаря CascadeType.ALL и mappedBy, мы можем просто взять список из сущности!
             List<Long> memberIds = cmd.getMembers().stream()
                     .map(member -> member.getCommandMemberId().getUserId())
                     .collect(Collectors.toList());

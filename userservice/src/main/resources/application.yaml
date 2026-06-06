@@ -22,3 +22,8 @@ crypto:
   secret-key: "MySuperSecretKey1234567890123456"
 server:
   port: 8089
+services:
+  festival:
+    url: http://localhost:8085
+  location:
+    url: http://localhost:8087/location

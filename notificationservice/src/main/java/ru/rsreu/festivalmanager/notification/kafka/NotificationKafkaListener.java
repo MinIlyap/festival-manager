@@ -26,9 +26,8 @@ public class NotificationKafkaListener {
     private final NotificationService notificationService;
     private final ObjectMapper objectMapper;
 
-    @RetryableTopic(backOff = @BackOff(delay = 1000, multiplier = 2.0),
-            dltStrategy = DltStrategy.FAIL_ON_ERROR)
-    @KafkaListener(topics = "COMPANY_AUTH_TOPIC", groupId = "notification-group")
+    @RetryableTopic(attempts = "${kafka.retry.attempts}", backOff = @BackOff(delay = 1000, multiplier = 2.0), dltStrategy = DltStrategy.FAIL_ON_ERROR)
+    @KafkaListener(topics = "${kafka.topics.company-auth}", groupId = "${kafka.groups.notification}")
     public void listenCompanyResult(String jsonMessage) throws JsonProcessingException {
         if (jsonMessage.startsWith("\"") && jsonMessage.endsWith("\"")) {
             jsonMessage = objectMapper.readValue(jsonMessage, String.class);
@@ -38,9 +37,8 @@ public class NotificationKafkaListener {
         notificationService.processCompanyResult(msg);
     }
 
-    @RetryableTopic(backOff = @BackOff(delay = 1000, multiplier = 2.0),
-            dltStrategy = DltStrategy.FAIL_ON_ERROR)
-    @KafkaListener(topics = "FESTIVAL_APPLICATION_RESPONSE_TOPIC", groupId = "notification-group")
+    @RetryableTopic(attempts = "${kafka.retry.attempts}", backOff = @BackOff(delay = 1000, multiplier = 2.0), dltStrategy = DltStrategy.FAIL_ON_ERROR)
+    @KafkaListener(topics = "${kafka.topics.festival-application-response}", groupId = "${kafka.groups.notification}")
     public void listenFestivalResponse(String jsonMessage) throws JsonProcessingException {
         if (jsonMessage.startsWith("\"") && jsonMessage.endsWith("\"")) {
             jsonMessage = objectMapper.readValue(jsonMessage, String.class);
@@ -50,9 +48,8 @@ public class NotificationKafkaListener {
         notificationService.processFestivalResponse(msg);
     }
 
-    @RetryableTopic(backOff = @BackOff(delay = 1000, multiplier = 2.0),
-            dltStrategy = DltStrategy.FAIL_ON_ERROR)
-    @KafkaListener(topics = "COMMAND_INVITE_TOPIC", groupId = "notification-group")
+    @RetryableTopic(attempts = "${kafka.retry.attempts}", backOff = @BackOff(delay = 1000, multiplier = 2.0), dltStrategy = DltStrategy.FAIL_ON_ERROR)
+    @KafkaListener(topics = "${kafka.topics.command-invite}", groupId = "${kafka.groups.notification}")
     public void listenTeamInvite(String jsonMessage) throws JsonProcessingException {
         if (jsonMessage.startsWith("\"") && jsonMessage.endsWith("\"")) {
             jsonMessage = objectMapper.readValue(jsonMessage, String.class);
@@ -62,9 +59,8 @@ public class NotificationKafkaListener {
         notificationService.processCommandInvite(msg);
     }
 
-    @RetryableTopic(backOff = @BackOff(delay = 1000, multiplier = 2.0),
-            dltStrategy = DltStrategy.FAIL_ON_ERROR)
-    @KafkaListener(topics = "RESUBMIT_APPLICATION_TOPIC", groupId = "notification-group")
+    @RetryableTopic(attempts = "${kafka.retry.attempts}", backOff = @BackOff(delay = 1000, multiplier = 2.0), dltStrategy = DltStrategy.FAIL_ON_ERROR)
+    @KafkaListener(topics = "${kafka.topics.resubmit-application}", groupId = "${kafka.groups.notification}")
     public void listenAdminNotification(String jsonMessage) throws JsonProcessingException {
         if (jsonMessage.startsWith("\"") && jsonMessage.endsWith("\"")) {
             jsonMessage = objectMapper.readValue(jsonMessage, String.class);

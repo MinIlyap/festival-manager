@@ -54,3 +54,16 @@ crypto:
   secret-key: "MySuperSecretKey1234567890123456"
 server:
   port: 8082
+services:
+  user:
+    url: http://localhost:8089/user
+  company:
+    url: http://localhost:8083/company
+kafka:
+  topics:
+    company-application-response: COMPANY_APPLICATION_RESPONSE_TOPIC
+    company-auth: COMPANY_AUTH_TOPIC
+  groups:
+    auth: auth-service-group
+  retry:
+    attempts: "3"

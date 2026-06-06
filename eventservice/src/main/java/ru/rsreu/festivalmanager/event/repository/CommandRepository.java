@@ -13,8 +13,6 @@ import java.util.Optional;
 
 @Repository
 public interface CommandRepository extends JpaRepository<Command, Long> {
-
-    // Блокировка команды для безопасного добавления участника
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     @Query("SELECT c FROM Command c WHERE c.id = :id")
     Optional<Command> findByIdForUpdate(@Param("id") Long id);

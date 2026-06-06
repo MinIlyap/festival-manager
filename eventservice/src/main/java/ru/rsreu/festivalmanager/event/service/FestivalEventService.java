@@ -39,9 +39,6 @@ public class FestivalEventService {
         return "Bearer " + systemToken;
     }
 
-    /**
-     * Поиск мероприятий с фильтрацией и пагинацией
-     */
     @Transactional(readOnly = true)
     public Page<FestivalEventResponse> searchFestivalEvents(
             String name, Long cityId, LocalDate startDate, LocalDate endDate, EventType type, Pageable pageable) {
@@ -145,10 +142,8 @@ public class FestivalEventService {
             throw new IllegalArgumentException("Для командного мероприятия нужно указать лимит людей в команде");
         }
 
-        // companyId хранит компанию-организатора; если не задана в запросе — создающая компания
         Long organizerCompanyId = request.getOrganizerCompanyId() != null ? request.getOrganizerCompanyId() : companyId;
 
-        // 2. Ищем точную копию инстанса ИЛИ создаем новую
         EventInstance instance = eventInstanceRepository.findIdenticalInstance(
                 request.getEventId(),
                 organizerCompanyId,
@@ -161,7 +156,6 @@ public class FestivalEventService {
                 request.getApproximateDuration(),
                 request.getMaxPeopleCommand()
         ).orElseGet(() -> {
-            // Если не нашли - собираем новый
             EventInstance newInstance = EventInstance.builder()
                     .event(event)
                     .companyId(organizerCompanyId)
@@ -177,7 +171,6 @@ public class FestivalEventService {
             return eventInstanceRepository.save(newInstance);
         });
 
-        // 3. Привязываем инстанс к локации фестиваля
         FestivalEvent festivalEvent = FestivalEvent.builder()
                 .festivalLocationId(request.getFestivalLocationId())
                 .eventInstance(instance)

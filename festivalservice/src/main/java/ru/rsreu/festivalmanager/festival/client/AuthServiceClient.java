@@ -6,7 +6,7 @@ import ru.rsreu.festivalmanager.festival.dto.AuthCredentialDto;
 
 import java.util.List;
 
-@FeignClient(name = "auth-service", url = "http://localhost:8082/auth")
+@FeignClient(name = "auth-service", url = "${services.auth.url}")
 public interface AuthServiceClient {
     @PutMapping("/roles/curator")
     void assignCuratorRoles(@RequestHeader("Authorization") String token, @RequestBody List<Long> userIds);

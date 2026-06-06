@@ -39,3 +39,13 @@ crypto:
   secret-key: "MySuperSecretKey1234567890123456"
 server:
   port: 8088
+kafka:
+  topics:
+    company-auth: COMPANY_AUTH_TOPIC
+    festival-application-response: FESTIVAL_APPLICATION_RESPONSE_TOPIC
+    command-invite: COMMAND_INVITE_TOPIC
+    resubmit-application: RESUBMIT_APPLICATION_TOPIC
+  groups:
+    notification: notification-group
+  retry:
+    attempts: "3"

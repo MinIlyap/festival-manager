@@ -9,7 +9,7 @@ import ru.rsreu.festivalmanager.event.dto.CompanyBriefDto;
 
 import java.util.List;
 
-@FeignClient(name = "festival-service", url = "http://localhost:8085")
+@FeignClient(name = "festival-service", url = "${services.festival.url}")
 public interface FestivalServiceClient {
 
     @GetMapping("/internal/festivals/visible-ids")

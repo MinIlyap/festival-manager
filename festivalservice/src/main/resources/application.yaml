@@ -33,3 +33,18 @@ crypto:
   secret-key: "MySuperSecretKey1234567890123456"
 server:
   port: 8085
+services:
+  auth:
+    url: http://localhost:8082/auth
+  company:
+    url: http://localhost:8083/company
+  location:
+    url: http://localhost:8087/location
+  user:
+    url: http://localhost:8089/user
+kafka:
+  topics:
+    festival-application-request: FESTIVAL_APPLICATION_REQUEST_TOPIC
+    festival-application-response: FESTIVAL_APPLICATION_RESPONSE_TOPIC
+  groups:
+    festival: festival-service-group

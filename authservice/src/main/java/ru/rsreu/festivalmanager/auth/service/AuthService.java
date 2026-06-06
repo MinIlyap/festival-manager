@@ -206,8 +206,6 @@ public class AuthService {
 
     @Transactional
     public Long registerExternalUser(String email, String displayName) {
-        // Формируем базовые данные для микросервиса пользователей
-        // Город и дату рождения придется запросить у пользователя позже при заполнении профиля
         UserCreationDto userDto = new UserCreationDto(displayName, null, null);
         Long userId = userServiceClient.createUser(getBearerSystemToken(), userDto);
 
@@ -215,7 +213,6 @@ public class AuthService {
         credential.setUserId(userId);
         credential.setEmail(email);
         credential.setAccessType(AccessType.USER);
-        // Пароль остается null
 
         credentialRepository.save(credential);
         return userId;

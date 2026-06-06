@@ -63,27 +63,22 @@ public class TicketService {
 
     @Transactional
     public Long createTicketTypeInstance(TicketTypeInstanceCreateRequest request, Long companyId) {
-        // 1. Проверяем, есть ли права у компании на этот фестиваль
         if (!festivalCompanyRepository.existsByFestivalCompanyId_FestivalLocationIdAndFestivalCompanyId_CompanyId(
                 request.getFestivalLocationId(), companyId)) {
             throw new SecurityException("У вашей компании нет прав на управление билетами этого фестиваля");
         }
 
-        // 2. Достаем глобальный тип билета
         TicketType ticketType = ticketTypeRepository.findById(request.getTicketTypeId())
                 .orElseThrow(() -> new IllegalArgumentException("Глобальный тип билета не найден"));
 
-        // 3. Достаем локацию фестиваля
         FestivalLocation location = festivalLocationRepository.findById(request.getFestivalLocationId())
                 .orElseThrow(() -> new IllegalArgumentException("Фестиваль не найден"));
 
-        // 4. Защита от дублей: проверяем, не добавлен ли уже этот тип билета на этот фестиваль
         boolean alreadyExists = ticketTypeInstanceRepository.existsByFestivalLocationAndTicketType(location, ticketType);
         if (alreadyExists) {
             throw new IllegalArgumentException("Этот тип билета уже добавлен на данный фестиваль");
         }
 
-        // 5. Создаем инстанс
         TicketTypeInstance instance = new TicketTypeInstance();
         instance.setTicketType(ticketType);
         instance.setFestivalLocation(location);
@@ -99,7 +94,6 @@ public class TicketService {
         TicketTypeInstance instance = ticketTypeInstanceRepository.findById(instanceId)
                 .orElseThrow(() -> new IllegalArgumentException("Экземпляр билета не найден"));
 
-        // Проверка прав компании на этот фестиваль
         Long festivalLocationId = instance.getFestivalLocation().getId();
         if (!festivalCompanyRepository.existsByFestivalCompanyId_FestivalLocationIdAndFestivalCompanyId_CompanyId(festivalLocationId, companyId)) {
             throw new SecurityException("У вашей компании нет прав на редактирование билетов этого фестиваля");
@@ -120,7 +114,6 @@ public class TicketService {
             throw new SecurityException("У вашей компании нет прав на удаление билетов этого фестиваля");
         }
 
-        // КРИТИЧЕСКАЯ ПРОВЕРКА: Если билеты уже куплены, удалять нельзя
         if (ticketRepository.existsByTicketTypeInstanceId(instanceId)) {
             throw new IllegalArgumentException("Невозможно удалить тип билета: по нему уже есть проданные билеты");
         }

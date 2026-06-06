@@ -9,7 +9,6 @@ import java.util.List;
 
 @Repository
 public interface RewardDistributionRepository extends JpaRepository<RewardDistribution, RewardDistributionId> {
-    // Проверка, выдавалась ли уже эта награда этому пользователю
     boolean existsByRewardDistributionId_EventReward_IdAndRewardDistributionId_UserId(Long eventRewardId, Long userId);
 
     List<RewardDistribution> findAllByRewardDistributionId_UserId(Long userId);

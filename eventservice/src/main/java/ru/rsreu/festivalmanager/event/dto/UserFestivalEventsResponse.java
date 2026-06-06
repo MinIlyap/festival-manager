@@ -13,5 +13,5 @@ import java.util.List;
 @AllArgsConstructor
 public class UserFestivalEventsResponse {
     private Long festivalLocationId;
-    private List<FestivalEventResponse> events; // Тот самый DTO из Этапа 1
+    private List<FestivalEventResponse> events;
 }

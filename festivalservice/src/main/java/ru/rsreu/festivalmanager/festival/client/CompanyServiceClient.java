@@ -5,7 +5,7 @@ import org.springframework.web.bind.annotation.*;
 import ru.rsreu.festivalmanager.festival.dto.CompanyCreateDto;
 import ru.rsreu.festivalmanager.festival.dto.CompanyDto;
 
-@FeignClient(name = "company-service", url = "http://localhost:8083/company")
+@FeignClient(name = "company-service", url = "${services.company.url}")
 public interface CompanyServiceClient {
 
     @GetMapping("/search")

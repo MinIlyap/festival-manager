@@ -14,12 +14,6 @@ import static io.restassured.RestAssured.given;
 import static org.hamcrest.Matchers.*;
 import static org.junit.jupiter.api.Assertions.*;
 
-/**
- * Интеграционные тесты граничных сценариев (раздел 3.4).
- * Требуют запущенных сервисов: authservice:8082, festivalservice:8085,
- *                               eventservice:8084, fileservice:8086.
- * Библиотеки: JUnit 5, REST Assured 5.3, java.util.concurrent.
- */
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 public class BoundaryIntegrationTest {
 
@@ -28,18 +22,11 @@ public class BoundaryIntegrationTest {
     private static final String EVENT_BASE    = "http://localhost:8084";
     private static final String FILE_BASE     = "http://localhost:8086";
 
-    /**
-     * ID типа билета, у которого в БД заранее выставлен остаток = 1.
-     * Настраивается вручную перед запуском теста.
-     */
+
     private static final int LAST_TICKET_TYPE_ID = 999;
 
-    /**
-     * ID мероприятия, у которого в БД заранее выставлен остаток мест = 1.
-     */
     private static final int LAST_EVENT_ID = 888;
 
-    /** Обычный тип билета для теста истёкшей блокировки. */
     private static final int NORMAL_TICKET_TYPE_ID = 1;
 
     private static String tokenUser1;
@@ -47,15 +34,12 @@ public class BoundaryIntegrationTest {
     private static String tokenUser3Blocked;
     private static String tokenCompany;
 
-    // ── setup ────────────────────────────────────────────────────────────────
-
     @BeforeAll
     static void setup() {
         RestAssured.enableLoggingOfRequestAndResponseIfValidationFails();
 
         tokenUser1        = login("bibu_duguvi34@yandex.ru",  "Qwertry123456");
         tokenUser2        = login("xuh-opitucu79@list.ru",     "Qwertry123456");
-        // fucibox заблокирован с истёкшим сроком блокировки (until < now)
         tokenUser3Blocked = login("fucibox-upu58@bk.ru",      "Qwertry123456");
         tokenCompany      = login("info@novacore.tech",        "yLuE1ehi");
     }
@@ -72,10 +56,6 @@ public class BoundaryIntegrationTest {
                 .extract().jsonPath().getString("accessToken");
     }
 
-    // ── 3.4.1 ────────────────────────────────────────────────────────────────
-    // Тип: интеграционный, конкурентный
-    // Сценарий: два пользователя одновременно покупают последний билет
-    // Ожидаемый результат: ровно 1 успешная покупка, 1 отказ
     @Test
     @Order(1)
     @DisplayName("3.4.1 — Последний билет: один получает, второй — отказ")
@@ -123,7 +103,7 @@ public class BoundaryIntegrationTest {
         ExecutorService pool = Executors.newFixedThreadPool(2);
         pool.submit(buy1);
         pool.submit(buy2);
-        startGate.countDown();              // одновременный старт обоих потоков
+        startGate.countDown();
         done.await(10, TimeUnit.SECONDS);
         pool.shutdown();
 
@@ -134,10 +114,6 @@ public class BoundaryIntegrationTest {
         assertEquals(1, errorCount,   "Второй пользователь должен получить отказ");
     }
 
-    // ── 3.4.2 ────────────────────────────────────────────────────────────────
-    // Тип: интеграционный, конкурентный
-    // Сценарий: два пользователя одновременно регистрируются на последнее место
-    // Ожидаемый результат: ровно 1 успешная регистрация, 1 отказ
     @Test
     @Order(2)
     @DisplayName("3.4.2 — Последнее место на мероприятие: один проходит, второй — нет")
@@ -190,10 +166,6 @@ public class BoundaryIntegrationTest {
         assertEquals(1, err, "Второй должен получить отказ");
     }
 
-    // ── 3.4.3 ────────────────────────────────────────────────────────────────
-    // Тип: интеграционный
-    // Сценарий: пользователь с истёкшей блокировкой успешно покупает билет
-    // Предусловие: запись в black_list для fucibox с until < now() существует в БД
     @Test
     @Order(3)
     @DisplayName("3.4.3 — Истёкшая блокировка не препятствует покупке билета")
@@ -210,15 +182,11 @@ public class BoundaryIntegrationTest {
                 .statusCode(anyOf(is(200), is(201)));
     }
 
-    // ── 3.4.4 ────────────────────────────────────────────────────────────────
-    // Тип: интеграционный
-    // Сценарий: загрузка файла, превышающего допустимый лимит сервера
-    // Ожидаемый результат: 413 Payload Too Large или 400 Bad Request
     @Test
     @Order(4)
     @DisplayName("3.4.4 — Файл сверх лимита отклоняется сервером (413 / 400)")
     void oversizedFile_isRejected() {
-        byte[] oversized = new byte[15 * 1024 * 1024]; // 15 МБ
+        byte[] oversized = new byte[15 * 1024 * 1024];
         new Random().nextBytes(oversized);
 
         given()

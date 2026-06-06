@@ -2,6 +2,7 @@ package ru.rsreu.festivalmanager.company.kafka;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.event.TransactionPhase;
@@ -16,6 +17,9 @@ public class CompanyKafkaProducer {
 
     private final KafkaTemplate<String, Object> kafkaTemplate;
 
+    @Value("${kafka.topics.company-application-request}")
+    private String companyAppRequestTopic;
+
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     public void handleCompanyAppRequestEvent(CompanyEvents.CompanyAppRequestEvent event) {
         CompanyAppRequestMsg msg = CompanyAppRequestMsg.builder()
@@ -26,7 +30,7 @@ public class CompanyKafkaProducer {
 
         String key = String.valueOf(event.companyId());
 
-        kafkaTemplate.send("COMPANY_APPLICATION_REQUEST_TOPIC", key, msg).whenComplete((result, exception) -> {
+        kafkaTemplate.send(companyAppRequestTopic, key, msg).whenComplete((result, exception) -> {
             if (exception != null) {
                 log.error("Couldn't send message to COMPANY_APPLICATION_REQUEST_TOPIC because: ", exception);
             } else {

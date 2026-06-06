@@ -27,9 +27,6 @@ public class StandController {
 
     private final StandService standService;
 
-    /**
-     * Открепление стенда от фестиваля (только если фестиваль еще не опубликован)
-     */
     @PutMapping("/{festivalStandId}")
     @PreAuthorize("hasRole('COMPANY')")
     public ResponseEntity<Void> updateFestivalStand(
@@ -51,9 +48,6 @@ public class StandController {
         return ResponseEntity.ok("Стенд успешно откреплен от фестиваля");
     }
 
-    /**
-     * Добавление конкретного товара на свой стенд
-     */
     @PostMapping("/{festivalStandId}/products")
     @PreAuthorize("hasRole('COMPANY')")
     public ResponseEntity<String> addProductToStand(

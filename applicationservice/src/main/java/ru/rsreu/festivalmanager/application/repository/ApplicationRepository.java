@@ -22,8 +22,6 @@ public interface ApplicationRepository extends JpaRepository<Application, Long> 
     @Query("SELECT a FROM Application a WHERE a.data.festivalLocationId = :festivalLocationId")
     Optional<Application> findByFestivalLocationId(@Param("festivalLocationId") Long festivalLocationId);
 
-    List<Application> findAllBySenderIdOrderByUpdatedAtDesc(Long senderId);
-    
     @Query("SELECT a FROM Application a WHERE " +
             "(:type IS NULL OR a.applicationType = :type) AND " +
             "(:status IS NULL OR a.applicationStatus = :status) " +

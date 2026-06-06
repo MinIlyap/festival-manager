@@ -20,9 +20,6 @@ public class UserEventProfileController {
 
     private final UserEventProfileService userEventProfileService;
 
-    /**
-     * Посещенные мероприятия пользователя (сгруппированные по фестивалям)
-     */
     @GetMapping("/attended")
     @PreAuthorize("hasRole('USER')")
     public ResponseEntity<List<UserFestivalEventsResponse>> getMyAttendedEvents(
@@ -31,9 +28,6 @@ public class UserEventProfileController {
         return ResponseEntity.ok(userEventProfileService.getMyAttendedEvents(userId));
     }
 
-    /**
-     * Полученные награды пользователя (сгруппированные по фестивалям)
-     */
     @GetMapping("/rewards")
     @PreAuthorize("hasRole('USER')")
     public ResponseEntity<List<UserFestivalRewardsResponse>> getMyRewards(

@@ -6,7 +6,7 @@ import ru.rsreu.festivalmanager.festival.dto.PlatformInfoDto;
 
 import java.util.List;
 
-@FeignClient(name = "location-service", url = "http://localhost:8087/location")
+@FeignClient(name = "location-service", url = "${services.location.url}")
 public interface LocationServiceClient {
 
     @GetMapping("/platform-instance/city/{cityId}")

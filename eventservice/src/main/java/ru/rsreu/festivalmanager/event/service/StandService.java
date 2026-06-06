@@ -68,7 +68,6 @@ public class StandService {
         FestivalStand festivalStand = festivalStandRepository.findById(festivalStandId)
                 .orElseThrow(() -> new IllegalArgumentException("Стенд не найден"));
 
-        // Защита: проверяем статус фестиваля через Feign Client
         Boolean isVisible = festivalServiceClient.isFestivalVisible(
                 getSystemToken(), festivalStand.getFestivalLocationId()
         );
@@ -77,15 +76,12 @@ public class StandService {
             throw new IllegalStateException("Нельзя открепить стенд: фестиваль уже опубликован!");
         }
 
-        // Если все ок - удаляем. CascadeType.ALL, если бы он был настроен, удалил бы и StandInstance,
-        // но здесь мы просто разрываем связь (или удаляем сам фестивальный стенд)
         festivalStandRepository.delete(festivalStand);
     }
 
     @Transactional
     public void addProductToStand(Long festivalStandId, Long companyId, ProductAddRequest request) {
 
-        // 1. Проверяем права на стенд
         FestivalStand festivalStand = festivalStandRepository.findById(festivalStandId)
                 .orElseThrow(() -> new IllegalArgumentException("Стенд не найден"));
 
@@ -93,11 +89,9 @@ public class StandService {
             throw new IllegalStateException("Это не ваш стенд");
         }
 
-        // 2. Ищем базовый продукт в словаре
         Product baseProduct = productRepository.findById(request.getProductId())
                 .orElseThrow(() -> new IllegalArgumentException("Базовый продукт не найден в словаре"));
 
-        // 3. Ищем точную копию инстанса продукта ИЛИ создаем новую
         ProductInstance productInstance = productInstanceRepository.findIdenticalInstance(
                 request.getProductId(),
                 request.getQuantity(),
@@ -113,7 +107,6 @@ public class StandService {
             return productInstanceRepository.save(newInstance);
         });
 
-        // 4. Связываем продукт со стендом через составной ключ
         StandProduct standProduct = new StandProduct(
                 new StandProductId(festivalStand, productInstance)
         );
@@ -234,10 +227,8 @@ public class StandService {
         Stand stand = standRepository.findById(request.getStandId())
                 .orElseThrow(() -> new IllegalArgumentException("Базовый стенд не найден"));
 
-        // companyId хранит компанию-организатора; если не задана в запросе — создающая компания
         Long organizerCompanyId = request.getOrganizerCompanyId() != null ? request.getOrganizerCompanyId() : companyId;
 
-        // 2. Ищем точную копию инстанса ИЛИ создаем новую
         StandInstance instance = standInstanceRepository.findIdenticalInstance(
                 request.getStandId(),
                 organizerCompanyId,
@@ -245,7 +236,6 @@ public class StandService {
                 request.getDateStart(),
                 request.getDescription()
         ).orElseGet(() -> {
-            // Если не нашли - собираем новый
             StandInstance newInstance = StandInstance.builder()
                     .stand(stand)
                     .companyId(organizerCompanyId)
@@ -256,7 +246,6 @@ public class StandService {
             return standInstanceRepository.save(newInstance);
         });
 
-        // 3. Привязываем инстанс к локации фестиваля
         FestivalStand festivalStand = FestivalStand.builder()
                 .festivalLocationId(request.getFestivalLocationId())
                 .standInstance(instance)

@@ -23,10 +23,11 @@ public class AuthKafkaListener {
     private final ObjectMapper objectMapper;
 
     @RetryableTopic(
+            attempts = "${kafka.retry.attempts}",
             dltStrategy = DltStrategy.FAIL_ON_ERROR,
             backOff = @BackOff(delay = 1000, multiplier = 2.0)
     )
-    @KafkaListener(topics = "COMPANY_APPLICATION_RESPONSE_TOPIC", groupId = "auth-service-group")
+    @KafkaListener(topics = "${kafka.topics.company-application-response}", groupId = "${kafka.groups.auth}")
     public void listenCompanyApplicationResponse(String jsonMessage) throws JsonProcessingException {
 
         while (jsonMessage.startsWith("\"") && jsonMessage.endsWith("\"")) {

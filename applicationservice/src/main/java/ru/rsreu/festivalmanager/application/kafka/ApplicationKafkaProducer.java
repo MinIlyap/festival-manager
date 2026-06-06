@@ -2,6 +2,7 @@ package ru.rsreu.festivalmanager.application.kafka;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.event.TransactionPhase;
@@ -19,6 +20,15 @@ public class ApplicationKafkaProducer {
 
     private final KafkaTemplate<String, Object> kafkaTemplate;
 
+    @Value("${kafka.topics.company-application-response}")
+    private String companyAppResponseTopic;
+
+    @Value("${kafka.topics.festival-application-response}")
+    private String festivalAppResponseTopic;
+
+    @Value("${kafka.topics.resubmit-application}")
+    private String resubmitApplicationTopic;
+
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     public void handleAppResponseEvent(AppResponseEvent event) {
 
@@ -32,8 +42,8 @@ public class ApplicationKafkaProducer {
                 .build();
 
         String topic = event.type() == ApplicationType.COMPANY_APPLICATION
-                ? "COMPANY_APPLICATION_RESPONSE_TOPIC"
-                : "FESTIVAL_APPLICATION_RESPONSE_TOPIC";
+                ? companyAppResponseTopic
+                : festivalAppResponseTopic;
 
         String key = event.type() == ApplicationType.COMPANY_APPLICATION
                 ? String.valueOf(event.companyId())
@@ -59,7 +69,7 @@ public class ApplicationKafkaProducer {
                 .updatedAt(event.updatedAt())
                 .build();
 
-        String topic = "RESUBMIT_APPLICATION_TOPIC";
+        String topic = resubmitApplicationTopic;
         String key = String.valueOf(event.agentId());
 
         kafkaTemplate.send(topic, key, msg).whenComplete((result, exception) -> {

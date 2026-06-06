@@ -6,7 +6,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestParam;
 
-@FeignClient(name = "event-service", url = "http://localhost:8084/internal/access/events/")
+@FeignClient(name = "event-service", url = "${services.event.url}")
 public interface EventServiceClient {
     @GetMapping("{entityType}/{entityId}")
     boolean checkAccess(@RequestHeader("Authorization") String token,

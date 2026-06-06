@@ -19,7 +19,6 @@ interface RegisterCompanyPayload {
   website?: string;
 }
 
-// Backend sends snake_case via @JsonProperty
 interface RawAuthResponse {
   access_token: string;
   refresh_token: string;

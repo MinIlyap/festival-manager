@@ -6,7 +6,7 @@ import ru.rsreu.festivalmanager.festival.dto.BlacklistStatusDto;
 import ru.rsreu.festivalmanager.festival.dto.UserProfileDto;
 
 
-@FeignClient(name = "user-service", url = "http://localhost:8089/user")
+@FeignClient(name = "user-service", url = "${services.user.url}")
 public interface UserServiceClient {
     @GetMapping("/blacklist/check/{userId}")
     boolean checkBlackListStatus(@RequestHeader("Authorization") String token, @PathVariable Long userId);

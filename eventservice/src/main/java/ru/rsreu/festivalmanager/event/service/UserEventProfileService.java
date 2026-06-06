@@ -29,9 +29,6 @@ public class UserEventProfileService {
     private final UserEventRegistrationRepository registrationRepository;
     private final RewardDistributionRepository rewardDistributionRepository;
 
-    /**
-     * 1. Просмотр расписания фестиваля (с фильтром по типу)
-     */
     @Transactional(readOnly = true)
     public List<FestivalEventResponse> getEventsForFestival(Long festivalLocationId, EventType type) {
         return festivalEventRepository.findByLocationAndType(festivalLocationId, type)
@@ -40,19 +37,14 @@ public class UserEventProfileService {
                 .collect(Collectors.toList());
     }
 
-    /**
-     * 2. Посещенные мероприятия (сгруппированные по фестивалям)
-     */
     @Transactional(readOnly = true)
     public List<UserFestivalEventsResponse> getMyAttendedEvents(Long userId) {
         List<UserEventRegistration> registrations = registrationRepository.findAllByUserEventRegistrationId_UserId(userId);
 
-        // Группируем мероприятия (FestivalEvent) по ID локации фестиваля
         Map<Long, List<FestivalEvent>> groupedEvents = registrations.stream()
                 .map(reg -> reg.getUserEventRegistrationId().getFestivalEvent())
                 .collect(Collectors.groupingBy(FestivalEvent::getFestivalLocationId));
 
-        // Превращаем Map в список красивых DTO
         return groupedEvents.entrySet().stream()
                 .map(entry -> new UserFestivalEventsResponse(
                         entry.getKey(),
@@ -61,14 +53,10 @@ public class UserEventProfileService {
                 .collect(Collectors.toList());
     }
 
-    /**
-     * 3. Полученные награды (сгруппированные по фестивалям)
-     */
     @Transactional(readOnly = true)
     public List<UserFestivalRewardsResponse> getMyRewards(Long userId) {
         List<RewardDistribution> distributions = rewardDistributionRepository.findAllByRewardDistributionId_UserId(userId);
 
-        // Группируем награды по ID локации фестиваля
         Map<Long, List<RewardDistribution>> groupedDistributions = distributions.stream()
                 .collect(Collectors.groupingBy(dist ->
                         dist.getRewardDistributionId().getEventReward().getFestivalEvent().getFestivalLocationId()
@@ -85,8 +73,6 @@ public class UserEventProfileService {
                 })
                 .collect(Collectors.toList());
     }
-
-    // --- Вспомогательные методы маппинга ---
 
     private FestivalEventResponse mapToEventResponse(FestivalEvent fe) {
         EventInstance ei = fe.getEventInstance();

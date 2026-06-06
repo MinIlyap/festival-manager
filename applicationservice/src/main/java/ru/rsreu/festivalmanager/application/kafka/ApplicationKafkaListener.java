@@ -25,10 +25,11 @@ public class ApplicationKafkaListener {
     private final ObjectMapper objectMapper;
 
     @RetryableTopic(
+            attempts = "${kafka.retry.attempts}",
             dltStrategy = DltStrategy.FAIL_ON_ERROR,
             backOff = @BackOff(delay = 1000, multiplier = 2.0)
     )
-    @KafkaListener(topics = "COMPANY_APPLICATION_REQUEST_TOPIC", groupId = "application-service-group")
+    @KafkaListener(topics = "${kafka.topics.company-application-request}", groupId = "${kafka.groups.application}")
     public void listenCompanyRequest(String jsonMessage) throws JsonProcessingException {
         if (jsonMessage.startsWith("\"") && jsonMessage.endsWith("\"")) {
             jsonMessage = objectMapper.readValue(jsonMessage, String.class);
@@ -40,10 +41,11 @@ public class ApplicationKafkaListener {
     }
 
     @RetryableTopic(
+            attempts = "${kafka.retry.attempts}",
             dltStrategy = DltStrategy.FAIL_ON_ERROR,
             backOff = @BackOff(delay = 1000, multiplier = 2.0)
     )
-    @KafkaListener(topics = "FESTIVAL_APPLICATION_REQUEST_TOPIC", groupId = "application-service-group")
+    @KafkaListener(topics = "${kafka.topics.festival-application-request}", groupId = "${kafka.groups.application}")
     public void listenFestivalRequest(String jsonMessage) throws JsonProcessingException {
         if (jsonMessage.startsWith("\"") && jsonMessage.endsWith("\"")) {
             jsonMessage = objectMapper.readValue(jsonMessage, String.class);

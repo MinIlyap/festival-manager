@@ -34,7 +34,7 @@ public class FileStorageService {
     private final EventServiceClient eventClient;
     private final Tika tika = new Tika();
 
-    private static final long MAX_FILE_SIZE = 5 * 1024 * 1024; // 5 MB
+    private static final long MAX_FILE_SIZE = 5 * 1024 * 1024;
 
     @Value("${internal.system-token}")
     private String systemToken;

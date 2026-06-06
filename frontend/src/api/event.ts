@@ -1,8 +1,6 @@
 import api from './axios';
 import type { FestivalEvent, Stand, EventRegistration, Reward, Page } from '../types';
 
-// ── Raw backend shapes ──────────────────────────────────────────────────────
-
 interface RawFestivalStandResponse {
   id: number;
   festivalLocationId: number;
@@ -36,8 +34,6 @@ interface RawUserFestivalEventsResponse {
   events: RawFestivalEventResponse[];
 }
 
-// ── Mappers ─────────────────────────────────────────────────────────────────
-
 function mapEvent(e: RawFestivalEventResponse): FestivalEvent {
   return {
     id: String(e.festivalEventId),
@@ -58,8 +54,6 @@ function mapEvent(e: RawFestivalEventResponse): FestivalEvent {
     rewards: [],
   };
 }
-
-// ── Payload types ────────────────────────────────────────────────────────────
 
 interface EventFilters {
   name?: string;
@@ -132,10 +126,6 @@ interface CreateRewardPayload {
   place: number;
   photoUrl?: string;
 }
-
-// ── API ──────────────────────────────────────────────────────────────────────
-// Proxy: /api/events/* → eventservice /events/*
-//        /api/qr/events/* → eventservice /qr/events/*
 
 export const eventApi = {
   // GET /events/search → Page<FestivalEventResponse>
