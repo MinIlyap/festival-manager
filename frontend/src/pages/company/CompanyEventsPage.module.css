@@ -19,7 +19,6 @@
   gap: var(--space-md);
 }
 
-/* ── Event card ── */
 .card {
   display: flex;
   align-items: stretch;

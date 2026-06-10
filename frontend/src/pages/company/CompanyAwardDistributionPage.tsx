@@ -13,16 +13,12 @@ import { eventApi, type EventReward } from '../../api/event';
 import { userApi } from '../../api/user';
 import styles from './CompanyAwardDistributionPage.module.css';
 
-// ── types ────────────────────────────────────────────────────
-
 type DragItem = {
   key: string;
   label: string;
   commandId?: number;
   userId?: number;
 };
-
-// ── helpers ──────────────────────────────────────────────────
 
 const TYPE_LABEL: Record<string, string> = {
   TOURNAMENT:    'Турнир',
@@ -47,13 +43,9 @@ function placeOrdinal(place: number) {
   return `${place}-е место`;
 }
 
-// ── component ─────────────────────────────────────────────────
-
 export default function CompanyAwardDistributionPage() {
   const { eventId } = useParams<{ eventId: string }>();
   const navigate = useNavigate();
-
-  // ── remote data ───────────────────────────────────────────
 
   const { data: event, isLoading: eventLoading } = useQuery({
     queryKey: ['event', eventId],
@@ -93,7 +85,6 @@ export default function CompanyAwardDistributionPage() {
     enabled: !!(participantIds && participantIds.length > 0),
   });
 
-  // ── DnD state ─────────────────────────────────────────────
 
   const [slots, setSlots] = useState<{ [place: number]: DragItem | null }>({});
   const [unplaced, setUnplaced] = useState<DragItem[]>([]);
@@ -104,13 +95,10 @@ export default function CompanyAwardDistributionPage() {
   const [dragOverSlot, setDragOverSlot] = useState<number | null>(null);
   const [dragOverList, setDragOverList] = useState(false);
 
-  // ── result state ─────────────────────────────────────────
 
   const [distributing, setDistributing] = useState(false);
   const [done, setDone] = useState(false);
   const [error, setError] = useState<string | null>(null);
-
-  // ── initialise ────────────────────────────────────────────
 
   useEffect(() => {
     if (initialized || !event) return;
@@ -140,8 +128,6 @@ export default function CompanyAwardDistributionPage() {
     setUnplaced(items);
     setInitialized(true);
   }, [initialized, event, isSolo, isTeam, participantProfiles, commands]);
-
-  // ── DnD handlers ─────────────────────────────────────────
 
   function dropOnSlot(targetPlace: number) {
     if (!draggingKey) return;
@@ -186,7 +172,6 @@ export default function CompanyAwardDistributionPage() {
     setDraggingFromSlot(null);
   }
 
-  // ── distribution ─────────────────────────────────────────
 
   async function distribute() {
     setDistributing(true);
@@ -211,8 +196,6 @@ export default function CompanyAwardDistributionPage() {
     }
   }
 
-  // ── computed ──────────────────────────────────────────────
-
   const slotPlaces = Object.keys(slots).map(Number).sort((a, b) => a - b);
   const totalSlots = slotPlaces.length;
   const filledCount = slotPlaces.filter(p => slots[p] !== null).length;
@@ -227,11 +210,9 @@ export default function CompanyAwardDistributionPage() {
     (isSolo && (pidLoading || profilesLoading)) ||
     (isTeam && commandsLoading);
 
-  // ── render: loading ───────────────────────────────────────
 
   if (isDataLoading && !initialized) return <Layout><Spinner centered /></Layout>;
 
-  // ── render: no participants ───────────────────────────────
 
   if (!initialized && !isDataLoading) {
     return (
@@ -251,8 +232,6 @@ export default function CompanyAwardDistributionPage() {
     );
   }
 
-  // ── render: success ───────────────────────────────────────
-
   if (done) {
     return (
       <Layout>
@@ -271,7 +250,6 @@ export default function CompanyAwardDistributionPage() {
     );
   }
 
-  // ── render: main ──────────────────────────────────────────
 
   return (
     <Layout>

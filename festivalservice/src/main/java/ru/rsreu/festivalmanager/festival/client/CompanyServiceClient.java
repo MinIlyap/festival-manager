@@ -2,12 +2,11 @@ package ru.rsreu.festivalmanager.festival.client;
 
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.*;
-import ru.rsreu.festivalmanager.festival.dto.CompanyCreateDto;
-import ru.rsreu.festivalmanager.festival.dto.CompanyDto;
+import ru.rsreu.festivalmanager.festival.dto.festival.CompanyCreateDto;
+import ru.rsreu.festivalmanager.festival.dto.festival.CompanyDto;
 
 @FeignClient(name = "company-service", url = "${services.company.url}")
 public interface CompanyServiceClient {
-
     @GetMapping("/search")
     CompanyDto getCompanyByTin(@RequestHeader("Authorization") String token, @RequestParam("tin") String tin);
 

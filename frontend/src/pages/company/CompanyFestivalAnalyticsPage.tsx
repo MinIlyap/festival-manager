@@ -3,7 +3,6 @@ import { ChevronLeft, BarChart2, Calendar, MapPin, Users, FileText, Building2 } 
 import Layout from '../../components/layout/Layout';
 import styles from './CompanyFestivalAnalyticsPage.module.css';
 
-// ── Fake data ──────────────────────────────────────────────────────────────
 
 const FESTIVAL = {
   name: 'СПб: Кубики и сенсоры',
@@ -22,7 +21,6 @@ const FESTIVAL = {
   actualAttendees: 198,
 };
 
-// Sorted descending by registration rate (registered/max)
 const EVENTS = [
   { name: 'Гвинт Mobile',                 type: 'Турнир',        organizer: 'ТапСфера',    max: 64,  registered: 64,  attended: 58 },
   { name: 'Монополия в реальной жизни',   type: 'Квест',         organizer: 'ДайсМастерс', max: 40,  registered: 40,  attended: 36 },
@@ -31,7 +29,6 @@ const EVENTS = [
   { name: 'Баланс в ККИ',                 type: 'Мастер-класс',  organizer: 'ТапСфера',    max: 50,  registered: 46,  attended: 39 },
 ];
 
-// ── Donut chart ────────────────────────────────────────────────────────────
 
 function DonutChart({ pct, color, label }: { pct: number; color: string; label: string }) {
   return (
@@ -51,7 +48,6 @@ function DonutChart({ pct, color, label }: { pct: number; color: string; label: 
   );
 }
 
-// ── Progress bar ───────────────────────────────────────────────────────────
 
 function ProgressBar({ pct, color }: { pct: number; color: string }) {
   return (
@@ -61,7 +57,6 @@ function ProgressBar({ pct, color }: { pct: number; color: string }) {
   );
 }
 
-// ── Page ───────────────────────────────────────────────────────────────────
 
 export default function CompanyFestivalAnalyticsPage() {
   const navigate = useNavigate();

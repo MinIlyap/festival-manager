@@ -9,7 +9,6 @@ import ru.rsreu.festivalmanager.festival.service.FestivalService;
 @RequestMapping("/internal/access/festivals")
 @RequiredArgsConstructor
 public class FestivalAccessController {
-
     private final FestivalService festivalService;
 
     @PreAuthorize("hasRole('INTERNAL')")

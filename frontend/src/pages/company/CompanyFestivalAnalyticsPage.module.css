@@ -19,7 +19,6 @@
 }
 .back:hover { color: var(--accent-primary); }
 
-/* ── Title ── */
 .titleRow {
   display: flex;
   align-items: flex-start;
@@ -48,7 +47,6 @@
   margin: 0;
 }
 
-/* ── Info card ── */
 .infoCard {
   background: var(--bg-surface);
   border: 1px solid var(--border-subtle);
@@ -89,7 +87,6 @@
   line-height: 1.5;
 }
 
-/* ── Stat boxes ── */
 .statsRow {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
@@ -134,7 +131,6 @@
   line-height: 1.3;
 }
 
-/* ── Donut charts ── */
 .chartsSection {
   display: flex;
   align-items: center;
@@ -197,7 +193,6 @@
   margin: 0;
 }
 
-/* ── Events section ── */
 .eventsSection {
   margin-top: var(--space-xs);
 }
@@ -291,7 +286,6 @@
   white-space: nowrap;
 }
 
-/* ── Per-event stats ── */
 .eventStats {
   display: flex;
   flex-direction: column;
@@ -360,7 +354,6 @@
   color: var(--text-muted);
 }
 
-/* ── Responsive ── */
 @media (max-width: 768px) {
   .statsRow { grid-template-columns: repeat(2, 1fr); }
   .chartsSection { flex-direction: column; gap: var(--space-xl); padding: var(--space-lg); }

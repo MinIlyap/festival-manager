@@ -7,7 +7,6 @@ import ru.rsreu.festivalmanager.auth.dto.CompanyRegistrationRequest;
 
 @FeignClient(name = "company-service", url = "${services.company.url}")
 public interface CompanyServiceClient {
-
     @PostMapping
     Long createInactiveCompany(@RequestHeader("Authorization") String token, @RequestBody CompanyRegistrationRequest request);
 

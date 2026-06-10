@@ -3,55 +3,68 @@ import type { FestivalEvent, Stand, EventRegistration, Reward, Page } from '../t
 
 interface RawFestivalStandResponse {
   id: number;
-  festivalLocationId: number;
+  festival_location_id: number;
   name: string;
   type: 'COMMERCIAL' | 'DEMONSTRATION';
   description?: string;
-  companyId: number;
-  organizerCompanyId?: number;
-  dateStart: string;
+  company_id: number;
+  organizer_company_id?: number;
+  date_start: string;
 }
 
 interface RawFestivalEventResponse {
-  festivalEventId: number;
-  festivalLocationId: number;
-  eventName: string;
+  festival_event_id: number;
+  festival_location_id: number;
+  event_name: string;
   type: string;
   description?: string;
-  dateStart: string;
-  timeStart?: string;
-  approximateDuration?: number;
-  isCommand: boolean;
-  maxNumberPeople?: number;
-  maxPeopleCommand?: number;
-  organizerCompanyId?: number;
-  companyBrandName?: string;
-  createdAt: string;
+  date_start: string;
+  time_start?: string;
+  approximate_duration?: number;
+  is_command: boolean;
+  max_number_people?: number;
+  max_people_command?: number;
+  organizer_company_id?: number;
+  company_brand_name?: string;
+  created_at: string;
 }
 
 interface RawUserFestivalEventsResponse {
-  festivalLocationId: number;
+  festival_location_id: number;
   events: RawFestivalEventResponse[];
 }
 
 function mapEvent(e: RawFestivalEventResponse): FestivalEvent {
   return {
-    id: String(e.festivalEventId),
-    festivalId: String(e.festivalLocationId),
+    id: String(e.festival_event_id),
+    festivalId: String(e.festival_location_id),
     festivalName: '',
-    name: e.eventName,
+    name: e.event_name,
     type: e.type as FestivalEvent['type'],
     description: e.description,
-    format: e.isCommand ? 'TEAM' : 'SOLO',
-    maxParticipants: e.maxNumberPeople,
-    teamSize: e.maxPeopleCommand,
-    startDate: e.dateStart,
-    startTime: e.timeStart,
-    approximateDuration: e.approximateDuration,
-    endDate: e.dateStart,
-    organizerCompanyId: e.organizerCompanyId,
-    companyName: e.companyBrandName,
+    format: e.is_command ? 'TEAM' : 'SOLO',
+    maxParticipants: e.max_number_people,
+    teamSize: e.max_people_command,
+    startDate: e.date_start,
+    startTime: e.time_start,
+    approximateDuration: e.approximate_duration,
+    endDate: e.date_start,
+    organizerCompanyId: e.organizer_company_id,
+    companyName: e.company_brand_name,
     rewards: [],
+  };
+}
+
+function mapStand(s: RawFestivalStandResponse): Stand {
+  return {
+    id: String(s.id),
+    festivalId: String(s.festival_location_id),
+    festivalName: '',
+    name: s.name,
+    type: s.type,
+    description: s.description,
+    startDate: s.date_start,
+    organizerCompanyId: s.organizer_company_id,
   };
 }
 
@@ -127,8 +140,29 @@ interface CreateRewardPayload {
   photoUrl?: string;
 }
 
+function mapEventReward(r: any): EventReward {
+  return {
+    eventRewardId: r.event_reward_id,
+    rewardId: r.reward_id,
+    rewardName: r.reward_name,
+    description: r.description,
+    place: r.place,
+    pointNumber: r.point_number,
+  };
+}
+
+function mapStandProduct(p: any): StandProduct {
+  return {
+    productInstanceId: p.product_instance_id,
+    productId: p.product_id,
+    productName: p.product_name,
+    description: p.description,
+    quantity: p.quantity,
+    price: p.price,
+  };
+}
+
 export const eventApi = {
-  // GET /events/search → Page<FestivalEventResponse>
   listEvents: (filters?: EventFilters) =>
     api.get<{ content: RawFestivalEventResponse[]; totalElements: number; totalPages: number; number: number; size: number; last: boolean }>(
       '/events/search',
@@ -152,7 +186,6 @@ export const eventApi = {
       last: r.data.last,
     } as Page<FestivalEvent>)),
 
-  // GET /events/festival/{festivalLocationId} — events by festival location
   getEventsByFestival: (festivalLocationId: string) =>
     api.get<RawFestivalEventResponse[]>(`/events/festival/${festivalLocationId}`)
       .then(r => r.data.map(mapEvent)),
@@ -160,68 +193,55 @@ export const eventApi = {
   getEventById: (id: string) =>
     Promise.all([
       api.get<RawFestivalEventResponse>(`/events/${id}`),
-      api.get<EventReward[]>(`/events/rewards/by-event/${id}`).catch(() => ({ data: [] as EventReward[] })),
+      api.get<any[]>(`/events/rewards/by-event/${id}`).catch(() => ({ data: [] as any[] })),
     ]).then(([eventRes, rewardsRes]) => {
       const event = mapEvent(eventRes.data);
-      event.rewards = (rewardsRes.data ?? []).map(r => ({
-        id: String(r.eventRewardId),
-        name: r.rewardName,
+      event.rewards = (rewardsRes.data ?? []).map((r: any) => ({
+        id: String(r.event_reward_id),
+        name: r.reward_name,
         description: r.description,
         place: r.place ?? 0,
-        photoUrl: `/api/files/EVENT_REWARD/${r.eventRewardId}`,
+        photoUrl: `/api/files/EVENT_REWARD/${r.event_reward_id}`,
         eventId: id,
       }));
       return event;
     }),
 
-  // POST /events — COMPANY creates festival event
   createEvent: (data: CreateEventPayload) =>
     api.post<number>('/events', {
-      eventId: data.eventId,
-      festivalLocationId: Number(data.festivalId),
+      event_id: data.eventId,
+      festival_location_id: Number(data.festivalId),
       type: data.type,
       description: data.description,
-      dateStart: data.startDate,
-      timeStart: data.startTime || '00:00',
-      approximateDuration: data.approximateDuration,
-      isCommand: data.format === 'TEAM',
-      maxNumberPeople: data.maxParticipants ?? 0,
-      maxPeopleCommand: data.teamSize,
-      organizerCompanyId: data.organizerCompanyId ?? null,
+      date_start: data.startDate,
+      time_start: data.startTime || '00:00',
+      approximate_duration: data.approximateDuration,
+      is_command: data.format === 'TEAM',
+      max_number_people: data.maxParticipants ?? 0,
+      max_people_command: data.teamSize,
+      organizer_company_id: data.organizerCompanyId ?? null,
     }).then(r => ({ id: String(r.data) } as FestivalEvent)),
 
   updateEvent: (festivalEventId: string, data: UpdateEventPayload) =>
     api.put(`/events/${festivalEventId}`, {
       type: data.type,
       description: data.description,
-      dateStart: data.startDate,
-      timeStart: data.startTime || '00:00',
-      approximateDuration: data.approximateDuration,
-      isCommand: data.format === 'TEAM',
-      maxNumberPeople: data.maxParticipants ?? 0,
-      maxPeopleCommand: data.teamSize,
-      organizerCompanyId: data.organizerCompanyId ?? null,
+      date_start: data.startDate,
+      time_start: data.startTime || '00:00',
+      approximate_duration: data.approximateDuration,
+      is_command: data.format === 'TEAM',
+      max_number_people: data.maxParticipants ?? 0,
+      max_people_command: data.teamSize,
+      organizer_company_id: data.organizerCompanyId ?? null,
     }).then(r => r.data),
 
-  // DELETE /events/{festivalEventId}
   deleteEvent: (id: string) =>
     api.delete(`/events/${id}`).then(r => r.data),
 
-  // GET /events/stands/festival/{festivalLocationId}
   getStandsByFestival: (festivalLocationId: string) =>
     api.get<RawFestivalStandResponse[]>(`/events/stands/festival/${festivalLocationId}`)
-      .then(r => r.data.map(s => ({
-        id: String(s.id),
-        festivalId: String(s.festivalLocationId),
-        festivalName: '',
-        name: s.name,
-        type: s.type,
-        description: s.description,
-        startDate: s.dateStart,
-        organizerCompanyId: s.organizerCompanyId,
-      } as Stand))),
+      .then(r => r.data.map(mapStand)),
 
-  // GET /events/stands/search
   listStands: (filters?: EventFilters) =>
     api.get<{ content: RawFestivalStandResponse[]; totalElements: number; totalPages: number; number: number; size: number; last: boolean }>(
       '/events/stands/search',
@@ -236,16 +256,7 @@ export const eventApi = {
         },
       }
     ).then(r => ({
-      content: r.data.content.map(s => ({
-        id: String(s.id),
-        festivalId: String(s.festivalLocationId),
-        festivalName: '',
-        name: s.name,
-        type: s.type,
-        description: s.description,
-        startDate: s.dateStart,
-        organizerCompanyId: s.organizerCompanyId,
-      } as Stand)),
+      content: r.data.content.map(mapStand),
       totalElements: r.data.totalElements,
       totalPages: r.data.totalPages,
       number: r.data.number,
@@ -253,87 +264,78 @@ export const eventApi = {
       last: r.data.last,
     } as Page<Stand>)),
 
-  // POST /events/stands
   createStand: (data: CreateStandPayload) =>
     api.post<number>('/events/stands', {
-      standId: data.standId,
-      festivalLocationId: Number(data.festivalId),
+      stand_id: data.standId,
+      festival_location_id: Number(data.festivalId),
       type: data.type,
       description: data.description,
-      dateStart: data.startDate,
-      organizerCompanyId: data.organizerCompanyId ?? null,
+      date_start: data.startDate,
+      organizer_company_id: data.organizerCompanyId ?? null,
     }).then(r => ({ id: String(r.data) } as Stand)),
 
   updateStand: (festivalStandId: string, data: { type: 'COMMERCIAL' | 'DEMONSTRATION'; description?: string; startDate: string; organizerCompanyId?: number }) =>
     api.put(`/events/stands/${festivalStandId}`, {
       type: data.type,
       description: data.description,
-      dateStart: data.startDate,
-      organizerCompanyId: data.organizerCompanyId ?? null,
+      date_start: data.startDate,
+      organizer_company_id: data.organizerCompanyId ?? null,
     }).then(r => r.data),
 
-  // DELETE /events/stands/{festivalStandId}
   deleteStand: (id: string) =>
     api.delete(`/events/stands/${id}`).then(r => r.data),
 
-  // POST /events/stands/{festivalStandId}/products
   addProduct: (standId: string, product: { productId: number; description?: string; price: number; quantity: number }) =>
     api.post(`/events/stands/${standId}/products`, {
-      productId: product.productId,
+      product_id: product.productId,
       description: product.description,
       quantity: product.quantity,
       price: product.price,
     }).then(r => r.data),
 
-  // GET /events/stands/{festivalStandId}/products
   getProductsByStand: (standId: string) =>
-    api.get<StandProduct[]>(`/events/stands/${standId}/products`).then(r => r.data),
+    api.get<any[]>(`/events/stands/${standId}/products`)
+      .then(r => r.data.map(mapStandProduct)),
 
-  // DELETE /events/stands/{festivalStandId}/products/{productInstanceId}
   deleteProduct: (standId: string, productInstanceId: number) =>
     api.delete(`/events/stands/${standId}/products/${productInstanceId}`).then(r => r.data),
 
-  // PUT /events/stands/{festivalStandId}/products/{productInstanceId}
   updateProduct: (standId: string, productInstanceId: number, data: { productId: number; description?: string; price: number; quantity: number }) =>
     api.put(`/events/stands/${standId}/products/${productInstanceId}`, {
-      productId: data.productId,
+      product_id: data.productId,
       description: data.description,
       quantity: data.quantity,
       price: data.price,
     }).then(r => r.data),
 
-  // POST /events/rewards/{festivalEventId}
   createReward: (data: CreateRewardPayload) =>
     api.post<number>(`/events/rewards/${data.eventId}`, {
-      rewardId: 0,
+      reward_id: 0,
       description: data.description,
       place: data.place,
     }).then(r => ({ id: String(r.data) } as Reward)),
 
-  // POST /events/rewards/{eventRewardId}/distribute/users
   distributeReward: (rewardId: string, userId: string) =>
     api.post(`/events/rewards/${rewardId}/distribute/users`, {
-      userIds: [Number(userId)],
+      user_ids: [Number(userId)],
     }).then(r => r.data),
 
-  // POST /events/registrations/{festivalEventId}
   register: (eventId: string) =>
     api.post(`/events/registrations/${eventId}`).then(r => ({ id: eventId } as EventRegistration)),
 
-  // GET /events/my/attended → UserFestivalEventsResponse[] → flat EventRegistration[]
   myRegistrations: () =>
     api.get<RawUserFestivalEventsResponse[]>('/events/my/attended').then(r => {
       const result: EventRegistration[] = [];
       (r.data ?? []).forEach(group => {
         (group.events ?? []).forEach(ev => {
           result.push({
-            id: String(ev.festivalEventId),
-            festivalId: String(group.festivalLocationId),
+            id: String(ev.festival_event_id),
+            festivalId: String(group.festival_location_id),
             festivalName: '',
-            eventId: String(ev.festivalEventId),
-            eventName: ev.eventName,
-            eventDate: ev.dateStart,
-            format: ev.isCommand ? 'TEAM' : 'SOLO',
+            eventId: String(ev.festival_event_id),
+            eventName: ev.event_name,
+            eventDate: ev.date_start,
+            format: ev.is_command ? 'TEAM' : 'SOLO',
             status: 'ACTIVE',
           });
         });
@@ -341,13 +343,11 @@ export const eventApi = {
       return result;
     }),
 
-  // POST /events/commands/create?festivalEventId=xxx&name=xxx
   createTeam: (festivalEventId: string, teamName: string) =>
     api.post('/events/commands/create', null, {
       params: { festivalEventId: Number(festivalEventId), name: teamName },
     }).then(r => r.data),
 
-  // POST /events/commands/{commandId}/invite?targetUserId=xxx
   inviteToTeam: (commandId: string, targetUserId: number) =>
     api.post(`/events/commands/${commandId}/invite`, null, {
       params: { targetUserId },
@@ -368,45 +368,45 @@ export const eventApi = {
     api.get<number[]>(`/events/${eventId}/info/participants`).then(r => r.data),
 
   getEventCommands: (eventId: string) =>
-    api.get<Array<{ commandId: number; commandName: string; creatorId: number; memberUserIds: number[] }>>(
-      `/events/${eventId}/info/commands`
-    ).then(r => r.data),
+    api.get<any[]>(`/events/${eventId}/info/commands`).then(r =>
+      r.data.map((c: any) => ({
+        commandId: c.command_id,
+        commandName: c.command_name,
+        creatorId: c.creator_id,
+        memberUserIds: c.member_user_ids,
+      }))
+    ),
 
   getEventParticipantsWithoutCommand: (eventId: string) =>
     api.get<number[]>(`/events/${eventId}/info/participants/without-command`).then(r => r.data),
 
-  // POST /qr/events/festival-event/{festivalEventId}/verify — COMPANY verifies event QR
   verifyEventQr: (token: string, festivalEventId = '0') =>
     api.post(`/qr/events/festival-event/${festivalEventId}/verify`, { token }).then(r => r.data),
 
-  // POST /qr/events/festival-event/{festivalEventId}/generate — USER generates event QR
   generateEventQr: (festivalEventId: string) =>
     api.post(`/qr/events/festival-event/${festivalEventId}/generate`).then(r => r.data),
 
-  // GET /events/my/created — COMPANY's own events
   myCompanyEvents: () =>
     api.get<RawFestivalEventResponse[]>('/events/my/created').then(r => r.data.map(mapEvent)),
 
-  // GET /events/my/rewards — rewards distributed to the current user
   myRewards: () =>
-    api.get<Array<{
-      festivalLocationId: number;
-      rewards: Array<{
-        eventRewardId: number;
-        eventName: string;
-        rewardName: string;
-        description?: string;
-        place?: number;
-        pointNumber?: number;
-      }>;
-    }>>('/events/my/rewards').then(r => r.data),
+    api.get<any[]>('/events/my/rewards').then(r =>
+      r.data.map((group: any) => ({
+        festivalLocationId: group.festival_location_id,
+        rewards: (group.rewards ?? []).map((rw: any) => ({
+          eventRewardId: rw.event_reward_id,
+          eventName: rw.event_name,
+          rewardName: rw.reward_name,
+          description: rw.description,
+          place: rw.place,
+          pointNumber: rw.point_number,
+        })),
+      }))
+    ),
 
-  // GET /user/users/search?nickname=xxx — used for invite flow
   searchUserByNickname: (nickname: string) =>
     api.get(`/user/users/search`, { params: { nickname } }).then(r => r.data),
 
-  // ── Photo management ─────────────────────────────────────────────────────────
-  // POST /files/FESTIVAL_EVENT/{eventId}
   uploadEventPhoto: async (eventId: string, file: File) => {
     const bytes = await file.arrayBuffer();
     await api.post(`/files/FESTIVAL_EVENT/${eventId}`, bytes, {
@@ -415,14 +415,11 @@ export const eventApi = {
     return `/api/files/FESTIVAL_EVENT/${eventId}`;
   },
 
-  // DELETE /files/FESTIVAL_EVENT/{eventId}
   deleteEventPhoto: (eventId: string) =>
     api.delete(`/files/FESTIVAL_EVENT/${eventId}`).then(r => r.data),
 
-  // GET URL for event photo
   getEventPhotoUrl: (eventId: string) => `/api/files/FESTIVAL_EVENT/${eventId}`,
 
-  // ── Dictionary management ────────────────────────────────────────────────────
   getDictionaryEvents: () =>
     api.get<Array<{ id: number; name: string }>>('/events/dictionaries/events').then(r => r.data),
 
@@ -447,23 +444,27 @@ export const eventApi = {
   createDictionaryProduct: (name: string) =>
     api.post<number>('/events/dictionaries/products', { name }).then(r => r.data),
 
-  // ── Event rewards ────────────────────────────────────────────────────────────
   getRewardsByEvent: (festivalEventId: string) =>
-    api.get<EventReward[]>(`/events/rewards/by-event/${festivalEventId}`).then(r => r.data),
+    api.get<any[]>(`/events/rewards/by-event/${festivalEventId}`)
+      .then(r => r.data.map(mapEventReward)),
 
   addRewardToEvent: (festivalEventId: string, data: { rewardId: number; description?: string; place?: number; pointNumber?: number }) =>
-    api.post<number>(`/events/rewards/${festivalEventId}`, data).then(r => r.data),
+    api.post<number>(`/events/rewards/${festivalEventId}`, {
+      reward_id: data.rewardId,
+      description: data.description,
+      place: data.place,
+      point_number: data.pointNumber,
+    }).then(r => r.data),
 
   deleteReward: (eventRewardId: string) =>
     api.delete(`/events/rewards/${eventRewardId}`).then(r => r.data),
 
   distributeRewardToUsers: (eventRewardId: string, userIds: number[]) =>
-    api.post(`/events/rewards/${eventRewardId}/distribute/users`, { userIds }).then(r => r.data),
+    api.post(`/events/rewards/${eventRewardId}/distribute/users`, { user_ids: userIds }).then(r => r.data),
 
   distributeRewardToCommand: (eventRewardId: string, commandId: number) =>
     api.post(`/events/rewards/${eventRewardId}/distribute/commands/${commandId}`).then(r => r.data),
 
-  // POST /files/FESTIVAL_STAND/{standId}
   uploadStandPhoto: async (standId: string, file: File) => {
     const bytes = await file.arrayBuffer();
     await api.post(`/files/FESTIVAL_STAND/${standId}`, bytes, {
@@ -472,11 +473,9 @@ export const eventApi = {
     return `/api/files/FESTIVAL_STAND/${standId}`;
   },
 
-  // DELETE /files/FESTIVAL_STAND/{standId}
   deleteStandPhoto: (standId: string) =>
     api.delete(`/files/FESTIVAL_STAND/${standId}`).then(r => r.data),
 
-  // POST /files/PRODUCT_INSTANCE/{productInstanceId}
   uploadProductPhoto: async (productInstanceId: number, file: File) => {
     const bytes = await file.arrayBuffer();
     await api.post(`/files/PRODUCT_INSTANCE/${productInstanceId}`, bytes, {
@@ -485,11 +484,9 @@ export const eventApi = {
     return `/api/files/PRODUCT_INSTANCE/${productInstanceId}`;
   },
 
-  // DELETE /files/PRODUCT_INSTANCE/{productInstanceId}
   deleteProductPhoto: (productInstanceId: number) =>
     api.delete(`/files/PRODUCT_INSTANCE/${productInstanceId}`).then(r => r.data),
 
-  // POST /files/EVENT_REWARD/{rewardId}
   uploadRewardPhoto: async (rewardId: string, file: File) => {
     const bytes = await file.arrayBuffer();
     await api.post(`/files/EVENT_REWARD/${rewardId}`, bytes, {
@@ -498,7 +495,6 @@ export const eventApi = {
     return `/api/files/EVENT_REWARD/${rewardId}`;
   },
 
-  // DELETE /files/EVENT_REWARD/{rewardId}
   deleteRewardPhoto: (rewardId: string) =>
     api.delete(`/files/EVENT_REWARD/${rewardId}`).then(r => r.data),
 };

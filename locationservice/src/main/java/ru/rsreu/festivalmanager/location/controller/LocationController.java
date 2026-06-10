@@ -35,6 +35,7 @@ public class LocationController {
             @RequestParam("name") String name,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size) {
+
         return ResponseEntity.ok(locationService.searchCities(name, PageRequest.of(page, size)));
     }
 
@@ -69,6 +70,7 @@ public class LocationController {
             @RequestParam(defaultValue = "") String platformName,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size) {
+
         return ResponseEntity.ok(locationService.searchPlatformInstances(cityId, platformName,
                 PageRequest.of(page, size)));
     }
@@ -77,6 +79,7 @@ public class LocationController {
     @PreAuthorize("hasAnyRole('COMPANY', 'ADMIN')")
     public ResponseEntity<PlatformInstanceResponse> createPlatformInstance(
             @Valid @RequestBody PlatformInstanceCreateRequest request) {
+
         return ResponseEntity.ok(locationService.createOrGetPlatformInstance(request));
     }
 
@@ -85,6 +88,7 @@ public class LocationController {
     public ResponseEntity<PlatformInstanceResponse> updatePlatformInstance(
             @PathVariable Long id,
             @Valid @RequestBody PlatformInstanceUpdateRequest request) {
+
         return ResponseEntity.ok(locationService.updatePlatformInstance(id, request));
     }
 }

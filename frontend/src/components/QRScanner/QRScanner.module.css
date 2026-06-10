@@ -4,19 +4,14 @@
   border-radius: var(--radius-md);
   overflow: hidden;
   background: #000;
-  /* Reserve space so the modal doesn't collapse before camera starts */
   min-height: 280px;
 }
-
-/* ── Camera feed ─────────────────────────────────────────────────────────── */
 
 .video {
   width: 100%;
   display: block;
   border-radius: var(--radius-md);
 }
-
-/* ── Loading overlay (absolute over .wrap) ───────────────────────────────── */
 
 .loadingOverlay {
   position: absolute;
@@ -46,8 +41,6 @@
   color: var(--text-muted);
   margin: 0;
 }
-
-/* ── Error state ─────────────────────────────────────────────────────────── */
 
 .errorState {
   display: flex;

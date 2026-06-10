@@ -7,8 +7,8 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-import ru.rsreu.festivalmanager.event.dto.UserFestivalEventsResponse;
-import ru.rsreu.festivalmanager.event.dto.UserFestivalRewardsResponse;
+import ru.rsreu.festivalmanager.event.dto.event.UserFestivalEventsResponse;
+import ru.rsreu.festivalmanager.event.dto.reward.UserFestivalRewardsResponse;
 import ru.rsreu.festivalmanager.event.service.UserEventProfileService;
 
 import java.util.List;
@@ -17,7 +17,6 @@ import java.util.List;
 @RequestMapping("/events/my")
 @RequiredArgsConstructor
 public class UserEventProfileController {
-
     private final UserEventProfileService userEventProfileService;
 
     @GetMapping("/attended")

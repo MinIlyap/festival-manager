@@ -50,7 +50,7 @@ public class SecurityIntegrationTest {
 
     @Test
     @Order(1)
-    @DisplayName("3.3.1 — Запрос без токена возвращает 401 Unauthorized")
+    @DisplayName("Запрос без токена возвращает 401 Unauthorized")
     void noToken_returns401() {
         given()
                 .baseUri(FESTIVAL_BASE)
@@ -64,7 +64,7 @@ public class SecurityIntegrationTest {
 
     @Test
     @Order(2)
-    @DisplayName("3.3.2 — Роль USER на admin-эндпоинте возвращает 403 Forbidden")
+    @DisplayName("Роль USER на admin-эндпоинте возвращает 403 Forbidden")
     void userRole_onAdminEndpoint_returns403() {
         given()
                 .baseUri(APP_BASE)
@@ -79,7 +79,7 @@ public class SecurityIntegrationTest {
 
     @Test
     @Order(3)
-    @DisplayName("3.3.3 — Истёкший JWT-токен возвращает 401 Unauthorized")
+    @DisplayName("Истёкший JWT-токен возвращает 401 Unauthorized")
     void expiredJwt_returns401() {
         given()
                 .baseUri(FESTIVAL_BASE)
@@ -94,7 +94,7 @@ public class SecurityIntegrationTest {
 
     @Test
     @Order(4)
-    @DisplayName("3.3.4 — Невалидный refreshToken не выдаёт новый accessToken")
+    @DisplayName("Невалидный refreshToken не выдаёт новый accessToken")
     void invalidRefreshToken_returnsError() {
         given()
                 .baseUri(AUTH_BASE)
@@ -108,7 +108,7 @@ public class SecurityIntegrationTest {
 
     @Test
     @Order(5)
-    @DisplayName("3.3.5 — Internal-эндпоинт без системного токена возвращает 403")
+    @DisplayName("Internal-эндпоинт без системного токена возвращает 403")
     void internalEndpoint_withoutSystemToken_returns403() {
         given()
                 .baseUri(AUTH_BASE)

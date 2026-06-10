@@ -13,26 +13,14 @@ import java.util.Optional;
 
 @Repository
 public interface PlatformInstanceRepository extends JpaRepository<PlatformInstance, Long> {
-    @Query("SELECT p FROM PlatformInstance p WHERE p.platform.id = :platformId AND p.city.id = :cityId AND p.street = :street AND p.house = :house")
-    Optional<PlatformInstance> findExistingInstance(
-            @Param("platformId") Long platformId,
-            @Param("cityId") Long cityId,
-            @Param("street") String street,
-            @Param("house") String house
-    );
+    Optional<PlatformInstance> findByPlatform_IdAndCity_IdAndStreetAndHouse(
+            Long platformId, Long cityId, String street, String house);
 
-    @Query("SELECT p FROM PlatformInstance p WHERE p.city.id = :cityId AND LOWER(p.platform.name) LIKE LOWER(CONCAT('%', :platformName, '%'))")
-    Page<PlatformInstance> searchInstancesByCityAndPlatformName(
-            @Param("cityId") Long cityId,
-            @Param("platformName") String platformName,
-            Pageable pageable
-    );
+    Page<PlatformInstance> findByCity_IdAndPlatform_NameContainingIgnoreCase(
+            Long cityId, String platformName, Pageable pageable);
 
-    @Query("SELECT p FROM PlatformInstance p WHERE LOWER(p.platform.name) LIKE LOWER(CONCAT('%', :platformName, '%'))")
-    Page<PlatformInstance> searchInstancesByPlatformName(
-            @Param("platformName") String platformName,
-            Pageable pageable
-    );
+    Page<PlatformInstance> findByPlatform_NameContainingIgnoreCase(
+            String platformName, Pageable pageable);
 
     @Query("SELECT pi.id FROM PlatformInstance pi WHERE pi.city.id = :cityId")
     List<Long> findPlatformInstanceIdsByCityId(@Param("cityId") Long cityId);

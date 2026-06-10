@@ -21,7 +21,6 @@ import java.util.Optional;
 @Service
 @RequiredArgsConstructor
 public class CustomOAuth2UserService extends DefaultOAuth2UserService {
-
     private final UserSocialAccountRepository socialRepository;
     private final AuthCredentialRepository credentialRepository;
     private final AuthService authService;

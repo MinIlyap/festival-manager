@@ -30,9 +30,10 @@ databaseChangeLog:
                   constraints:
                     nullable: false
               - column:
-                  name: phone_number_enc
-                  type: VARCHAR(255)
+                  name: phone_number
+                  type: VARCHAR(13)
                   constraints:
+                    unique: true
                     nullable: true
               - column:
                   name: last_name
@@ -50,12 +51,12 @@ databaseChangeLog:
                   constraints:
                     nullable: true
               - column:
-                  name: passport_seria_enc
+                  name: passport_seria_hash
                   type: VARCHAR(255)
                   constraints:
                     nullable: true
               - column:
-                  name: passport_number_enc
+                  name: passport_number_hash
                   type: VARCHAR(255)
                   constraints:
                     nullable: true

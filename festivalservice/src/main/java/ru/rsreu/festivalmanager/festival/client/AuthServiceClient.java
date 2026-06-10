@@ -2,7 +2,7 @@ package ru.rsreu.festivalmanager.festival.client;
 
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.*;
-import ru.rsreu.festivalmanager.festival.dto.AuthCredentialDto;
+import ru.rsreu.festivalmanager.festival.dto.festival.AuthCredentialDto;
 
 import java.util.List;
 
@@ -15,5 +15,5 @@ public interface AuthServiceClient {
     AuthCredentialDto getUserByEmail(@RequestHeader("Authorization") String token, @RequestParam("email") String email);
 
     @GetMapping("/users/{userId}")
-    AuthCredentialDto getCredentialByUserId(@RequestHeader("Authorization") String token, @PathVariable("userId") Long userId);
+    AuthCredentialDto getCredentialByUserId(@RequestHeader("Authorization") String token, @PathVariable Long userId);
 }

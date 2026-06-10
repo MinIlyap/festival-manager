@@ -3,7 +3,7 @@ package ru.rsreu.festivalmanager.event.service;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import ru.rsreu.festivalmanager.event.dto.CommandWithMembersResponse;
+import ru.rsreu.festivalmanager.event.dto.event.CommandWithMembersResponse;
 import ru.rsreu.festivalmanager.event.entity.event.FestivalEvent;
 import ru.rsreu.festivalmanager.event.entity.registration.Command;
 import ru.rsreu.festivalmanager.event.repository.CommandRepository;
@@ -15,8 +15,8 @@ import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class EventInfoService {
-
     private final UserEventRegistrationRepository registrationRepository;
     private final CommandRepository commandRepository;
     private final FestivalEventRepository festivalEventRepository;

@@ -11,7 +11,6 @@ import java.util.Date;
 
 @Component
 public class JwtProvider {
-
     private final SecretKey jwtAccessSecret;
 
     public JwtProvider(@Value("${jwt.secret.access}") String jwtAccessSecret) {
@@ -24,7 +23,7 @@ public class JwtProvider {
                 .claim("id", id)
                 .claim("role", role)
                 .issuedAt(new Date())
-                .expiration(new Date(System.currentTimeMillis() + 1000 * 60 * 60)) // 1 час
+                .expiration(new Date(System.currentTimeMillis() + 1000 * 60 * 60))
                 .signWith(jwtAccessSecret)
                 .compact();
     }

@@ -2,6 +2,7 @@ databaseChangeLog:
   - changeSet:
       id: 003-add-social-accounts
       author: ilyap
+      validCheckSum: ANY
       changes:
         - dropNotNullConstraint:
             tableName: auth_credentials
@@ -23,9 +24,6 @@ databaseChangeLog:
                   type: BIGINT
                   constraints:
                     nullable: false
-                    foreignKeyName: fk_social_auth_user
-                    referencedTableName: auth_credentials
-                    referencedColumnNames: id
               - column:
                   name: provider
                   type: VARCHAR(50)
@@ -44,3 +42,10 @@ databaseChangeLog:
             tableName: user_social_accounts
             columnNames: provider, external_id
             constraintName: uq_social_provider_id
+
+        - addForeignKeyConstraint:
+            constraintName: fk_social_auth_user
+            baseTableName: user_social_accounts
+            baseColumnNames: user_id
+            referencedTableName: auth_credentials
+            referencedColumnNames: id

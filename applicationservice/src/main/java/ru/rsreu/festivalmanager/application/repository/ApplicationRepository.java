@@ -10,17 +10,13 @@ import ru.rsreu.festivalmanager.application.entity.Application;
 import ru.rsreu.festivalmanager.application.entity.ApplicationStatus;
 import ru.rsreu.festivalmanager.application.entity.ApplicationType;
 
-import java.util.List;
 import java.util.Optional;
 
 @Repository
 public interface ApplicationRepository extends JpaRepository<Application, Long> {
+    Optional<Application> findByData_CompanyId(Long companyId);
 
-    @Query("SELECT a FROM Application a WHERE a.data.companyId = :companyId")
-    Optional<Application> findByCompanyId(@Param("companyId") Long companyId);
-
-    @Query("SELECT a FROM Application a WHERE a.data.festivalLocationId = :festivalLocationId")
-    Optional<Application> findByFestivalLocationId(@Param("festivalLocationId") Long festivalLocationId);
+    Optional<Application> findByData_FestivalLocationId(Long festivalLocationId);
 
     @Query("SELECT a FROM Application a WHERE " +
             "(:type IS NULL OR a.applicationType = :type) AND " +

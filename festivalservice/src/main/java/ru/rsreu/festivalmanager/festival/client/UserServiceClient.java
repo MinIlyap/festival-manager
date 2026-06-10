@@ -2,9 +2,8 @@ package ru.rsreu.festivalmanager.festival.client;
 
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.*;
-import ru.rsreu.festivalmanager.festival.dto.BlacklistStatusDto;
-import ru.rsreu.festivalmanager.festival.dto.UserProfileDto;
-
+import ru.rsreu.festivalmanager.festival.dto.festival.BlacklistStatusDto;
+import ru.rsreu.festivalmanager.festival.dto.festival.UserProfileDto;
 
 @FeignClient(name = "user-service", url = "${services.user.url}")
 public interface UserServiceClient {

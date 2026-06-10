@@ -9,11 +9,11 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
-import ru.rsreu.festivalmanager.event.dto.FestivalStandCreateRequest;
-import ru.rsreu.festivalmanager.event.dto.FestivalStandResponse;
-import ru.rsreu.festivalmanager.event.dto.FestivalStandUpdateRequest;
-import ru.rsreu.festivalmanager.event.dto.ProductAddRequest;
-import ru.rsreu.festivalmanager.event.dto.StandProductResponse;
+import ru.rsreu.festivalmanager.event.dto.stand.FestivalStandCreateRequest;
+import ru.rsreu.festivalmanager.event.dto.stand.FestivalStandResponse;
+import ru.rsreu.festivalmanager.event.dto.stand.FestivalStandUpdateRequest;
+import ru.rsreu.festivalmanager.event.dto.stand.ProductAddRequest;
+import ru.rsreu.festivalmanager.event.dto.stand.StandProductResponse;
 import ru.rsreu.festivalmanager.event.entity.stand.StandType;
 import ru.rsreu.festivalmanager.event.service.StandService;
 
@@ -24,7 +24,6 @@ import java.util.List;
 @RequestMapping("/events/stands")
 @RequiredArgsConstructor
 public class StandController {
-
     private final StandService standService;
 
     @PutMapping("/{festivalStandId}")
@@ -63,6 +62,7 @@ public class StandController {
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<List<StandProductResponse>> getProductsByStand(
             @PathVariable Long festivalStandId) {
+
         return ResponseEntity.ok(standService.getProductsByStand(festivalStandId));
     }
 
@@ -72,6 +72,7 @@ public class StandController {
             @PathVariable Long festivalStandId,
             @PathVariable Long productInstanceId,
             @AuthenticationPrincipal Long companyId) {
+
         standService.removeProductFromStand(festivalStandId, productInstanceId, companyId);
         return ResponseEntity.ok("Товар удалён со стенда");
     }
@@ -83,6 +84,7 @@ public class StandController {
             @PathVariable Long productInstanceId,
             @Valid @RequestBody ProductAddRequest request,
             @AuthenticationPrincipal Long companyId) {
+
         standService.updateProductOnStand(festivalStandId, productInstanceId, companyId, request);
         return ResponseEntity.ok("Товар обновлён");
     }
@@ -96,6 +98,7 @@ public class StandController {
             @RequestParam(required = false) StandType type,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "12") int size) {
+
         return ResponseEntity.ok(standService.searchStands(name, cityId, dateStart, type, PageRequest.of(page, size)));
     }
 
@@ -103,6 +106,7 @@ public class StandController {
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<List<FestivalStandResponse>> getStandsByFestival(
             @PathVariable Long festivalLocationId) {
+
         return ResponseEntity.ok(standService.getStandsByFestival(festivalLocationId));
     }
 

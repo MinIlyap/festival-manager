@@ -3,14 +3,6 @@ plugins {
     id 'io.spring.dependency-management'
 }
 
-group = 'ru.rsreu.festivalmanager'
-version = '0.0.1-SNAPSHOT'
-description = 'common'
-
-repositories {
-    mavenCentral()
-}
-
 dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-web'
     implementation 'org.springframework.boot:spring-boot-starter-validation'

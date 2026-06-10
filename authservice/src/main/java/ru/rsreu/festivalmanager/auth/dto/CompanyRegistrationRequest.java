@@ -24,7 +24,7 @@ public class CompanyRegistrationRequest {
     @JsonProperty("full_name")
     private String fullName;
 
-    @NotBlank(message = "Название бренда (Brand Name) обязательно")
+    @NotBlank(message = "Название бренда обязательно")
     @JsonProperty("brand_name")
     private String brandName;
 

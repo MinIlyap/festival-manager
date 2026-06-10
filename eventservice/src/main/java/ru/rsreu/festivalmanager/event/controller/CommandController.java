@@ -11,7 +11,6 @@ import ru.rsreu.festivalmanager.event.service.CommandService;
 @RequestMapping("/events/commands")
 @RequiredArgsConstructor
 public class CommandController {
-
     private final CommandService commandService;
 
     @PostMapping("/create")

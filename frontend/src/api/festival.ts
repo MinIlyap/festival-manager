@@ -11,8 +11,6 @@ export interface TicketTypeOption {
   name: string;
 }
 
-// ── Management DTOs ─────────────────────────────────────────────────────────
-
 export interface FestivalOrganizer {
   company_id: number;
   tin: string;
@@ -37,7 +35,6 @@ export interface CompanyInfo {
   is_active: boolean;
 }
 
-// ── Raw backend shapes ──────────────────────────────────────────────────────
 
 interface RawFestivalResponse {
   festival_location_id: number;
@@ -81,7 +78,6 @@ interface RawUserTicketsResponse {
   expired_tickets: RawTicketResponse[];
 }
 
-// ── Mappers ─────────────────────────────────────────────────────────────────
 
 function mapFestival(f: RawFestivalResponse): Festival {
   return {
@@ -119,7 +115,6 @@ function mapTicket(t: RawTicketResponse, status: 'ACTIVE' | 'EXPIRED'): Ticket {
   };
 }
 
-// ── Payload types ────────────────────────────────────────────────────────────
 
 interface FestivalFilters {
   name?: string;
@@ -153,10 +148,7 @@ interface CreateTicketTypePayload {
   price?: number;
 }
 
-// ── API ──────────────────────────────────────────────────────────────────────
-
 export const festivalApi = {
-  // GET /festival/search → List<FestivalResponse>
   list: (filters?: FestivalFilters) =>
     api.get<RawFestivalResponse[]>('/festival/search', {
       params: {
@@ -174,7 +166,6 @@ export const festivalApi = {
       last: true,
     } as Page<Festival>)),
 
-  // GET /festival/{id} + tickets + organizers in parallel
   getById: (id: string) =>
     Promise.all([
       api.get<RawFestivalResponse>(`/festival/${id}`),
@@ -201,19 +192,15 @@ export const festivalApi = {
       return festival;
     }),
 
-  // GET /festival/age-limits — public, no auth required
   getAgeLimits: () =>
     api.get<AgeLimit[]>('/festival/age-limits').then(r => r.data),
 
-  // GET /ticket/types — returns all global ticket types
   getTicketTypes: () =>
     api.get<TicketTypeOption[]>('/ticket/types').then(r => r.data),
 
-  // POST /ticket/types — create a new global ticket type
   createGlobalTicketType: (name: string) =>
     api.post<TicketTypeOption>('/ticket/types', { name }).then(r => r.data),
 
-  // POST /festival/apply — COMPANY creates festival application
   create: (data: CreateFestivalPayload) =>
     api.post<number>('/festival/apply', {
       festival_name: data.name,
@@ -255,7 +242,6 @@ export const festivalApi = {
       age_limit_id: data.ageLimitId,
     }).then(r => r.data),
 
-  // Company/curator management (after festival creation)
   getOrganizers: (locationId: string) =>
     api.get<FestivalOrganizer[]>(`/festival/${locationId}/management/organizers`).then(r => r.data),
 
@@ -277,7 +263,6 @@ export const festivalApi = {
   submitForModeration: (locationId: string) =>
     api.post(`/festival/${locationId}/management/submit`),
 
-  // Company search/create proxy (via festivalservice with system token)
   searchCompanyByTin: (tin: string) =>
     api.get<CompanyInfo>('/festival/company/search', { params: { tin } }).then(r => r.data),
 
@@ -287,34 +272,29 @@ export const festivalApi = {
   createCompany: (data: { tin: string; full_name: string; brand_name: string; email: string }) =>
     api.post<CompanyInfo>('/festival/company', data).then(r => r.data),
 
-  // POST /ticket/instances
   createTicketType: (data: CreateTicketTypePayload) =>
     api.post('/ticket/instances', {
-      ticketTypeId: data.ticketTypeId,
-      festivalLocationId: data.festivalLocationId ? Number(data.festivalLocationId) : undefined,
+      ticket_type_id: data.ticketTypeId,
+      festival_location_id: data.festivalLocationId ? Number(data.festivalLocationId) : undefined,
       description: data.description,
       price: data.price,
     }).then(r => r.data),
 
-  // PUT /ticket/instances/{id}
   updateTicketType: (id: string, data: Partial<CreateTicketTypePayload>) =>
     api.put(`/ticket/instances/${id}`, {
       description: data.description,
       price: data.price,
     }).then(r => r.data),
 
-  // DELETE /ticket/instances/{id}
   deleteTicketType: (id: string) =>
     api.delete(`/ticket/instances/${id}`).then(r => r.data),
 
-  // POST /ticket/purchase
-  buyTicket: (ticketTypeInstanceId: string) =>
+  buyTicket: (ticketTypeInstanceId: string, quantity: number = 1) =>
     api.post<number>('/ticket/purchase', {
       ticket_type_instance_id: Number(ticketTypeInstanceId),
-      quantity: 1,
+      quantity,
     }).then(r => ({ id: String(r.data) } as Ticket)),
 
-  // GET /ticket/my → UserTicketsResponse → Ticket[]
   myTickets: () =>
     api.get<RawUserTicketsResponse>('/ticket/my').then(r => {
       const valid = (r.data.valid_tickets ?? []).map(t => mapTicket(t, 'ACTIVE'));
@@ -322,31 +302,32 @@ export const festivalApi = {
       return [...valid, ...expired];
     }),
 
-  // GET /festival/my — COMPANY's festivals
   myCompanyFestivals: () =>
     api.get<RawFestivalResponse[]>('/festival/my').then(r => r.data.map(mapFestival)),
 
-  // GET /festival/curator/my — CURATOR's festivals
   myCuratorFestivals: () =>
     api.get<RawFestivalResponse[]>('/festival/curator/my').then(r => r.data.map(mapFestival)),
 
-  // GET /ticket/participants/{festivalLocationId} — CURATOR gets festival participants
   getParticipants: (festivalLocationId: string) =>
-    api.get<import('../types').FestivalParticipant[]>(`/ticket/participants/${festivalLocationId}`).then(r => r.data),
+    api.get<any[]>(`/ticket/participants/${festivalLocationId}`).then(r =>
+      r.data.map((p: any) => ({
+        userId: p.user_id,
+        nickname: p.nickname,
+        inBlacklist: p.in_blacklist,
+        blacklistReason: p.blacklist_reason,
+        blacklistUntil: p.blacklist_until,
+      } as import('../types').FestivalParticipant))
+    ),
 
-  // POST /qr/festivals/location/{locationId}/verify — CURATOR verifies ticket QR
   verifyTicketQr: (token: string, locationId = '0') =>
     api.post<import('../types').QrVerifyResponse>(`/qr/festivals/location/${locationId}/verify`, { token }).then(r => r.data),
 
-  // POST /qr/festivals/ticket/{ticketId}/generate — USER generates ticket QR
   generateTicketQr: (ticketId: string) =>
     api.post(`/qr/festivals/ticket/${ticketId}/generate`).then(r => r.data),
 
-  // GET /festival/{id} — lightweight name lookup (via public endpoint)
   getFestivalName: (festivalLocationId: string) =>
     api.get<{ name: string }>(`/festival/${festivalLocationId}`).then(r => r.data.name as string),
 
-  // GET /festival/{id} — basic info (name, city, platform) used by ticket/reg cards
   getFestivalBasicInfo: (id: string) =>
     api.get<RawFestivalResponse>(`/festival/${id}`).then(r => ({
       name: r.data.name,
@@ -355,7 +336,6 @@ export const festivalApi = {
       address: r.data.address ?? '',
     })),
 
-  // GET /festival/{id} — lightweight fetch for name + visibility status
   getFestivalInfo: (id: string) =>
     api.get<RawFestivalResponse>(`/festival/${id}`).then(r => ({
       id,
@@ -363,7 +343,6 @@ export const festivalApi = {
       isVisible: r.data.is_visible ?? false,
     })),
 
-  // POST /files/FESTIVAL_LOCATION/{festivalId}
   uploadPhoto: async (festivalId: string, file: File) => {
     const bytes = await file.arrayBuffer();
     await api.post(`/files/FESTIVAL_LOCATION/${festivalId}`, bytes, {
@@ -372,7 +351,6 @@ export const festivalApi = {
     return { url: `/api/files/FESTIVAL_LOCATION/${festivalId}` };
   },
 
-  // DELETE /files/FESTIVAL_LOCATION/{festivalId}
   deletePhoto: (festivalId: string) =>
     api.delete(`/files/FESTIVAL_LOCATION/${festivalId}`).then(r => r.data),
 

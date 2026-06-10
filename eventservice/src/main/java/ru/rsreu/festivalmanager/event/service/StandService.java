@@ -8,11 +8,11 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import ru.rsreu.festivalmanager.event.client.FestivalServiceClient;
-import ru.rsreu.festivalmanager.event.dto.FestivalStandCreateRequest;
-import ru.rsreu.festivalmanager.event.dto.FestivalStandResponse;
-import ru.rsreu.festivalmanager.event.dto.FestivalStandUpdateRequest;
-import ru.rsreu.festivalmanager.event.dto.ProductAddRequest;
-import ru.rsreu.festivalmanager.event.dto.StandProductResponse;
+import ru.rsreu.festivalmanager.event.dto.stand.FestivalStandCreateRequest;
+import ru.rsreu.festivalmanager.event.dto.stand.FestivalStandResponse;
+import ru.rsreu.festivalmanager.event.dto.stand.FestivalStandUpdateRequest;
+import ru.rsreu.festivalmanager.event.dto.stand.ProductAddRequest;
+import ru.rsreu.festivalmanager.event.dto.stand.StandProductResponse;
 import ru.rsreu.festivalmanager.event.entity.stand.*;
 import ru.rsreu.festivalmanager.event.repository.*;
 
@@ -24,7 +24,6 @@ import java.util.stream.Collectors;
 @Service
 @RequiredArgsConstructor
 public class StandService {
-
     private final FestivalStandRepository festivalStandRepository;
     private final StandProductRepository standProductRepository;
     private final ProductInstanceRepository productInstanceRepository;
@@ -39,7 +38,6 @@ public class StandService {
     private String getSystemToken() {
         return "Bearer " + systemToken;
     }
-
 
     @Transactional
     public void updateFestivalStand(Long festivalStandId, Long companyId, FestivalStandUpdateRequest request) {
@@ -60,6 +58,7 @@ public class StandService {
         if (request.getOrganizerCompanyId() != null) {
             instance.setCompanyId(request.getOrganizerCompanyId());
         }
+
         standInstanceRepository.save(instance);
     }
 
@@ -135,9 +134,11 @@ public class StandService {
     public void removeProductFromStand(Long festivalStandId, Long productInstanceId, Long companyId) {
         FestivalStand festivalStand = festivalStandRepository.findById(festivalStandId)
                 .orElseThrow(() -> new IllegalArgumentException("Стенд не найден"));
+
         if (!festivalStand.getStandInstance().getCompanyId().equals(companyId)) {
             throw new IllegalStateException("Это не ваш стенд");
         }
+
         StandProduct sp = standProductRepository
                 .findByStandProductId_FestivalStand_IdAndStandProductId_ProductInstance_Id(festivalStandId, productInstanceId)
                 .orElseThrow(() -> new IllegalArgumentException("Товар не найден на стенде"));
@@ -148,9 +149,11 @@ public class StandService {
     public void updateProductOnStand(Long festivalStandId, Long oldProductInstanceId, Long companyId, ProductAddRequest request) {
         FestivalStand festivalStand = festivalStandRepository.findById(festivalStandId)
                 .orElseThrow(() -> new IllegalArgumentException("Стенд не найден"));
+
         if (!festivalStand.getStandInstance().getCompanyId().equals(companyId)) {
             throw new IllegalStateException("Это не ваш стенд");
         }
+
         StandProduct oldSp = standProductRepository
                 .findByStandProductId_FestivalStand_IdAndStandProductId_ProductInstance_Id(festivalStandId, oldProductInstanceId)
                 .orElseThrow(() -> new IllegalArgumentException("Товар не найден на стенде"));
@@ -243,6 +246,7 @@ public class StandService {
                     .description(request.getDescription())
                     .dateStart(request.getDateStart())
                     .build();
+
             return standInstanceRepository.save(newInstance);
         });
 

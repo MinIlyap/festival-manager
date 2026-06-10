@@ -5,13 +5,11 @@ import lombok.*;
 
 @Entity
 @Table(name = "user_social_accounts")
-@Getter
-@Setter
+@Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
 public class UserSocialAccount {
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;

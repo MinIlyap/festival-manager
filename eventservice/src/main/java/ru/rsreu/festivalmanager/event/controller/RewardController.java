@@ -6,9 +6,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
-import ru.rsreu.festivalmanager.event.dto.EventRewardResponse;
-import ru.rsreu.festivalmanager.event.dto.RewardAddRequest;
-import ru.rsreu.festivalmanager.event.dto.RewardDistributionRequest;
+import ru.rsreu.festivalmanager.event.dto.reward.EventRewardResponse;
+import ru.rsreu.festivalmanager.event.dto.reward.RewardAddRequest;
+import ru.rsreu.festivalmanager.event.dto.reward.RewardDistributionRequest;
 import ru.rsreu.festivalmanager.event.service.RewardService;
 
 import java.util.List;
@@ -17,7 +17,6 @@ import java.util.List;
 @RequestMapping("/events/rewards")
 @RequiredArgsConstructor
 public class RewardController {
-
     private final RewardService rewardService;
 
     @GetMapping("/by-event/{festivalEventId}")

@@ -8,9 +8,10 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.rsreu.festivalmanager.event.client.FestivalServiceClient;
-import ru.rsreu.festivalmanager.event.dto.FestivalEventCreateRequest;
-import ru.rsreu.festivalmanager.event.dto.FestivalEventResponse;
-import ru.rsreu.festivalmanager.event.dto.FestivalEventUpdateRequest;
+import ru.rsreu.festivalmanager.event.dto.event.CompanyBriefDto;
+import ru.rsreu.festivalmanager.event.dto.event.FestivalEventCreateRequest;
+import ru.rsreu.festivalmanager.event.dto.event.FestivalEventResponse;
+import ru.rsreu.festivalmanager.event.dto.event.FestivalEventUpdateRequest;
 import ru.rsreu.festivalmanager.event.entity.event.Event;
 import ru.rsreu.festivalmanager.event.entity.event.EventInstance;
 import ru.rsreu.festivalmanager.event.entity.event.EventType;
@@ -26,7 +27,6 @@ import java.util.List;
 @Service
 @RequiredArgsConstructor
 public class FestivalEventService {
-
     private final FestivalEventRepository festivalEventRepository;
     private final FestivalServiceClient festivalServiceClient;
     private final EventRepository eventRepository;
@@ -96,6 +96,7 @@ public class FestivalEventService {
         if (request.getOrganizerCompanyId() != null) {
             instance.setCompanyId(request.getOrganizerCompanyId());
         }
+
         eventInstanceRepository.save(instance);
     }
 
@@ -168,6 +169,7 @@ public class FestivalEventService {
                     .maxNumberPeople(request.getMaxNumberPeople())
                     .maxPeopleCommand(request.getMaxPeopleCommand())
                     .build();
+
             return eventInstanceRepository.save(newInstance);
         });
 
@@ -186,7 +188,7 @@ public class FestivalEventService {
         FestivalEventResponse response = mapToResponse(festivalEvent);
         if (festivalEvent.getEventInstance().getCompanyId() != null) {
             try {
-                ru.rsreu.festivalmanager.event.dto.CompanyBriefDto company =
+                CompanyBriefDto company =
                         festivalServiceClient.getCompanyById(getSystemToken(), festivalEvent.getEventInstance().getCompanyId());
                 if (company != null) {
                     response.setCompanyBrandName(
@@ -195,6 +197,7 @@ public class FestivalEventService {
                 }
             } catch (Exception ignored) {}
         }
+
         return response;
     }
 
@@ -203,7 +206,7 @@ public class FestivalEventService {
         return festivalEventRepository.findAllByEventInstance_CompanyId(companyId)
                 .stream()
                 .map(this::mapToResponse)
-                .collect(java.util.stream.Collectors.toList());
+                .toList();
     }
 
     private FestivalEventResponse mapToResponse(FestivalEvent fe) {

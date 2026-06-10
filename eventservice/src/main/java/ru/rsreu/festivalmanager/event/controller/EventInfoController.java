@@ -7,7 +7,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-import ru.rsreu.festivalmanager.event.dto.CommandWithMembersResponse;
+import ru.rsreu.festivalmanager.event.dto.event.CommandWithMembersResponse;
 import ru.rsreu.festivalmanager.event.service.EventInfoService;
 
 import java.util.List;
@@ -16,7 +16,6 @@ import java.util.List;
 @RequestMapping("/events/{festivalEventId}/info")
 @RequiredArgsConstructor
 public class EventInfoController {
-
     private final EventInfoService eventInfoService;
 
     @GetMapping("/participants")

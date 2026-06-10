@@ -14,7 +14,6 @@ import ru.rsreu.festivalmanager.file.service.FileStorageService;
 @RequestMapping("/files")
 @RequiredArgsConstructor
 public class FileController {
-
     private final FileStorageService fileService;
 
     @PreAuthorize("isAuthenticated()")
@@ -60,6 +59,7 @@ public class FileController {
     public ResponseEntity<byte[]> getEntityImage(
             @PathVariable EntityType entityType,
             @PathVariable Long entityId) {
+
         try {
             byte[] fileBytes = fileService.downloadFile(entityType, entityId);
             return ResponseEntity.ok(fileBytes);

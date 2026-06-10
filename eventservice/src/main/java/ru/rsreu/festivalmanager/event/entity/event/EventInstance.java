@@ -8,8 +8,7 @@ import java.time.LocalTime;
 
 @Entity
 @Table(name = "event_instances")
-@Getter
-@Setter
+@Data
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder

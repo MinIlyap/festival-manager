@@ -7,14 +7,13 @@ import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.event.TransactionPhase;
 import org.springframework.transaction.event.TransactionalEventListener;
-import ru.rsreu.festivalmanager.festival.dto.FestivalAppRequestMsg;
+import ru.rsreu.festivalmanager.festival.dto.festival.FestivalAppRequestMsg;
 import ru.rsreu.festivalmanager.festival.event.FestivalEvents;
 
 @Slf4j
 @Component
 @RequiredArgsConstructor
 public class FestivalKafkaProducer {
-
     private final KafkaTemplate<String, Object> kafkaTemplate;
 
     @Value("${kafka.topics.festival-application-request}")

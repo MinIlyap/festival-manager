@@ -10,7 +10,7 @@
 .festDate { font-size: 12px; color: var(--text-muted); margin-bottom: 2px; }
 .festLocation { display: flex; align-items: center; gap: 4px; font-size: 12px; color: var(--text-muted); margin-bottom: var(--space-sm); }
 .festActions { display: flex; gap: var(--space-sm); flex-wrap: wrap; }
-/* Edit page */
+
 .editLayout { display: grid; grid-template-columns: 220px 1fr; gap: var(--space-xl); align-items: start; }
 .sidebar { background: var(--bg-surface); border: 1px solid var(--border-subtle); border-radius: var(--radius-lg); overflow: hidden; }
 .sidebarItem { display: flex; align-items: center; gap: 10px; padding: 12px 16px; font-size: 14px; font-weight: 600; font-family: var(--font-heading); color: var(--text-muted); cursor: pointer; transition: background var(--transition-fast), color var(--transition-fast); border: none; background: none; width: 100%; text-align: left; }

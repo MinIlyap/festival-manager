@@ -18,7 +18,6 @@ import { userApi } from '../../api/user';
 import { useAuthStore } from '../../store/authStore';
 import styles from './EventDetailPage.module.css';
 
-// ── helpers ──────────────────────────────────────────────────────────────────
 
 function RewardPhoto({ url, name }: { url?: string; name: string }) {
   const [err, setErr] = useState(false);
@@ -59,8 +58,6 @@ function fmtDate(iso: string) {
 }
 function fmtTime(t?: string) { return t ? t.substring(0, 5) : ''; }
 
-// ── main component ────────────────────────────────────────────────────────────
-
 export default function EventDetailPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
@@ -73,7 +70,6 @@ export default function EventDetailPage() {
   const [teamName, setTeamName] = useState('');
   const [imgErr, setImgErr] = useState(false);
 
-  // ── data queries ──────────────────────────────────────────────────────────
 
   const { data: event, isLoading } = useQuery({
     queryKey: ['event', id],
@@ -122,15 +118,12 @@ export default function EventDetailPage() {
     enabled: !!myReg && isTeam && !!id,
   });
 
-  // my command derived from commands list
   const myCommand = (commands ?? []).find(c => myUserId && c.memberUserIds.includes(myUserId));
   const amCreator = myCommand?.creatorId === myUserId;
 
   const hasValidTicket = (myTickets ?? []).some(
     t => t.status === 'ACTIVE' && event && t.festivalId === event.festivalId,
   );
-
-  // ── mutations ─────────────────────────────────────────────────────────────
 
   const registerMutation = useMutation({
     mutationFn: () => eventApi.register(id!),
@@ -185,8 +178,6 @@ export default function EventDetailPage() {
     },
   });
 
-  // ── guards ────────────────────────────────────────────────────────────────
-
   if (isLoading) return <Layout><Spinner centered /></Layout>;
   if (!event) return <Layout><p style={{ color: 'var(--text-muted)' }}>Мероприятие не найдено</p></Layout>;
 
@@ -221,7 +212,7 @@ export default function EventDetailPage() {
           <div className={styles.badgeRow}>
             <Badge status="info">{TYPE_LABEL[event.type] ?? event.type}</Badge>
             <Badge status={isTeam ? 'pending' : 'active'}>
-              {isTeam ? `Командное${event.teamSize ? ` · до ${event.teamSize} чел.` : ''}` : 'Личное'}
+              {isTeam ? `Командное${event.teamSize ? ` · до ${event.teamSize} чел.` : ''}` : 'Одиночное'}
             </Badge>
           </div>
           <h1 className={styles.title}>{event.name}</h1>

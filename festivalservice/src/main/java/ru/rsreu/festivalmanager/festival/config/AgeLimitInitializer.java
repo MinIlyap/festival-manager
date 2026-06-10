@@ -13,7 +13,6 @@ import java.util.List;
 @Component
 @RequiredArgsConstructor
 public class AgeLimitInitializer implements CommandLineRunner {
-
     private final AgeLimitRepository ageLimitRepository;
 
     @Override
@@ -36,8 +35,6 @@ public class AgeLimitInitializer implements CommandLineRunner {
 
         if (addedCount > 0) {
             log.info("Справочник age_limits успешно обновлен. Добавлено записей: {}", addedCount);
-        } else {
-            log.info("Справочник age_limits уже заполнен. Инициализация пропущена.");
         }
     }
 }

@@ -9,9 +9,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
-import ru.rsreu.festivalmanager.event.dto.FestivalEventCreateRequest;
-import ru.rsreu.festivalmanager.event.dto.FestivalEventResponse;
-import ru.rsreu.festivalmanager.event.dto.FestivalEventUpdateRequest;
+import ru.rsreu.festivalmanager.event.dto.event.FestivalEventCreateRequest;
+import ru.rsreu.festivalmanager.event.dto.event.FestivalEventResponse;
+import ru.rsreu.festivalmanager.event.dto.event.FestivalEventUpdateRequest;
 import ru.rsreu.festivalmanager.event.entity.event.EventType;
 import ru.rsreu.festivalmanager.event.service.FestivalEventService;
 import ru.rsreu.festivalmanager.event.service.UserEventProfileService;
@@ -23,7 +23,6 @@ import java.util.List;
 @RequestMapping("/events")
 @RequiredArgsConstructor
 public class FestivalEventController {
-
     private final FestivalEventService festivalEventService;
     private final UserEventProfileService userEventProfileService;
 
@@ -61,6 +60,7 @@ public class FestivalEventController {
     @PreAuthorize("hasRole('COMPANY')")
     public ResponseEntity<List<FestivalEventResponse>> getMyCompanyEvents(
             @AuthenticationPrincipal Long companyId) {
+
         return ResponseEntity.ok(festivalEventService.getEventsByCompany(companyId));
     }
 

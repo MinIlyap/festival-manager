@@ -4,7 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
-import ru.rsreu.festivalmanager.festival.dto.CompanyDto;
+import ru.rsreu.festivalmanager.festival.dto.festival.CompanyDto;
 import ru.rsreu.festivalmanager.festival.service.FestivalService;
 import ru.rsreu.festivalmanager.festival.service.TicketService;
 
@@ -14,7 +14,6 @@ import java.util.List;
 @RequestMapping("/internal/festivals")
 @RequiredArgsConstructor
 public class InternalFestivalController {
-
     private final FestivalService festivalService;
     private final TicketService ticketService;
 

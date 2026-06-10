@@ -11,9 +11,7 @@ import ru.rsreu.festivalmanager.jwt.annotation.EnableFestivalSecurity;
 @EnableFestivalSecurity
 @EnableSpringDataWebSupport(pageSerializationMode = EnableSpringDataWebSupport.PageSerializationMode.VIA_DTO)
 public class ApplicationServiceApplication {
-
     public static void main(String[] args) {
         SpringApplication.run(ApplicationServiceApplication.class, args);
     }
-
 }

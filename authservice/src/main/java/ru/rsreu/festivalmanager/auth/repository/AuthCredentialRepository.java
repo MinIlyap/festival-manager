@@ -9,7 +9,6 @@ import java.util.Optional;
 
 @Repository
 public interface AuthCredentialRepository extends JpaRepository<AuthCredential, Long> {
-
     boolean existsByEmail(String email);
 
     Optional<AuthCredential> findByEmail(String email);

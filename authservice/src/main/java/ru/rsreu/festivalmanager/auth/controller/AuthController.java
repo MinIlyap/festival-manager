@@ -17,7 +17,6 @@ import java.util.List;
 @RequestMapping("/auth")
 @RequiredArgsConstructor
 public class AuthController {
-
     private final AuthService authService;
 
     @PostMapping("/register/user")
@@ -58,7 +57,6 @@ public class AuthController {
     @PreAuthorize("hasRole('INTERNAL')")
     public void assignCuratorRoles(
             @RequestBody List<Long> userIds) {
-
         authService.assignCuratorRoles(userIds);
     }
 

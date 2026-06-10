@@ -7,13 +7,12 @@ import org.springframework.stereotype.Service;
 import lombok.RequiredArgsConstructor;
 import org.springframework.transaction.event.TransactionPhase;
 import org.springframework.transaction.event.TransactionalEventListener;
-import ru.rsreu.festivalmanager.auth.data.AuthEvents;
+import ru.rsreu.festivalmanager.auth.event.AuthEvents;
 
 @Slf4j
 @Service
 @RequiredArgsConstructor
 public class AuthKafkaProducer {
-
     private final KafkaTemplate<String, Object> kafkaTemplate;
 
     @Value("${kafka.topics.company-auth}")
@@ -34,9 +33,9 @@ public class AuthKafkaProducer {
         kafkaTemplate.send(companyAuthTopic, key, msg)
                 .whenComplete((result, exception) -> {
             if (exception != null) {
-                log.error("Couldn't send message to {} because: ", companyAuthTopic, exception);
+                log.error("Не удалось отправить сообщение в {} потому что: ", companyAuthTopic, exception);
             } else {
-                log.info("Message with key: {} sent to topic {} offset {}",
+                log.info("Сообщение с ключом: {} отправлено в топик {} смещение {}",
                         result.getProducerRecord().key(),
                         result.getRecordMetadata().topic(),
                         result.getRecordMetadata().offset());

@@ -12,9 +12,7 @@ import ru.rsreu.festivalmanager.jwt.annotation.EnableFestivalSecurity;
 @EnableFeignClients(defaultConfiguration = CoreFeignConfig.class)
 @EnableFestivalSecurity
 public class FestivalServiceApplication {
-
     public static void main(String[] args) {
         SpringApplication.run(FestivalServiceApplication.class, args);
     }
-
 }

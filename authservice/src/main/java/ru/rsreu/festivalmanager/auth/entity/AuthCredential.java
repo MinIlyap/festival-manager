@@ -5,8 +5,7 @@ import lombok.*;
 
 @Entity
 @Table(name = "auth_credentials")
-@Getter
-@Setter
+@Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor

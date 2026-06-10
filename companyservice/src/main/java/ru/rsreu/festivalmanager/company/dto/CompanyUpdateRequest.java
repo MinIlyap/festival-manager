@@ -6,13 +6,12 @@ import lombok.Data;
 
 @Data
 public class CompanyUpdateRequest {
-
-    @JsonProperty("full_name")
     @NotBlank(message = "Полное название обязательно")
+    @JsonProperty("full_name")
     private String fullName;
 
-    @JsonProperty("brand_name")
     @NotBlank(message = "Название бренда обязательно")
+    @JsonProperty("brand_name")
     private String brandName;
 
     @JsonProperty("website")

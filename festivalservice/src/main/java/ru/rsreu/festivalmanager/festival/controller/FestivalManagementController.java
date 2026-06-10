@@ -6,7 +6,10 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
-import ru.rsreu.festivalmanager.festival.dto.*;
+import ru.rsreu.festivalmanager.festival.dto.festival.AddCuratorRequest;
+import ru.rsreu.festivalmanager.festival.dto.festival.AddOrganizerRequest;
+import ru.rsreu.festivalmanager.festival.dto.festival.FestivalCuratorDto;
+import ru.rsreu.festivalmanager.festival.dto.festival.FestivalOrganizerDto;
 import ru.rsreu.festivalmanager.festival.service.FestivalService;
 
 import java.util.List;
@@ -15,7 +18,6 @@ import java.util.List;
 @RequestMapping("/festival/{locationId}/management")
 @RequiredArgsConstructor
 public class FestivalManagementController {
-
     private final FestivalService festivalService;
 
     @PostMapping("/submit")

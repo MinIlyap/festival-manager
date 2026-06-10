@@ -5,9 +5,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
-import ru.rsreu.festivalmanager.festival.dto.QrTicketResponse;
-import ru.rsreu.festivalmanager.festival.dto.VerifyQrTicketRequest;
-import ru.rsreu.festivalmanager.festival.dto.VerifyQrTicketResponse;
+import ru.rsreu.festivalmanager.festival.dto.ticket.QrTicketResponse;
+import ru.rsreu.festivalmanager.festival.dto.ticket.VerifyQrTicketRequest;
+import ru.rsreu.festivalmanager.festival.dto.ticket.VerifyQrTicketResponse;
 import ru.rsreu.festivalmanager.festival.service.FestivalQrService;
 
 @RestController

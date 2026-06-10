@@ -18,7 +18,6 @@ import ru.rsreu.festivalmanager.application.service.ApplicationService;
 @RequestMapping("/application/admin")
 @RequiredArgsConstructor
 public class ApplicationAdminController {
-
     private final ApplicationService applicationService;
 
     @GetMapping("/{id}")

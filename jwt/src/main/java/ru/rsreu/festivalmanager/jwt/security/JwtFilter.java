@@ -19,7 +19,6 @@ import java.util.Collections;
 @Component
 @RequiredArgsConstructor
 public class JwtFilter extends OncePerRequestFilter {
-
     private final JwtProvider jwtProvider;
 
     @Override

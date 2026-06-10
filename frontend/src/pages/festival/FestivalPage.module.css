@@ -1,4 +1,3 @@
-/* ── Admin review bar ────────────────────────────────────────────────────── */
 
 .adminReviewBar {
   display: flex;
@@ -37,7 +36,6 @@
   flex-shrink: 0;
 }
 
-/* ── Hero ──────────────────────────────────────────────────────────────────── */
 
 .hero {
   position: relative;
@@ -164,7 +162,6 @@
   align-self: flex-start;
 }
 
-/* ── Description ──────────────────────────────────────────────────────────── */
 
 .desc {
   font-size: 15px;
@@ -174,7 +171,6 @@
   margin-bottom: var(--space-xl);
 }
 
-/* ── Day tabs — full width, equal columns ─────────────────────────────────── */
 
 .dayTabs {
   display: flex;
@@ -233,7 +229,6 @@
   opacity: 0.75;
 }
 
-/* ── Section tabs: Мероприятия / Стенды ──────────────────────────────────── */
 
 .sectionTabs {
   display: flex;
@@ -283,14 +278,12 @@
   color: var(--accent-primary);
 }
 
-/* ── Content section ──────────────────────────────────────────────────────── */
 
 .contentSection {
   margin-bottom: var(--space-3xl, 48px);
   min-height: 120px;
 }
 
-/* ── Item grid (shared for events and stands) ─────────────────────────────── */
 
 .itemGrid {
   display: grid;
@@ -298,7 +291,6 @@
   gap: 14px;
 }
 
-/* ── Item card (shared base) ──────────────────────────────────────────────── */
 
 .itemCard {
   display: flex;
@@ -418,7 +410,6 @@
   transform: translateX(2px);
 }
 
-/* ── Shared ───────────────────────────────────────────────────────────────── */
 
 .emptyHint {
   font-size: 14px;
@@ -426,7 +417,6 @@
   padding: var(--space-xl) 0;
 }
 
-/* ── Buy ticket modal ─────────────────────────────────────────────────────── */
 
 .buyBody {
   display: flex;
@@ -621,7 +611,6 @@
   margin-top: 1px;
 }
 
-/* ── Success state ────────────────────────────────────────────────────────── */
 
 .successState {
   display: flex;

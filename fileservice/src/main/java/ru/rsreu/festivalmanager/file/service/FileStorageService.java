@@ -26,7 +26,6 @@ import java.util.UUID;
 @Service
 @RequiredArgsConstructor
 public class FileStorageService {
-
     private final MinioClient minioClient;
     private final UserFileRepository fileRepository;
     private final BucketRepository bucketRepository;
@@ -99,6 +98,7 @@ public class FileStorageService {
         fileRepository.save(userFile);
     }
 
+    @Transactional(readOnly = true)
     public byte[] downloadFile(EntityType type, Long entityId) {
         UserFile file = fileRepository.findByEntityTypeAndEntityId(type, entityId)
                 .orElseThrow(() -> new RuntimeException("Изображение не найдено"));

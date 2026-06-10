@@ -4,7 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import ru.rsreu.festivalmanager.event.dto.CommandInviteEvent;
+import ru.rsreu.festivalmanager.event.dto.event.CommandInviteEvent;
 import ru.rsreu.festivalmanager.event.entity.registration.*;
 import ru.rsreu.festivalmanager.event.entity.event.FestivalEvent;
 import ru.rsreu.festivalmanager.event.entity.registration.Command;
@@ -19,12 +19,10 @@ import java.time.OffsetDateTime;
 @Service
 @RequiredArgsConstructor
 public class CommandService {
-
     private final CommandRepository commandRepository;
     private final CommandMemberRepository commandMemberRepository;
     private final FestivalEventRepository festivalEventRepository;
     private final UserEventRegistrationRepository registrationRepository;
-    private final CommandKafkaProducer kafkaProducer;
     private final ApplicationEventPublisher eventPublisher;
 
     @Transactional

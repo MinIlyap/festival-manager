@@ -18,7 +18,6 @@ import ru.rsreu.festivalmanager.auth.service.AuthService;
 @Component
 @RequiredArgsConstructor
 public class AuthKafkaListener {
-
     private final AuthService authService;
     private final ObjectMapper objectMapper;
 
@@ -40,7 +39,7 @@ public class AuthKafkaListener {
 
         CompanyAppResponseMsg msg = objectMapper.readValue(jsonMessage, CompanyAppResponseMsg.class);
 
-        log.info("Received message from COMPANY_APPLICATION_RESPONSE_TOPIC: {}", msg);
+        log.info("Полученное сообщение из COMPANY_APPLICATION_RESPONSE_TOPIC: {}", msg);
         authService.processCompanyApplicationResponse(
                 msg.getCompanyId(),
                 msg.getStatus(),
@@ -54,7 +53,7 @@ public class AuthKafkaListener {
             @Header(KafkaHeaders.RECEIVED_TOPIC) String topic,
             @Header(KafkaHeaders.EXCEPTION_MESSAGE) String exceptionMessage) {
 
-        log.error("DLT Handler: Message from topic '{}' failed completely. Exception: {}. Message Data: {}",
+        log.error("DLT Handler: Сообщение из топика '{}' не было прочитано. Ошибка: {}. Данные сообщения: {}",
                 topic, exceptionMessage, jsonMessage);
     }
 }

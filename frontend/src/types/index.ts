@@ -11,7 +11,6 @@ export interface User {
   middleName?: string;
   passportSeries?: string;
   passportNumber?: string;
-  // populated from other sources (auth/file services)
   email?: string;
   avatarUrl?: string;
   role?: UserRole;

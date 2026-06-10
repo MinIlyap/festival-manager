@@ -6,7 +6,10 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.rsreu.festivalmanager.festival.client.UserServiceClient;
-import ru.rsreu.festivalmanager.festival.dto.*;
+import ru.rsreu.festivalmanager.festival.dto.festival.BlacklistStatusDto;
+import ru.rsreu.festivalmanager.festival.dto.festival.FestivalParticipantDto;
+import ru.rsreu.festivalmanager.festival.dto.festival.UserProfileDto;
+import ru.rsreu.festivalmanager.festival.dto.ticket.*;
 import ru.rsreu.festivalmanager.festival.entity.festival.FestivalLocation;
 import java.util.stream.Collectors;
 import ru.rsreu.festivalmanager.festival.entity.ticket.*;
@@ -29,7 +32,6 @@ import java.util.List;
 @Service
 @RequiredArgsConstructor
 public class TicketService {
-
     private final TicketRepository ticketRepository;
     private final TicketTypeRepository ticketTypeRepository;
     private final TicketTypeInstanceRepository ticketTypeInstanceRepository;
@@ -203,7 +205,7 @@ public class TicketService {
         List<TicketTypeInstance> instances = ticketTypeInstanceRepository.findByFestivalLocation_Id(festivalLocationId);
         if (instances.isEmpty()) return Collections.emptyList();
 
-        FestivalInstance festivalInstance = instances.get(0).getFestivalLocation().getFestivalInstance();
+        FestivalInstance festivalInstance = instances.getFirst().getFestivalLocation().getFestivalInstance();
         int maxPeople = festivalInstance.getMaxPeopleNumber() != null ? festivalInstance.getMaxPeopleNumber() : 0;
         int soldTickets = ticketRepository.sumSoldTicketsByFestivalInstanceId(festivalInstance.getId());
         int remaining = Math.max(0, maxPeople - soldTickets);

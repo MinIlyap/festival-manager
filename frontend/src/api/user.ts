@@ -13,16 +13,41 @@ interface UpdateUserPayload {
 
 export const userApi = {
   getMe: () =>
-    api.get<User>('/user/me').then(r => ({
-      ...r.data,
-      avatarUrl: `/api/files/avatar/${r.data.id}`,
-    })),
+    api.get<any>('/user/me').then(r => {
+      const d = r.data;
+      return {
+        id: d.id,
+        nickname: d.nickname,
+        birthDate: d.birth_date,
+        cityId: d.city_id != null ? String(d.city_id) : undefined,
+        cityName: d.city_name,
+        phoneNumber: d.phone_number,
+        firstName: d.first_name,
+        lastName: d.last_name,
+        middleName: d.middle_name,
+        passportSeries: d.passport_series,
+        passportNumber: d.passport_number,
+        avatarUrl: `/api/files/avatar/${d.id}`,
+      } as User;
+    }),
 
   updateMe: (data: UpdateUserPayload) =>
-    api.patch<string>('/user/me', data).then(r => r.data),
+    api.patch<string>('/user/me', {
+      first_name: data.firstName,
+      last_name: data.lastName,
+      middle_name: data.middleName,
+      city_id: data.cityId,
+      phone_number: data.phoneNumber,
+      passport_series: data.passportSeries,
+      passport_number: data.passportNumber,
+    }).then(r => r.data),
 
   checkBlacklist: () =>
-    api.get<BlacklistEntry>('/user/me/blacklist-check').then(r => r.data),
+    api.get<any>('/user/me/blacklist-check').then(r => ({
+      inBlacklist: r.data.in_blacklist,
+      reason: r.data.reason,
+      until: r.data.until,
+    } as BlacklistEntry)),
 
   addToBlacklist: (userId: string, reason: string, days: number) =>
     api.post<string>(`/user/blacklist/${userId}`, { reason, days }).then(r => r.data),

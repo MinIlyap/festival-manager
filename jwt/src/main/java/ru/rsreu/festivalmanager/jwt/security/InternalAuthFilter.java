@@ -17,7 +17,6 @@ import java.util.Collections;
 @Slf4j
 @RequiredArgsConstructor
 public class InternalAuthFilter extends OncePerRequestFilter {
-
     private final String systemToken;
 
     @Override

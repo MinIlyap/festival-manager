@@ -16,17 +16,13 @@ import static org.junit.jupiter.api.Assertions.*;
 
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 public class BoundaryIntegrationTest {
-
-    private static final String AUTH_BASE     = "http://localhost:8082";
+    private static final String AUTH_BASE = "http://localhost:8082";
     private static final String FESTIVAL_BASE = "http://localhost:8085";
-    private static final String EVENT_BASE    = "http://localhost:8084";
-    private static final String FILE_BASE     = "http://localhost:8086";
+    private static final String EVENT_BASE = "http://localhost:8084";
+    private static final String FILE_BASE = "http://localhost:8086";
 
-
-    private static final int LAST_TICKET_TYPE_ID = 999;
-
-    private static final int LAST_EVENT_ID = 888;
-
+    private static final int LAST_TICKET_TYPE_ID = 14;
+    private static final int LAST_EVENT_ID = 18;
     private static final int NORMAL_TICKET_TYPE_ID = 1;
 
     private static String tokenUser1;
@@ -38,10 +34,10 @@ public class BoundaryIntegrationTest {
     static void setup() {
         RestAssured.enableLoggingOfRequestAndResponseIfValidationFails();
 
-        tokenUser1        = login("bibu_duguvi34@yandex.ru",  "Qwertry123456");
-        tokenUser2        = login("xuh-opitucu79@list.ru",     "Qwertry123456");
-        tokenUser3Blocked = login("fucibox-upu58@bk.ru",      "Qwertry123456");
-        tokenCompany      = login("info@novacore.tech",        "yLuE1ehi");
+        tokenUser1 = login("bibu_duguvi34@yandex.ru", "Qwertry123456");
+        tokenUser2 = login("xuh-opitucu79@list.ru", "Qwertry123456");
+        tokenUser3Blocked = login("fucibox-upu58@bk.ru", "Qwertry123456");
+        tokenCompany = login("info@novacore.tech", "yLuE1ehi");
     }
 
     static String login(String email, String password) {
@@ -58,10 +54,10 @@ public class BoundaryIntegrationTest {
 
     @Test
     @Order(1)
-    @DisplayName("3.4.1 — Последний билет: один получает, второй — отказ")
+    @DisplayName("Последний билет: один получает, второй — отказ")
     void lastTicket_concurrentPurchase_onlyOneSucceeds() throws InterruptedException {
         CountDownLatch startGate = new CountDownLatch(1);
-        CountDownLatch done      = new CountDownLatch(2);
+        CountDownLatch done = new CountDownLatch(2);
         int[] statuses = new int[2];
 
         Runnable buy1 = () -> {
@@ -108,18 +104,18 @@ public class BoundaryIntegrationTest {
         pool.shutdown();
 
         long successCount = Arrays.stream(statuses).filter(s -> s == 200 || s == 201).count();
-        long errorCount   = Arrays.stream(statuses).filter(s -> s >= 400).count();
+        long errorCount = Arrays.stream(statuses).filter(s -> s >= 400).count();
 
         assertEquals(1, successCount, "Ровно один пользователь должен купить билет");
-        assertEquals(1, errorCount,   "Второй пользователь должен получить отказ");
+        assertEquals(1, errorCount, "Второй пользователь должен получить отказ");
     }
 
     @Test
     @Order(2)
-    @DisplayName("3.4.2 — Последнее место на мероприятие: один проходит, второй — нет")
+    @DisplayName("Последнее место на мероприятие: один проходит, второй — нет")
     void lastEventSlot_concurrentRegistration_onlyOneSucceeds() throws InterruptedException {
         CountDownLatch startGate = new CountDownLatch(1);
-        CountDownLatch done      = new CountDownLatch(2);
+        CountDownLatch done = new CountDownLatch(2);
         int[] statuses = new int[2];
 
         Runnable reg1 = () -> {
@@ -162,13 +158,13 @@ public class BoundaryIntegrationTest {
         long ok  = Arrays.stream(statuses).filter(s -> s == 200 || s == 201).count();
         long err = Arrays.stream(statuses).filter(s -> s >= 400).count();
 
-        assertEquals(1, ok,  "Ровно один пользователь должен зарегистрироваться");
+        assertEquals(1, ok, "Ровно один пользователь должен зарегистрироваться");
         assertEquals(1, err, "Второй должен получить отказ");
     }
 
     @Test
     @Order(3)
-    @DisplayName("3.4.3 — Истёкшая блокировка не препятствует покупке билета")
+    @DisplayName("Истёкшая блокировка не препятствует покупке билета")
     void expiredBlacklist_purchaseSucceeds() {
         given()
                 .baseUri(FESTIVAL_BASE)
@@ -184,7 +180,7 @@ public class BoundaryIntegrationTest {
 
     @Test
     @Order(4)
-    @DisplayName("3.4.4 — Файл сверх лимита отклоняется сервером (413 / 400)")
+    @DisplayName("Файл сверх лимита отклоняется сервером (413 / 400)")
     void oversizedFile_isRejected() {
         byte[] oversized = new byte[15 * 1024 * 1024];
         new Random().nextBytes(oversized);

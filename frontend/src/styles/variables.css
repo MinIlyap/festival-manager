@@ -1,5 +1,4 @@
 :root {
-  /* Background */
   --bg-base:        #F3F4F8;
   --bg-page:        #F3F4F8;
   --bg-surface:     #FFFFFF;
@@ -7,7 +6,6 @@
   --bg-elevated:    #F8F9FC;
   --bg-hover:       #EEF0F7;
 
-  /* Accents */
   --accent-primary:   #4F46E5;
   --accent-glow:      #4F46E520;
   --accent-secondary: #0EA5E9;
@@ -15,40 +13,33 @@
   --accent-success:   #16A34A;
   --accent-warn:      #D97706;
 
-  /* Text */
   --text-primary:   #0C0E14;
   --text-secondary: #3D4558;
   --text-muted:     #7A839B;
 
-  /* Borders */
   --border-subtle:  #E4E7F0;
   --border-default: #C8CEDC;
   --border-accent:  #E8A83855;
 
-  /* Radius */
   --radius-sm: 6px;
   --radius-md: 12px;
   --radius-lg: 20px;
   --radius-xl: 28px;
 
-  /* Shadows */
   --shadow-sm:  0 1px 4px rgba(0, 0, 0, 0.07), 0 2px 8px rgba(0, 0, 0, 0.05);
   --shadow-md:  0 2px 12px rgba(0, 0, 0, 0.09), 0 4px 20px rgba(0, 0, 0, 0.06);
   --shadow-lg:  0 4px 24px rgba(0, 0, 0, 0.11), 0 8px 40px rgba(0, 0, 0, 0.08);
   --shadow-glow: 0 0 20px var(--accent-glow);
 
-  /* Transitions */
   --transition-fast: 150ms ease;
   --transition-base: 250ms ease;
   --transition-slow: 350ms ease;
 
-  /* Fonts */
   --font-display: 'Bebas Neue', sans-serif;
   --font-heading:  'Syne', sans-serif;
   --font-body:     'DM Sans', sans-serif;
   --font-mono:     'JetBrains Mono', monospace;
 
-  /* Spacing */
   --space-xs:  4px;
   --space-sm:  8px;
   --space-md:  16px;
@@ -57,7 +48,6 @@
   --space-2xl: 48px;
   --space-3xl: 64px;
 
-  /* Layout */
   --header-height: 64px;
   --sidebar-width: 240px;
   --content-max:   1280px;

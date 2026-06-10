@@ -78,6 +78,7 @@ public class CompanyService {
     public CompanyResponse getCompanyByTin(String tin) {
         Company company = companyRepository.findByTin(tin)
                 .orElseThrow(() -> new IllegalArgumentException("Компания с ИНН " + tin + " не найдена"));
+
         return mapToResponse(company);
     }
 
@@ -86,6 +87,7 @@ public class CompanyService {
         Company company = companyRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Компания не найдена"));
         company.setActive(true);
+
         companyRepository.save(company);
     }
 
@@ -93,6 +95,7 @@ public class CompanyService {
     public CompanyResponse getCompanyById(Long id) {
         Company company = companyRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Компания не найдена"));
+
         return mapToResponse(company);
     }
 

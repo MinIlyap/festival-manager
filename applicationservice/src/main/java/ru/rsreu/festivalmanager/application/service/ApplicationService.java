@@ -19,13 +19,12 @@ import java.time.OffsetDateTime;
 @Service
 @RequiredArgsConstructor
 public class ApplicationService {
-
     private final ApplicationRepository applicationRepository;
     private final ApplicationEventPublisher eventPublisher;
 
     @Transactional
     public void processCompanyApplication(Long companyId, OffsetDateTime eventTimestamp) {
-        Application application = applicationRepository.findByCompanyId(companyId)
+        Application application = applicationRepository.findByData_CompanyId(companyId)
                 .orElseGet(() -> createNewApplication(ApplicationType.COMPANY_APPLICATION, null, companyId, null, eventTimestamp));
 
         handleIncomingApplication(application, eventTimestamp);
@@ -33,7 +32,7 @@ public class ApplicationService {
 
     @Transactional
     public void processFestivalApplication(Long festivalLocationId, Long senderId, OffsetDateTime eventTimestamp) {
-        Application application = applicationRepository.findByFestivalLocationId(festivalLocationId)
+        Application application = applicationRepository.findByData_FestivalLocationId(festivalLocationId)
                 .orElseGet(() -> createNewApplication(ApplicationType.FESTIVAL_APPLICATION, senderId, null, festivalLocationId, eventTimestamp));
 
         handleIncomingApplication(application, eventTimestamp);
@@ -74,7 +73,7 @@ public class ApplicationService {
             application.setUpdatedAt(eventTimestamp != null ? eventTimestamp : OffsetDateTime.now());
 
             applicationRepository.save(application);
-            log.info("Отклоненная заявка ID {} переведена в PENDING. Старый комментарий сохранен для контекста админа.", application.getId());
+            log.info("Отклоненная заявка ID {} переведена в PENDING.", application.getId());
 
             Long entityId = application.getApplicationType() == ApplicationType.COMPANY_APPLICATION ?
                     application.getData().getCompanyId() : application.getData().getFestivalLocationId();
@@ -126,19 +125,23 @@ public class ApplicationService {
         ));
     }
 
+    @Transactional(readOnly = true)
     public Application getApplicationById(Long id) {
         return applicationRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Заявка не найдена"));
     }
 
+    @Transactional(readOnly = true)
     public Page<Application> getMyApplications(Long companyId, ApplicationStatus status, Pageable pageable) {
         return applicationRepository.findAllBySenderIdWithFilters(companyId, status, pageable);
     }
 
+    @Transactional(readOnly = true)
     public Page<Application> getAllApplicationsForAdmin(ApplicationType type, ApplicationStatus status, Pageable pageable) {
         return applicationRepository.findAllWithFilters(type, status, pageable);
     }
 
+    @Transactional(readOnly = true)
     public Page<Application> getAdminPersonalHistory(Long agentId, ApplicationType type, ApplicationStatus status, Pageable pageable) {
         return applicationRepository.findAdminHistory(agentId, type, status, pageable);
     }

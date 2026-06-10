@@ -19,7 +19,6 @@ import java.time.LocalDate;
 @Component
 @RequiredArgsConstructor
 public class AdminSeeder implements CommandLineRunner {
-
     private final AuthCredentialRepository credentialRepository;
     private final UserServiceClient userServiceClient;
     private final PasswordEncoder passwordEncoder;
@@ -30,7 +29,7 @@ public class AdminSeeder implements CommandLineRunner {
     @Override
     @Transactional
     public void run(String... args) {
-        log.info("Checking if default admins exist...");
+        log.info("Проверка существования админов...");
 
         createAdminIfNotExists("admin1@festival.com", "AdminOne", "SuperSecurePassword1!");
         createAdminIfNotExists("admin2@festival.com", "AdminTwo", "SuperSecurePassword2!");
@@ -54,10 +53,10 @@ public class AdminSeeder implements CommandLineRunner {
                 credential.setPasswordHash(passwordEncoder.encode(password));
 
                 credentialRepository.save(credential);
-                log.info("Created default admin: {}", email);
+                log.info("Админ создан: {}", email);
 
             } catch (Exception e) {
-                log.error("Failed to create admin {}: {}", email, e.getMessage());
+                log.error("Произошла ошибка при создании админа {}: {}", email, e.getMessage());
             }
         }
     }

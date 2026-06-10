@@ -85,7 +85,6 @@ export default function CompanyEventsPage() {
     onError: () => setScanResult({ valid: false, message: '❌ Недействительный QR-код' }),
   });
 
-  // Fetch visibility status for each unique festival ID referenced by company's events
   const uniqueFestivalIds = useMemo(
     () => [...new Set(allEvents.map(ev => ev.festivalId))],
     [allEvents],
@@ -107,7 +106,6 @@ export default function CompanyEventsPage() {
     return map;
   }, [festivalInfoQueries]);
 
-  // Keep only events that belong to published (visible) festivals
   const events = useMemo(
     () => allEvents
       .filter(ev => festivalInfoMap[ev.festivalId]?.isVisible === true)
@@ -147,7 +145,6 @@ export default function CompanyEventsPage() {
         </div>
       )}
 
-      {/* QR Scanner modal */}
       <Modal
         open={scanModal}
         onClose={() => { setScanModal(false); setScanResult(null); }}

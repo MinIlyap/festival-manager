@@ -14,12 +14,10 @@ import ru.rsreu.festivalmanager.location.repository.PlatformInstanceRepository;
 import ru.rsreu.festivalmanager.location.repository.PlatformRepository;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
 public class LocationService {
-
     private final CityRepository cityRepository;
     private final PlatformRepository platformRepository;
     private final PlatformInstanceRepository instanceRepository;
@@ -29,24 +27,30 @@ public class LocationService {
         if (cityRepository.existsByNameIgnoreCase(request.getName())) {
             throw new IllegalArgumentException("Такой город уже существует");
         }
+
         City city = new City();
         city.setName(request.getName());
         city = cityRepository.save(city);
+
         return mapToCityResponse(city);
     }
 
+    @Transactional(readOnly = true)
     public Page<CityResponse> searchCities(String namePart, Pageable pageable) {
         return cityRepository.findByNameContainingIgnoreCase(namePart, pageable)
                 .map(this::mapToCityResponse);
     }
 
+    @Transactional(readOnly = true)
     public boolean checkCityExists(Long id) {
         return cityRepository.existsById(id);
     }
 
+    @Transactional(readOnly = true)
     public CityResponse getCityById(Long id) {
         City city = cityRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Город не найден: " + id));
+
         return mapToCityResponse(city);
     }
 
@@ -59,10 +63,11 @@ public class LocationService {
                 .orElseGet(() -> {
                     Platform newPlatform = new Platform();
                     newPlatform.setName(request.getPlatformName());
+
                     return platformRepository.save(newPlatform);
                 });
 
-        return instanceRepository.findExistingInstance(platform.getId(), city.getId(), request.getStreet(), request.getHouse())
+        return instanceRepository.findByPlatform_IdAndCity_IdAndStreetAndHouse(platform.getId(), city.getId(), request.getStreet(), request.getHouse())
                 .map(this::mapToInstanceResponse)
                 .orElseGet(() -> {
                     PlatformInstance newInstance = new PlatformInstance();
@@ -70,16 +75,18 @@ public class LocationService {
                     newInstance.setCity(city);
                     newInstance.setStreet(request.getStreet());
                     newInstance.setHouse(request.getHouse());
+
                     return mapToInstanceResponse(instanceRepository.save(newInstance));
                 });
     }
 
+    @Transactional(readOnly = true)
     public Page<PlatformInstanceResponse> searchPlatformInstances(Long cityId, String platformNamePart, Pageable pageable) {
         if (cityId == null) {
-            return instanceRepository.searchInstancesByPlatformName(platformNamePart, pageable)
+            return instanceRepository.findByPlatform_NameContainingIgnoreCase(platformNamePart, pageable)
                     .map(this::mapToInstanceResponse);
         }
-        return instanceRepository.searchInstancesByCityAndPlatformName(cityId, platformNamePart, pageable)
+        return instanceRepository.findByCity_IdAndPlatform_NameContainingIgnoreCase(cityId, platformNamePart, pageable)
                 .map(this::mapToInstanceResponse);
     }
 

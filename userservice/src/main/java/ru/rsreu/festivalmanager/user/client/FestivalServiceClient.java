@@ -7,7 +7,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 
 @FeignClient(name = "festival-service", url = "${services.festival.url}")
 public interface FestivalServiceClient {
-
     @GetMapping("/ticket/validate-curator-access")
     boolean validateCuratorAccessToUser(
             @RequestHeader("Authorization") String token,

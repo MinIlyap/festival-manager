@@ -62,6 +62,7 @@ public class CompanyController {
     public ResponseEntity<CompanyResponse> updateMe(
             @AuthenticationPrincipal Long companyId,
             @Valid @RequestBody CompanyUpdateRequest request) {
+
         return ResponseEntity.ok(companyService.updateCompany(companyId, request));
     }
 }

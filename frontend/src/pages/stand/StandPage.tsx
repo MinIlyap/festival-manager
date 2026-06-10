@@ -64,13 +64,11 @@ export default function StandPage() {
 
   return (
     <Layout>
-      {/* Back */}
       <button className={styles.backBtn} onClick={handleBack}>
         <ArrowLeft size={16} />
         {festivalName ? `К фестивалю «${festivalName}»` : 'Назад'}
       </button>
 
-      {/* Photo */}
       {!imgErr && (
         <div className={styles.photoWrapper}>
           <img
@@ -82,7 +80,6 @@ export default function StandPage() {
         </div>
       )}
 
-      {/* Header */}
       <div className={styles.header}>
         <Badge status={stand.type === 'COMMERCIAL' ? 'active' : 'info'}>
           {stand.type === 'COMMERCIAL' ? 'Коммерческий стенд' : 'Демонстрационный стенд'}
@@ -92,7 +89,6 @@ export default function StandPage() {
         {festivalName && <p className={styles.festivalRef}>Фестиваль: {festivalName}</p>}
       </div>
 
-      {/* Description */}
       {stand.description && (
         <Card padding="lg" className={styles.descCard}>
           <p className={styles.descLabel}>Описание</p>
@@ -100,7 +96,6 @@ export default function StandPage() {
         </Card>
       )}
 
-      {/* Products — commercial only */}
       {stand.type === 'COMMERCIAL' && (
         <div className={styles.productsSection}>
           <h2 className={styles.sectionTitle}>

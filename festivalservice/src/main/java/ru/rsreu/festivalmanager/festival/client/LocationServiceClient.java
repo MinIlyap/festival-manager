@@ -2,13 +2,12 @@ package ru.rsreu.festivalmanager.festival.client;
 
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.*;
-import ru.rsreu.festivalmanager.festival.dto.PlatformInfoDto;
+import ru.rsreu.festivalmanager.festival.dto.festival.PlatformInfoDto;
 
 import java.util.List;
 
 @FeignClient(name = "location-service", url = "${services.location.url}")
 public interface LocationServiceClient {
-
     @GetMapping("/platform-instance/city/{cityId}")
     List<Long> getPlatformIdsByCity(@RequestHeader("Authorization") String token, @PathVariable Long cityId);
 

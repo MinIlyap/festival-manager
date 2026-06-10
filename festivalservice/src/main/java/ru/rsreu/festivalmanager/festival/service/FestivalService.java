@@ -2,7 +2,6 @@ package ru.rsreu.festivalmanager.festival.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.jspecify.annotations.NonNull;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
@@ -11,7 +10,8 @@ import ru.rsreu.festivalmanager.festival.client.AuthServiceClient;
 import ru.rsreu.festivalmanager.festival.client.CompanyServiceClient;
 import ru.rsreu.festivalmanager.festival.client.LocationServiceClient;
 import ru.rsreu.festivalmanager.festival.client.UserServiceClient;
-import ru.rsreu.festivalmanager.festival.dto.*;
+import ru.rsreu.festivalmanager.festival.dto.festival.*;
+import ru.rsreu.festivalmanager.festival.dto.ticket.TicketTypeRequest;
 import ru.rsreu.festivalmanager.festival.entity.festival.*;
 import ru.rsreu.festivalmanager.festival.entity.ticket.TicketType;
 import ru.rsreu.festivalmanager.festival.entity.ticket.TicketTypeInstance;
@@ -23,13 +23,13 @@ import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 @Slf4j
 @Service
 @RequiredArgsConstructor
 public class FestivalService {
-
     private final FestivalRepository festivalRepository;
     private final FestivalInstanceRepository instanceRepository;
     private final FestivalLocationRepository locationRepository;
@@ -62,7 +62,6 @@ public class FestivalService {
         AgeLimit ageLimit = ageLimitRepository.findById(request.getAgeLimitId())
                 .orElseThrow(() -> new IllegalArgumentException("Возрастное ограничение не найдено"));
 
-        // 1. Ищем или создаем сам фестиваль (название)
         Festival festival = festivalRepository.findByNameIgnoreCase(request.getFestivalName())
                 .orElseGet(() -> {
                     Festival f = new Festival();
@@ -70,7 +69,6 @@ public class FestivalService {
                     return festivalRepository.save(f);
                 });
 
-        // 2. ИСправлено: Ищем существующий инстанс (проведение) по датам, иначе создаем новый
         FestivalInstance instance = instanceRepository
                 .findByFestivalIdAndDateStartAndDateEnd(festival.getId(), request.getDateStart(), request.getDateEnd())
                 .orElseGet(() -> getFestivalInstance(request, festival, ageLimit));
@@ -143,7 +141,7 @@ public class FestivalService {
         return location.getId();
     }
 
-    private static @NonNull FestivalInstance getFestivalInstance(FestivalCreateRequest request, Festival festival, AgeLimit ageLimit) {
+    private FestivalInstance getFestivalInstance(FestivalCreateRequest request, Festival festival, AgeLimit ageLimit) {
         FestivalInstance instance = new FestivalInstance();
         instance.setFestival(festival);
         instance.setAgeLimit(ageLimit);
@@ -154,8 +152,10 @@ public class FestivalService {
         instance.setTimeEnd(request.getTimeEnd());
         instance.setMaxPeopleNumber(request.getMaxPeopleNumber());
         instance.setVisible(false);
+
         return instance;
     }
+
     @Transactional
     public void submitForModeration(Long festivalLocationId, Long requestingCompanyId) {
         FestivalLocation location = locationRepository.findById(festivalLocationId)
@@ -211,7 +211,7 @@ public class FestivalService {
             List<Long> platformIdsInCity = locationClient.getPlatformIdsByCity(getSystemToken(), cityId);
             locations = locations.stream()
                     .filter(loc -> platformIdsInCity.contains(loc.getPlatformInstanceId()))
-                    .collect(Collectors.toList());
+                    .toList();
         }
 
         return locations.stream().map(this::mapToResponse).collect(Collectors.toList());
@@ -268,7 +268,7 @@ public class FestivalService {
                         return null;
                     }
                 })
-                .filter(tin -> tin != null)
+                .filter(Objects::nonNull)
                 .collect(Collectors.toList());
         template.setOrganizerTins(oldTins);
 
@@ -297,7 +297,7 @@ public class FestivalService {
             return Collections.emptyList();
         }
 
-        return locationRepository.findAllVisibleByPlatformInstanceIdIn(platformIdsInCity)
+        return locationRepository.findByFestivalInstance_IsVisibleTrueAndPlatformInstanceIdIn(platformIdsInCity)
                 .stream()
                 .map(FestivalLocation::getId)
                 .collect(Collectors.toList());
@@ -327,6 +327,7 @@ public class FestivalService {
     public FestivalResponse getFestivalById(Long festivalLocationId) {
         FestivalLocation location = locationRepository.findById(festivalLocationId)
                 .orElseThrow(() -> new IllegalArgumentException("Фестиваль не найден"));
+
         return mapToResponse(location);
     }
 
@@ -335,10 +336,12 @@ public class FestivalService {
         return ageLimitRepository.findAll();
     }
 
+    @Transactional(readOnly = true)
     public CompanyDto searchCompanyByTin(String tin) {
         return companyClient.getCompanyByTin(getSystemToken(), tin);
     }
 
+    @Transactional(readOnly = true)
     public CompanyDto getCompanyById(Long id) {
         return companyClient.getCompanyById(getSystemToken(), id);
     }
@@ -581,7 +584,7 @@ public class FestivalService {
         String address = null;
         if (location.getPlatformInstanceId() != null) {
             try {
-                ru.rsreu.festivalmanager.festival.dto.PlatformInfoDto info =
+                PlatformInfoDto info =
                         locationClient.getPlatformInstanceById(getSystemToken(), location.getPlatformInstanceId());
                 if (info != null) {
                     platformName = info.getPlatformName();

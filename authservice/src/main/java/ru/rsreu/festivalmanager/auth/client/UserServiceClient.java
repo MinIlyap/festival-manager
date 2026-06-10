@@ -6,7 +6,6 @@ import ru.rsreu.festivalmanager.auth.dto.UserCreationDto;
 
 @FeignClient(name = "user-service", url = "${services.user.url}")
 public interface UserServiceClient {
-
     @PostMapping
     Long createUser(@RequestHeader("Authorization") String token, @RequestBody UserCreationDto request);
 

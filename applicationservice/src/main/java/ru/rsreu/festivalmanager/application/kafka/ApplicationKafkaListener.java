@@ -20,7 +20,6 @@ import ru.rsreu.festivalmanager.application.service.ApplicationService;
 @Component
 @RequiredArgsConstructor
 public class ApplicationKafkaListener {
-
     private final ApplicationService applicationService;
     private final ObjectMapper objectMapper;
 

@@ -16,10 +16,9 @@ import { eventApi } from '../../api/event';
 import { userApi } from '../../api/user';
 import { applicationApi } from '../../api/application';
 import { useAuthStore } from '../../store/authStore';
-import type { FestivalEvent, Stand } from '../../types';
+import type { FestivalEvent, Stand, QrVerifyResponse } from '../../types';
 import styles from './FestivalPage.module.css';
 
-// ── helpers ───────────────────────────────────────────────────────────────────
 
 function getDays(start: string, end: string): string[] {
   const days: string[] = [];
@@ -33,6 +32,14 @@ function getDays(start: string, end: string): string[] {
   }
   return days;
 }
+
+const SCAN_STATUS: Record<QrVerifyResponse['status'], { valid: boolean; message: string }> = {
+  SUCCESS:           { valid: true,  message: 'Билет действителен' },
+  EXPIRED:           { valid: false, message: 'Срок действия билета истёк' },
+  FORGED:            { valid: false, message: 'QR-код недействителен (подделка)' },
+  INVALID:           { valid: false, message: 'Недействительный QR-код' },
+  LOCATION_MISMATCH: { valid: false, message: 'Билет не относится к этому фестивалю' },
+};
 
 const TYPE_LABEL: Record<string, string> = {
   TOURNAMENT:    'Турнир',
@@ -72,7 +79,6 @@ function sortByTime<T extends { startTime?: string }>(items: T[]): T[] {
   });
 }
 
-// ── Event card (vertical grid) ───────────────────────────────────────────────
 
 function EventCard({ ev, onClick }: { ev: FestivalEvent; onClick: () => void }) {
   const [imgErr, setImgErr] = useState(false);
@@ -115,7 +121,6 @@ function EventCard({ ev, onClick }: { ev: FestivalEvent; onClick: () => void }) 
   );
 }
 
-// ── Stand card (vertical grid) ───────────────────────────────────────────────
 
 function StandCard({ st, onClick }: { st: Stand; onClick: () => void }) {
   const [imgErr, setImgErr] = useState(false);
@@ -150,7 +155,6 @@ function StandCard({ st, onClick }: { st: Stand; onClick: () => void }) {
   );
 }
 
-// ── main page ─────────────────────────────────────────────────────────────────
 
 export default function FestivalPage() {
   const { id } = useParams<{ id: string }>();
@@ -172,7 +176,7 @@ export default function FestivalPage() {
   const [rejectModal, setRejectModal] = useState(false);
   const [rejectReason, setRejectReason] = useState('');
   const [scanModal, setScanModal] = useState(false);
-  const [scanResult, setScanResult] = useState<'valid' | 'invalid' | null>(null);
+  const [scanResult, setScanResult] = useState<{ valid: boolean; message: string } | null>(null);
 
   const { data: festival, isLoading } = useQuery({
     queryKey: ['festival', id],
@@ -271,7 +275,8 @@ export default function FestivalPage() {
   const selectedTicket = festival?.ticketTypes.find(t => t.id === selectedTicketId);
 
   const buyMutation = useMutation({
-    mutationFn: (ticketTypeId: string) => festivalApi.buyTicket(ticketTypeId),
+    mutationFn: ({ ticketTypeId, quantity }: { ticketTypeId: string; quantity: number }) =>
+      festivalApi.buyTicket(ticketTypeId, quantity),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['festival', id] });
       qc.invalidateQueries({ queryKey: ['my-tickets'] });
@@ -318,7 +323,6 @@ export default function FestivalPage() {
 
   return (
     <Layout>
-      {/* ── Admin review bar ── */}
       {isAdminReview && (
         <div className={styles.adminReviewBar}>
           <div className={styles.adminReviewBarInfo}>
@@ -336,7 +340,6 @@ export default function FestivalPage() {
         </div>
       )}
 
-      {/* ── Hero ── */}
       <div className={styles.hero}>
         {hasCover ? (
           <div className={styles.heroBg}>
@@ -405,7 +408,6 @@ export default function FestivalPage() {
         </div>
       </div>
 
-      {/* ── Description ── */}
       {festival.description && <p className={styles.desc}>{festival.description}</p>}
 
       {/* ── Day tabs (full-width, equal) ── */}
@@ -424,7 +426,6 @@ export default function FestivalPage() {
         </div>
       )}
 
-      {/* ── Section tabs: Мероприятия / Стенды ── */}
       <div className={styles.sectionTabs}>
         <button
           className={[styles.sectionTab, activeSection === 'events' ? styles.sectionTabActive : ''].join(' ')}
@@ -483,7 +484,6 @@ export default function FestivalPage() {
         )}
       </section>
 
-      {/* ── Admin reject modal ── */}
       <Modal open={rejectModal} onClose={() => setRejectModal(false)} title="Причина отказа" size="sm">
         <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
           <textarea
@@ -506,7 +506,6 @@ export default function FestivalPage() {
         </div>
       </Modal>
 
-      {/* ── Curator scanner modal ── */}
       <Modal
         open={scanModal}
         onClose={() => { setScanModal(false); setScanResult(null); }}
@@ -522,25 +521,27 @@ export default function FestivalPage() {
               <QRScanner
                 onScan={token => {
                   festivalApi.verifyTicketQr(token, id!)
-                    .then(res => setScanResult(res.status === 'SUCCESS' ? 'valid' : 'invalid'))
-                    .catch(() => setScanResult('invalid'));
+                    .then(res => setScanResult(
+                      SCAN_STATUS[res.status] ?? { valid: false, message: `Неизвестный статус: ${res.status}` }
+                    ))
+                    .catch(() => setScanResult({ valid: false, message: 'Ошибка при проверке билета' }));
                 }}
               />
             </>
           ) : (
             <div style={{ textAlign: 'center', padding: '16px 0' }}>
-              {scanResult === 'valid' ? (
+              {scanResult?.valid ? (
                 <>
                   <CheckCircle size={56} style={{ color: 'var(--accent-success)', margin: '0 auto' }} />
                   <p style={{ fontSize: 20, fontWeight: 700, marginTop: 14, color: 'var(--accent-success)' }}>
-                    Билет действителен
+                    {scanResult.message}
                   </p>
                 </>
               ) : (
                 <>
                   <XCircle size={56} style={{ color: 'var(--accent-danger)', margin: '0 auto' }} />
                   <p style={{ fontSize: 20, fontWeight: 700, marginTop: 14, color: 'var(--accent-danger)' }}>
-                    Недействительный билет
+                    {scanResult?.message}
                   </p>
                 </>
               )}
@@ -552,7 +553,6 @@ export default function FestivalPage() {
         </div>
       </Modal>
 
-      {/* ── Buy ticket modal ── */}
       <Modal open={buyModal} onClose={closeBuyModal} title="Купить билет">
         {buySuccess ? (
           <div className={styles.successState}>
@@ -644,7 +644,10 @@ export default function FestivalPage() {
               fullWidth
               loading={buyMutation.isPending}
               disabled={!canPay || !selectedTicketId}
-              onClick={() => selectedTicketId && buyMutation.mutate(selectedTicketId)}
+              onClick={() => selectedTicketId && buyMutation.mutate({
+                ticketTypeId: selectedTicketId,
+                quantity: selectedDays.size > 0 ? selectedDays.size : 1,
+              })}
             >
               Оплатить
             </Button>

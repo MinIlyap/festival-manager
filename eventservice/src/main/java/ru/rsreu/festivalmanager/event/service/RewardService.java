@@ -3,8 +3,8 @@ package ru.rsreu.festivalmanager.event.service;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import ru.rsreu.festivalmanager.event.dto.EventRewardResponse;
-import ru.rsreu.festivalmanager.event.dto.RewardAddRequest;
+import ru.rsreu.festivalmanager.event.dto.reward.EventRewardResponse;
+import ru.rsreu.festivalmanager.event.dto.reward.RewardAddRequest;
 import ru.rsreu.festivalmanager.event.entity.event.FestivalEvent;
 import ru.rsreu.festivalmanager.event.entity.registration.CommandMember;
 import ru.rsreu.festivalmanager.event.entity.registration.UserEventRegistrationId;
@@ -17,7 +17,6 @@ import java.util.stream.Collectors;
 @Service
 @RequiredArgsConstructor
 public class RewardService {
-
     private final FestivalEventRepository festivalEventRepository;
     private final RewardRepository rewardRepository;
     private final RewardInstanceRepository rewardInstanceRepository;
@@ -77,6 +76,7 @@ public class RewardService {
                     .place(request.getPlace())
                     .pointNumber(request.getPointNumber())
                     .build();
+
             return rewardInstanceRepository.save(newInstance);
         });
 
@@ -111,6 +111,7 @@ public class RewardService {
 
             RewardDistribution distribution = new RewardDistribution();
             distribution.setRewardDistributionId(new RewardDistributionId(eventReward, userId));
+
             rewardDistributionRepository.save(distribution);
         }
     }

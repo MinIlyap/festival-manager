@@ -7,13 +7,12 @@ import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.event.TransactionPhase;
 import org.springframework.transaction.event.TransactionalEventListener;
-import ru.rsreu.festivalmanager.event.dto.CommandInviteEvent;
+import ru.rsreu.festivalmanager.event.dto.event.CommandInviteEvent;
 
 @Slf4j
 @Component
 @RequiredArgsConstructor
 public class CommandKafkaProducer {
-
     private final KafkaTemplate<String, Object> kafkaTemplate;
 
     @Value("${kafka.topics.command-invite}")

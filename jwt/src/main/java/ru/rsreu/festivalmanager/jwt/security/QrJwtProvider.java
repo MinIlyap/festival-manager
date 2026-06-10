@@ -12,7 +12,6 @@ import java.util.Map;
 
 @Component
 public class QrJwtProvider {
-
     private final SecretKey qrSecret;
     private static final long EXPIRATION_MS = 15 * 60 * 1000;
 

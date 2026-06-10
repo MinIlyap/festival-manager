@@ -21,7 +21,6 @@ import java.util.Map;
 @Service
 @RequiredArgsConstructor
 public class UserService {
-
     private final AppUserRepository userRepository;
     private final BlackListRepository blackListRepository;
     private final LocationServiceClient locationClient;
@@ -49,6 +48,7 @@ public class UserService {
         return userRepository.save(user).getId();
     }
 
+    @Transactional(readOnly = true)
     public UserResponse getMe(Long id) {
         AppUser user = userRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Пользователь не найден"));
@@ -140,12 +140,14 @@ public class UserService {
         userRepository.save(user);
     }
 
+    @Transactional(readOnly = true)
     public Map<String, Object> getUserPublicInfo(Long id) {
         AppUser user = userRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Пользователь не найден"));
         return Map.of("id", user.getId(), "nickname", user.getNickname());
     }
 
+    @Transactional(readOnly = true)
     public List<Map<String, Object>> searchUsersByNickname(String nickname) {
         return userRepository.findByNicknameContainingIgnoreCase(nickname)
                 .stream()
@@ -194,17 +196,19 @@ public class UserService {
         blackListRepository.save(blackList);
     }
 
+    @Transactional(readOnly = true)
     public boolean checkUserBlackListStatus(Long userId) {
         return blackListRepository.isUserBlacklistedNow(userId, LocalDateTime.now());
     }
 
+    @Transactional(readOnly = true)
     public BlacklistStatusResponse getMyBlacklistStatus(Long userId) {
         LocalDateTime now = LocalDateTime.now();
         List<BlackList> entries = blackListRepository.findActiveEntries(userId, now);
         if (entries.isEmpty()) {
             return BlacklistStatusResponse.builder().inBlacklist(false).build();
         }
-        BlackList entry = entries.get(0);
+        BlackList entry = entries.getFirst();
         return BlacklistStatusResponse.builder()
                 .inBlacklist(true)
                 .reason(entry.getReason())
@@ -212,6 +216,7 @@ public class UserService {
                 .build();
     }
 
+    @Transactional(readOnly = true)
     public boolean isNicknameTaken(String nickname) {
         return userRepository.existsByNickname(nickname);
     }

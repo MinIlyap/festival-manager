@@ -14,7 +14,6 @@ import ru.rsreu.festivalmanager.company.event.CompanyEvents;
 @Component
 @RequiredArgsConstructor
 public class CompanyKafkaProducer {
-
     private final KafkaTemplate<String, Object> kafkaTemplate;
 
     @Value("${kafka.topics.company-application-request}")
@@ -32,9 +31,9 @@ public class CompanyKafkaProducer {
 
         kafkaTemplate.send(companyAppRequestTopic, key, msg).whenComplete((result, exception) -> {
             if (exception != null) {
-                log.error("Couldn't send message to COMPANY_APPLICATION_REQUEST_TOPIC because: ", exception);
+                log.error("Не удалось отправить сообщение в {} по причине: ", companyAppRequestTopic, exception);
             } else {
-                log.info("Message with key: {} sent to topic {} offset {}",
+                log.info("Сообщение с ключом: {} отправлено в топик {} смещение {}",
                         result.getProducerRecord().key(),
                         result.getRecordMetadata().topic(),
                         result.getRecordMetadata().offset());

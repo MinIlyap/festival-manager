@@ -31,6 +31,7 @@ public class NotificationController {
                 .findFirst()
                 .map(a -> a.getAuthority())
                 .orElse("ROLE_USER");
+
         return ResponseEntity.ok(notificationService.getUserNotifications(userId, role, isRead, pageable));
     }
 
@@ -68,6 +69,7 @@ public class NotificationController {
                 .findFirst()
                 .map(a -> a.getAuthority())
                 .orElse("ROLE_USER");
+
         return ResponseEntity.ok(notificationService.getUnreadCount(userId, role));
     }
 }

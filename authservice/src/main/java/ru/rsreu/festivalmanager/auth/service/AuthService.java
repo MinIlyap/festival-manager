@@ -9,7 +9,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.rsreu.festivalmanager.auth.client.CompanyServiceClient;
 import ru.rsreu.festivalmanager.auth.client.UserServiceClient;
-import ru.rsreu.festivalmanager.auth.data.AuthEvents;
+import ru.rsreu.festivalmanager.auth.event.AuthEvents;
 import ru.rsreu.festivalmanager.auth.dto.*;
 import ru.rsreu.festivalmanager.auth.entity.AccessType;
 import ru.rsreu.festivalmanager.auth.entity.AuthCredential;
@@ -29,7 +29,6 @@ import java.util.UUID;
 @Service
 @RequiredArgsConstructor
 public class AuthService {
-
     private final AuthCredentialRepository credentialRepository;
     private final UserSessionRepository sessionRepository;
     private final UserSocialAccountRepository userSocialAccountRepository;
@@ -138,11 +137,13 @@ public class AuthService {
         credentialRepository.saveAll(credentials);
     }
 
+    @Transactional(readOnly = true)
     public AuthCredential getCredentialByUserId(Long userId) {
         return credentialRepository.findByUserId(userId)
                 .orElseThrow(() -> new IllegalArgumentException("Пользователь не найден: " + userId));
     }
 
+    @Transactional(readOnly = true)
     public AuthCredential getCurrentUserInfo(Long id, String role) {
         if ("COMPANY".equals(role)) {
             return credentialRepository.findByCompanyId(id)
@@ -153,6 +154,7 @@ public class AuthService {
         }
     }
 
+    @Transactional(readOnly = true)
     public AuthCredential getUserByEmail(String email) {
         return credentialRepository.findByEmail(email)
                 .orElseThrow(() -> new IllegalArgumentException("Пользователь не найден"));

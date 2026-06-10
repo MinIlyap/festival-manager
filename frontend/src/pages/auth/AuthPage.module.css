@@ -4,7 +4,6 @@
   grid-template-columns: 1fr 1fr;
 }
 
-/* Left decorative column */
 .left {
   position: relative;
   background: var(--bg-surface);
@@ -61,7 +60,6 @@
   pointer-events: none;
 }
 
-/* Right form column */
 .right {
   display: flex;
   align-items: center;
@@ -172,7 +170,6 @@
   text-decoration: underline;
 }
 
-/* Pill switcher for register */
 .switcher {
   display: flex;
   background: var(--bg-elevated);
@@ -202,7 +199,6 @@
   color: #fff;
 }
 
-/* Collapsible section */
 .collapsible {
   border: 1px solid var(--border-subtle);
   border-radius: var(--radius-md);

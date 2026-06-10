@@ -5,13 +5,12 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestParam;
-import ru.rsreu.festivalmanager.event.dto.CompanyBriefDto;
+import ru.rsreu.festivalmanager.event.dto.event.CompanyBriefDto;
 
 import java.util.List;
 
 @FeignClient(name = "festival-service", url = "${services.festival.url}")
 public interface FestivalServiceClient {
-
     @GetMapping("/internal/festivals/visible-ids")
     List<Long> getAllVisibleFestivalLocationIds(
             @RequestHeader("Authorization") String token

@@ -3,6 +3,7 @@ databaseChangeLog:
       id: 003-fill-cities
       author: ilyap
       context: init-data
+      validCheckSum: ANY
       changes:
         - loadData:
             tableName: cities

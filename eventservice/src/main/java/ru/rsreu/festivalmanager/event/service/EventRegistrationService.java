@@ -15,7 +15,6 @@ import ru.rsreu.festivalmanager.event.client.FestivalServiceClient;
 @Service
 @RequiredArgsConstructor
 public class EventRegistrationService {
-
     private final FestivalEventRepository festivalEventRepository;
     private final UserEventRegistrationRepository registrationRepository;
     private final FestivalServiceClient festivalServiceClient;
@@ -29,7 +28,6 @@ public class EventRegistrationService {
     }
 
     public void registerUserToEvent(Long festivalEventId, Long userId) {
-
         if (registrationRepository
                 .existsByUserEventRegistrationId_FestivalEvent_IdAndUserEventRegistrationId_UserId(festivalEventId,
                         userId)) {

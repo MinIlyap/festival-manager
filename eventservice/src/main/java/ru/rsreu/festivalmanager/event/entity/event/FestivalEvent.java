@@ -7,8 +7,7 @@ import java.time.OffsetDateTime;
 
 @Entity
 @Table(name = "festival_events")
-@Getter
-@Setter
+@Data
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder

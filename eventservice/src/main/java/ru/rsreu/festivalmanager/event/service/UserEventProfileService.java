@@ -3,10 +3,10 @@ package ru.rsreu.festivalmanager.event.service;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import ru.rsreu.festivalmanager.event.dto.FestivalEventResponse;
-import ru.rsreu.festivalmanager.event.dto.UserFestivalEventsResponse;
-import ru.rsreu.festivalmanager.event.dto.UserFestivalRewardsResponse;
-import ru.rsreu.festivalmanager.event.dto.UserRewardResponse;
+import ru.rsreu.festivalmanager.event.dto.event.FestivalEventResponse;
+import ru.rsreu.festivalmanager.event.dto.event.UserFestivalEventsResponse;
+import ru.rsreu.festivalmanager.event.dto.reward.UserFestivalRewardsResponse;
+import ru.rsreu.festivalmanager.event.dto.reward.UserRewardResponse;
 import ru.rsreu.festivalmanager.event.entity.event.Event;
 import ru.rsreu.festivalmanager.event.entity.event.EventInstance;
 import ru.rsreu.festivalmanager.event.entity.event.EventType;
@@ -24,7 +24,6 @@ import java.util.stream.Collectors;
 @Service
 @RequiredArgsConstructor
 public class UserEventProfileService {
-
     private final FestivalEventRepository festivalEventRepository;
     private final UserEventRegistrationRepository registrationRepository;
     private final RewardDistributionRepository rewardDistributionRepository;

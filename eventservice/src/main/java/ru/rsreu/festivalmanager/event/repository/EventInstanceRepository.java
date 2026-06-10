@@ -24,6 +24,7 @@ public interface EventInstanceRepository extends JpaRepository<EventInstance, Lo
             "AND (ei.description = :description OR (ei.description IS NULL AND :description IS NULL)) " +
             "AND (ei.approximateDuration = :approximateDuration OR (ei.approximateDuration IS NULL AND :approximateDuration IS NULL)) " +
             "AND (ei.maxPeopleCommand = :maxPeopleCommand OR (ei.maxPeopleCommand IS NULL AND :maxPeopleCommand IS NULL))")
+
     Optional<EventInstance> findIdenticalInstance(
             @Param("eventId") Long eventId,
             @Param("companyId") Long companyId,

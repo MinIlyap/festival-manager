@@ -11,7 +11,6 @@ import ru.rsreu.festivalmanager.event.service.EventRegistrationService;
 @RequestMapping("/events/registrations")
 @RequiredArgsConstructor
 public class EventRegistrationController {
-
     private final EventRegistrationService registrationService;
 
     @PostMapping("/{festivalEventId}")

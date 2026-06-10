@@ -6,8 +6,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import ru.rsreu.festivalmanager.festival.dto.QrTicketResponse;
-import ru.rsreu.festivalmanager.festival.dto.VerifyQrTicketResponse;
+import ru.rsreu.festivalmanager.festival.dto.ticket.QrTicketResponse;
+import ru.rsreu.festivalmanager.festival.dto.ticket.VerifyQrTicketResponse;
 import ru.rsreu.festivalmanager.festival.entity.ticket.Ticket;
 import ru.rsreu.festivalmanager.festival.repository.FestivalCuratorRepository;
 import ru.rsreu.festivalmanager.festival.repository.TicketRepository;
@@ -20,7 +20,6 @@ import java.util.Map;
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
 public class FestivalQrService {
-
     private final TicketRepository ticketRepository;
     private final FestivalCuratorRepository festivalCuratorRepository;
     private final QrJwtProvider qrJwtProvider;

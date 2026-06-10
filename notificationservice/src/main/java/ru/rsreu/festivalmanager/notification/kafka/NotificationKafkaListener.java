@@ -22,7 +22,6 @@ import ru.rsreu.festivalmanager.notification.service.NotificationService;
 @Component
 @RequiredArgsConstructor
 public class NotificationKafkaListener {
-
     private final NotificationService notificationService;
     private final ObjectMapper objectMapper;
 

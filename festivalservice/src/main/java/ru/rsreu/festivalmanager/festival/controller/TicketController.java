@@ -6,11 +6,10 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
-import ru.rsreu.festivalmanager.festival.dto.*;
+import ru.rsreu.festivalmanager.festival.dto.festival.FestivalParticipantDto;
+import ru.rsreu.festivalmanager.festival.dto.ticket.*;
 import ru.rsreu.festivalmanager.festival.entity.ticket.TicketType;
 import ru.rsreu.festivalmanager.festival.service.TicketService;
-
-import java.util.List;
 
 import java.util.List;
 
@@ -18,7 +17,6 @@ import java.util.List;
 @RequestMapping("/ticket")
 @RequiredArgsConstructor
 public class TicketController {
-
     private final TicketService ticketService;
 
     @PostMapping("/purchase")
@@ -48,14 +46,14 @@ public class TicketController {
         return ResponseEntity.ok(ticketService.getAllTicketTypes());
     }
 
-    @PreAuthorize("hasAnyRole('COMPANY', 'ADMIN')")
     @PostMapping("/types")
+    @PreAuthorize("hasAnyRole('COMPANY', 'ADMIN')")
     public ResponseEntity<TicketType> createGlobalTicketType(@RequestBody TicketTypeCreateRequest request) {
         return ResponseEntity.ok(ticketService.createTicketType(request.getName()));
     }
 
-    @PreAuthorize("hasRole('COMPANY')")
     @PostMapping("/instances")
+    @PreAuthorize("hasRole('COMPANY')")
     public ResponseEntity<Long> createTicketInstance(
             @RequestBody TicketTypeInstanceCreateRequest request,
             @AuthenticationPrincipal Long companyId) {
@@ -64,8 +62,8 @@ public class TicketController {
         return ResponseEntity.ok(instanceId);
     }
 
-    @PreAuthorize("hasRole('COMPANY')")
     @PutMapping("/instances/{instanceId}")
+    @PreAuthorize("hasRole('COMPANY')")
     public ResponseEntity<Void> updateTicketInstance(
             @PathVariable Long instanceId,
             @RequestBody TicketTypeInstanceUpdateRequest request,

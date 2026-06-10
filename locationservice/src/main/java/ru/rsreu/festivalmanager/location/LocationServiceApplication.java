@@ -11,9 +11,7 @@ import ru.rsreu.festivalmanager.jwt.annotation.EnableFestivalSecurity;
 @EnableFestivalSecurity
 @EnableSpringDataWebSupport(pageSerializationMode = EnableSpringDataWebSupport.PageSerializationMode.VIA_DTO)
 public class LocationServiceApplication {
-
     public static void main(String[] args) {
         SpringApplication.run(LocationServiceApplication.class, args);
     }
-
 }

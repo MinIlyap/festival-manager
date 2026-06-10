@@ -17,7 +17,6 @@
   font-size: 0.95rem;
 }
 
-/* Festival selection grid */
 .festivalGrid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
@@ -104,7 +103,6 @@
   color: var(--accent-primary);
 }
 
-/* Participants view header */
 .header { margin-bottom: var(--space-lg); }
 
 .back {
@@ -138,7 +136,6 @@
   margin: 4px 0 0;
 }
 
-/* QR Scanner */
 .scannerCard { margin-bottom: var(--space-md); }
 
 .scannerHint {
@@ -148,7 +145,6 @@
   margin: 0 0 var(--space-md);
 }
 
-/* Scan feedback alerts */
 .scanAlert {
   display: flex;
   align-items: center;
@@ -178,7 +174,6 @@
   color: #065f46;
 }
 
-/* Search row */
 .searchRow {
   display: flex;
   align-items: center;
@@ -218,7 +213,6 @@
   white-space: nowrap;
 }
 
-/* Participants list */
 .participantList {
   display: flex;
   flex-direction: column;
@@ -316,7 +310,6 @@
   padding: var(--space-lg) 0;
 }
 
-/* Modal */
 .modalBody {
   display: flex;
   flex-direction: column;

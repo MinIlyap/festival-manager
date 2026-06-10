@@ -5,7 +5,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
-import ru.rsreu.festivalmanager.event.dto.DictionaryCreateRequest;
+import ru.rsreu.festivalmanager.event.dto.event.DictionaryCreateRequest;
 import ru.rsreu.festivalmanager.event.entity.event.Event;
 import ru.rsreu.festivalmanager.event.entity.reward.Reward;
 import ru.rsreu.festivalmanager.event.entity.stand.Product;
@@ -18,7 +18,6 @@ import java.util.List;
 @RequestMapping("/events/dictionaries")
 @RequiredArgsConstructor
 public class DictionaryController {
-
     private final DictionaryService dictionaryService;
 
     @GetMapping("/events")

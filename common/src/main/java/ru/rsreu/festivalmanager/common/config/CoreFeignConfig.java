@@ -10,7 +10,6 @@ import java.nio.charset.StandardCharsets;
 
 @Slf4j
 public class CoreFeignConfig {
-
     @Bean
     public ErrorDecoder errorDecoder() {
         return new CustomErrorDecoder();

@@ -17,7 +17,6 @@ import java.util.List;
 @Service
 @RequiredArgsConstructor
 public class DictionaryService {
-
     private final EventRepository eventRepository;
     private final StandRepository standRepository;
     private final RewardRepository rewardRepository;

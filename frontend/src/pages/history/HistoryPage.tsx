@@ -56,7 +56,6 @@ export default function HistoryPage() {
     enabled: tab === 'awards',
   });
 
-  // fetch festival names for each unique festivalLocationId
   const uniqueFestivalIds = [...new Set(awardsRaw.map(g => g.festivalLocationId))];
   const festivalQueries = useQueries({
     queries: uniqueFestivalIds.map(id => ({

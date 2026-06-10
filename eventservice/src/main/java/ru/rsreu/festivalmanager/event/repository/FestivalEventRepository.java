@@ -17,7 +17,6 @@ import java.util.Optional;
 
 @Repository
 public interface FestivalEventRepository extends JpaRepository<FestivalEvent, Long> {
-
     @Query("SELECT fe FROM FestivalEvent fe " +
             "JOIN fe.eventInstance ei " +
             "JOIN ei.event e " +

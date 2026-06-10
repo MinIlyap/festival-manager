@@ -28,7 +28,6 @@ import java.util.Optional;
 @EnableMethodSecurity
 @RequiredArgsConstructor
 public class SecurityConfig {
-
     private final JwtFilter jwtFilter;
 
     @Value("${internal.system-token:}")
@@ -43,7 +42,6 @@ public class SecurityConfig {
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-
         if (systemToken != null && !systemToken.isEmpty()) {
             http.addFilterBefore(new InternalAuthFilter(systemToken), UsernamePasswordAuthenticationFilter.class);
         }

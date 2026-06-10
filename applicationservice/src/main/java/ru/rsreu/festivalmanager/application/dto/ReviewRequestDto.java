@@ -7,8 +7,8 @@ import ru.rsreu.festivalmanager.application.entity.ApplicationStatus;
 
 @Data
 public class ReviewRequestDto {
-    @JsonProperty("status")
     @NotNull
+    @JsonProperty("status")
     private ApplicationStatus status;
 
     @JsonProperty("comment")

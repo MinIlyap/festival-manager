@@ -17,7 +17,6 @@ import ru.rsreu.festivalmanager.application.event.ApplicationEvents.AppResponseE
 @Component
 @RequiredArgsConstructor
 public class ApplicationKafkaProducer {
-
     private final KafkaTemplate<String, Object> kafkaTemplate;
 
     @Value("${kafka.topics.company-application-response}")
@@ -51,9 +50,11 @@ public class ApplicationKafkaProducer {
 
         kafkaTemplate.send(topic, key, msg).whenComplete((result, exception) -> {
             if (exception != null) {
-                log.error("КРИТИЧЕСКАЯ ОШИБКА: Не удалось отправить ответ по заявке в топик {}. Причина: ", topic, exception);
+                log.error("КРИТИЧЕСКАЯ ОШИБКА: Не удалось отправить ответ по заявке в топик {}. Причина: ",
+                        topic, exception);
             } else {
-                log.info("Успешно отправлен статус {} в топик {} (offset: {})", msg.getStatus(), topic, result.getRecordMetadata().offset());
+                log.info("Ответ по заявке успешно отправлен статус {} в топик {} (offset: {})",
+                        msg.getStatus(), topic, result.getRecordMetadata().offset());
             }
         });
     }
@@ -74,9 +75,11 @@ public class ApplicationKafkaProducer {
 
         kafkaTemplate.send(topic, key, msg).whenComplete((result, exception) -> {
             if (exception != null) {
-                log.error("КРИТИЧЕСКАЯ ОШИБКА: Не удалось отправить уведомление о переподаче в топик {}. Причина: ", topic, exception);
+                log.error("КРИТИЧЕСКАЯ ОШИБКА: Не удалось отправить уведомление о переподаче в топик {}. Причина: ",
+                        topic, exception);
             } else {
-                log.info("Успешно отправлено уведомление админу {} в топик {} (offset: {})", msg.getAgentId(), topic, result.getRecordMetadata().offset());
+                log.info("Успешно отправлено уведомление админу {} в топик {} (offset: {})",
+                        msg.getAgentId(), topic, result.getRecordMetadata().offset());
             }
         });
     }

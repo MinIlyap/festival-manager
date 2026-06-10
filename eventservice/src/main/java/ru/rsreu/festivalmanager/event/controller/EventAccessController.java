@@ -12,7 +12,6 @@ import ru.rsreu.festivalmanager.event.entity.stand.StandProduct;
 @RequestMapping("/internal/access/events")
 @RequiredArgsConstructor
 public class EventAccessController {
-
     private final FestivalEventRepository festivalEventRepository;
     private final FestivalStandRepository festivalStandRepository;
     private final EventRewardRepository eventRewardRepository;
