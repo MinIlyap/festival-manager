@@ -347,11 +347,8 @@ export default function CompanyAwardDistributionPage() {
                     onDragLeave={() => setDragOverSlot(null)}
                     onDrop={e => { e.preventDefault(); dropOnSlot(place); }}
                   >
-                    <div className={styles.slotLabel}>
-                      {prize
-                        ? <span className={styles.medal}>{medalEmoji(place)}</span>
-                        : <span className={styles.placeNum}>{place}</span>
-                      }
+                    <div className={[styles.slotLabel, !prize && styles.slotLabelNoPrize].filter(Boolean).join(' ')}>
+                      {prize && <span className={styles.medal}>{medalEmoji(place)}</span>}
                       <div className={styles.slotInfo}>
                         <span className={styles.slotOrdinal}>{placeOrdinal(place)}</span>
                         {prize && (

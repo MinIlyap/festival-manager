@@ -169,20 +169,19 @@
 
 .slot {
   display: flex;
-  align-items: center;
+  align-items: stretch;
   gap: var(--space-md);
-  padding: 8px 10px;
+  padding: 10px;
   border: 1px solid var(--border-subtle);
   border-radius: var(--radius-md);
   background: var(--bg-elevated);
   transition: border-color 0.12s, background 0.12s;
-  min-height: 52px;
 }
 
 .slotPrize  { background: rgba(79, 70, 229, 0.03); }
 .slotGold   { border-left: 3px solid #f59e0b; background: rgba(245,158,11,0.04); }
 .slotSilver { border-left: 3px solid #94a3b8; background: rgba(148,163,184,0.04); }
-.slotBronze { border-left: 3px solid #cd7f32; background: rgba(205,127,50,0.04); }
+.slotBronze { border-left: 3px solid #cd7f32; background: rgba(205,127,50,0.12); }
 
 .slotOver {
   border-color: var(--accent-primary) !important;
@@ -192,31 +191,37 @@
 
 .slotLabel {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   gap: 8px;
-  flex: 0 0 150px;
-  overflow: hidden;
+  flex: 0 1 180px;
+  min-width: 0;
 }
 
-.medal    { font-size: 1.2rem; line-height: 1; }
+.slotLabelNoPrize {
+  padding-left: 32px;
+  align-items: center;
+}
+
+.medal    { font-size: 1.2rem; line-height: 1; align-self: center; }
 .placeNum {
-  width: 24px; height: 24px;
+  min-width: 24px; height: 24px;
+  padding: 0 5px;
   display: flex; align-items: center; justify-content: center;
   background: var(--bg-card);
   border: 1px solid var(--border-subtle);
-  border-radius: 50%;
+  border-radius: 999px;
   font-size: 11px; font-weight: 600;
   color: var(--text-muted);
   flex-shrink: 0;
+  align-self: center;
 }
 
-.slotInfo    { display: flex; flex-direction: column; gap: 2px; overflow: hidden; }
-.slotOrdinal { font-size: 12px; font-weight: 600; color: var(--text-primary); }
-.slotReward  { display: flex; align-items: center; gap: 3px; font-size: 11px; color: var(--text-muted); }
+.slotInfo    { display: flex; flex-direction: column; gap: 2px; min-width: 0; flex: 1; overflow: hidden; }
+.slotOrdinal { font-size: 12px; font-weight: 600; color: var(--text-primary); word-break: break-word; }
+.slotReward  { display: flex; align-items: flex-start; gap: 3px; font-size: 11px; color: var(--text-muted); min-width: 0; flex-wrap: wrap; word-break: break-word; }
 
 .dropZone {
   flex: 1;
-  min-height: 36px;
   display: flex;
   align-items: center;
 }
