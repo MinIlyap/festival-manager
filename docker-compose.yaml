@@ -1,8 +1,49 @@
-version: "3.9"
+# Whole system in one command:
+#
+#   docker compose up --build -d
+#
+# Frontend:      http://localhost:3000
+# MinIO console: http://localhost:9001  (minioadmin / minioadmin)
+#
+# Host ports for Postgres, Kafka and MinIO are unchanged, so running a single
+# service from the IDE against this infrastructure still works.
+
+name: festivalmanager
+
+x-postgres: &postgres
+  image: postgres:16-alpine
+  restart: unless-stopped
+  healthcheck:
+    test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
+    interval: 10s
+    timeout: 5s
+    retries: 5
+  networks: [festivalmanager]
+
+x-service-build: &service-build
+  context: .
+  dockerfile: Dockerfile
+
+x-service: &service
+  restart: unless-stopped
+  networks: [festivalmanager]
+  # Секреты (Яндекс OAuth, SMTP, ключи) берутся из .env, если он есть.
+  # Без него сервисы поднимаются на dev-значениях из application.yaml.
+  env_file:
+    - path: .env
+      required: false
+
+# Kafka is reached at kafka:9094 from inside the compose network and at
+# localhost:9092 from the host.
+x-kafka-env: &kafka-env
+  SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:9094
 
 services:
+
+  # ---------------------------------------------------------------- databases
+
   auth-postgres:
-    image: postgres:16-alpine
+    <<: *postgres
     container_name: festivalmanager-auth-postgres
     environment:
       POSTGRES_DB: auth_db
@@ -12,14 +53,9 @@ services:
       - "5433:5432"
     volumes:
       - auth_postgres_data:/var/lib/postgresql/data
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U auth_user -d auth_db"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
 
   user-postgres:
-    image: postgres:16-alpine
+    <<: *postgres
     container_name: festivalmanager-user-postgres
     environment:
       POSTGRES_DB: user_db
@@ -29,14 +65,9 @@ services:
       - "5434:5432"
     volumes:
       - user_postgres_data:/var/lib/postgresql/data
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U user_service_user -d user_db"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
 
   company-postgres:
-    image: postgres:16-alpine
+    <<: *postgres
     container_name: festivalmanager-company-postgres
     environment:
       POSTGRES_DB: company_db
@@ -46,14 +77,9 @@ services:
       - "5435:5432"
     volumes:
       - company_postgres_data:/var/lib/postgresql/data
-    healthcheck:
-      test: [ "CMD-SHELL", "pg_isready -U user_service_user -d user_db" ]
-      interval: 10s
-      timeout: 5s
-      retries: 5
 
   festival-postgres:
-    image: postgres:16-alpine
+    <<: *postgres
     container_name: festivalmanager-festival-postgres
     environment:
       POSTGRES_DB: festival_db
@@ -63,14 +89,9 @@ services:
       - "5436:5432"
     volumes:
       - festival_postgres_data:/var/lib/postgresql/data
-    healthcheck:
-      test: [ "CMD-SHELL", "pg_isready -U user_service_user -d user_db" ]
-      interval: 10s
-      timeout: 5s
-      retries: 5
 
   event-postgres:
-    image: postgres:16-alpine
+    <<: *postgres
     container_name: festivalmanager-event-postgres
     environment:
       POSTGRES_DB: event_db
@@ -80,14 +101,9 @@ services:
       - "5437:5432"
     volumes:
       - event_postgres_data:/var/lib/postgresql/data
-    healthcheck:
-      test: [ "CMD-SHELL", "pg_isready -U user_service_user -d user_db" ]
-      interval: 10s
-      timeout: 5s
-      retries: 5
 
   location-postgres:
-    image: postgres:16-alpine
+    <<: *postgres
     container_name: festivalmanager-location-postgres
     environment:
       POSTGRES_DB: location_db
@@ -97,14 +113,9 @@ services:
       - "5438:5432"
     volumes:
       - location_postgres_data:/var/lib/postgresql/data
-    healthcheck:
-      test: [ "CMD-SHELL", "pg_isready -U user_service_user -d user_db" ]
-      interval: 10s
-      timeout: 5s
-      retries: 5
 
   notification-postgres:
-    image: postgres:16-alpine
+    <<: *postgres
     container_name: festivalmanager-notification-postgres
     environment:
       POSTGRES_DB: notification_db
@@ -114,14 +125,9 @@ services:
       - "5439:5432"
     volumes:
       - notification_postgres_data:/var/lib/postgresql/data
-    healthcheck:
-      test: [ "CMD-SHELL", "pg_isready -U user_service_user -d user_db" ]
-      interval: 10s
-      timeout: 5s
-      retries: 5
 
   application-postgres:
-    image: postgres:16-alpine
+    <<: *postgres
     container_name: festivalmanager-application-postgres
     environment:
       POSTGRES_DB: application_db
@@ -131,14 +137,9 @@ services:
       - "5440:5432"
     volumes:
       - application_postgres_data:/var/lib/postgresql/data
-    healthcheck:
-      test: [ "CMD-SHELL", "pg_isready -U user_service_user -d user_db" ]
-      interval: 10s
-      timeout: 5s
-      retries: 5
 
   file-postgres:
-    image: postgres:16-alpine
+    <<: *postgres
     container_name: festivalmanager-file-postgres
     environment:
       POSTGRES_DB: file_db
@@ -148,15 +149,13 @@ services:
       - "5441:5432"
     volumes:
       - file_postgres_data:/var/lib/postgresql/data
-    healthcheck:
-      test: [ "CMD-SHELL", "pg_isready -U user_service_user -d user_db" ]
-      interval: 10s
-      timeout: 5s
-      retries: 5
+
+  # ----------------------------------------------------------- infrastructure
 
   minio:
     image: minio/minio:latest
     container_name: festivalmanager-minio
+    restart: unless-stopped
     environment:
       MINIO_ROOT_USER: minioadmin
       MINIO_ROOT_PASSWORD: minioadmin
@@ -167,33 +166,237 @@ services:
       - minio_data:/data
     command: server /data --console-address ":9001"
     healthcheck:
-      test: [ "CMD", "curl", "-f", "http://localhost:9000/minio/health/live" ]
-      interval: 30s
-      timeout: 10s
-      retries: 5
+      test: ["CMD", "mc", "ready", "local"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    networks: [festivalmanager]
 
   kafka:
     image: apache/kafka:3.9.2
     container_name: festivalmanager-kafka
+    restart: unless-stopped
     environment:
       KAFKA_NODE_ID: 1
       KAFKA_PROCESS_ROLES: broker,controller
-      KAFKA_CONTROLLER_QUORUM_VOTERS: 1@localhost:9093
-      KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:9092,CONTROLLER://0.0.0.0:9093
-      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://localhost:9092
-      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT
+      KAFKA_CONTROLLER_QUORUM_VOTERS: 1@kafka:9093
+      KAFKA_LISTENERS: DOCKER://0.0.0.0:9094,HOST://0.0.0.0:9092,CONTROLLER://0.0.0.0:9093
+      KAFKA_ADVERTISED_LISTENERS: DOCKER://kafka:9094,HOST://localhost:9092
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: CONTROLLER:PLAINTEXT,DOCKER:PLAINTEXT,HOST:PLAINTEXT
+      KAFKA_INTER_BROKER_LISTENER_NAME: DOCKER
       KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
       KAFKA_LOG_DIRS: /var/lib/kafka/data
     ports:
       - "9092:9092"
     volumes:
       - kafka_data:/var/lib/kafka/data
     healthcheck:
-      test: [ "CMD", "sh", "-c", "/opt/kafka/bin/kafka-broker-api-versions.sh --bootstrap-server localhost:9092 > /dev/null 2>&1" ]
+      test: ["CMD", "sh", "-c", "/opt/kafka/bin/kafka-broker-api-versions.sh --bootstrap-server kafka:9094 > /dev/null 2>&1"]
       interval: 10s
-      timeout: 5s
-      retries: 5
+      timeout: 10s
+      retries: 10
+    networks: [festivalmanager]
+
+  # ----------------------------------------------------------------- services
+
+  applicationservice:
+    <<: *service
+    build:
+      <<: *service-build
+      args:
+        SERVICE: applicationservice
+    container_name: festivalmanager-applicationservice
+    environment:
+      <<: *kafka-env
+      SPRING_DATASOURCE_URL: jdbc:postgresql://application-postgres:5432/application_db
+    ports:
+      - "8081:8081"
+    depends_on:
+      application-postgres:
+        condition: service_healthy
+      kafka:
+        condition: service_healthy
+
+  authservice:
+    <<: *service
+    build:
+      <<: *service-build
+      args:
+        SERVICE: authservice
+    container_name: festivalmanager-authservice
+    environment:
+      <<: *kafka-env
+      SPRING_DATASOURCE_URL: jdbc:postgresql://auth-postgres:5432/auth_db
+      SERVICES_USER_URL: http://userservice:8089/user
+      SERVICES_COMPANY_URL: http://companyservice:8083/company
+    ports:
+      # Published on the host as well, because the Yandex OAuth redirect URI
+      # sends the browser straight to this service.
+      - "8082:8082"
+    depends_on:
+      auth-postgres:
+        condition: service_healthy
+      kafka:
+        condition: service_healthy
+
+  companyservice:
+    <<: *service
+    build:
+      <<: *service-build
+      args:
+        SERVICE: companyservice
+    container_name: festivalmanager-companyservice
+    environment:
+      <<: *kafka-env
+      SPRING_DATASOURCE_URL: jdbc:postgresql://company-postgres:5432/company_db
+    ports:
+      - "8083:8083"
+    depends_on:
+      company-postgres:
+        condition: service_healthy
+      kafka:
+        condition: service_healthy
+
+  eventservice:
+    <<: *service
+    build:
+      <<: *service-build
+      args:
+        SERVICE: eventservice
+    container_name: festivalmanager-eventservice
+    environment:
+      <<: *kafka-env
+      SPRING_DATASOURCE_URL: jdbc:postgresql://event-postgres:5432/event_db
+      SERVICES_FESTIVAL_URL: http://festivalservice:8085
+    ports:
+      - "8084:8084"
+    depends_on:
+      event-postgres:
+        condition: service_healthy
+      kafka:
+        condition: service_healthy
+
+  festivalservice:
+    <<: *service
+    build:
+      <<: *service-build
+      args:
+        SERVICE: festivalservice
+    container_name: festivalmanager-festivalservice
+    environment:
+      <<: *kafka-env
+      SPRING_DATASOURCE_URL: jdbc:postgresql://festival-postgres:5432/festival_db
+      SERVICES_AUTH_URL: http://authservice:8082/auth
+      SERVICES_COMPANY_URL: http://companyservice:8083/company
+      SERVICES_LOCATION_URL: http://locationservice:8087/location
+      SERVICES_USER_URL: http://userservice:8089/user
+    ports:
+      - "8085:8085"
+    depends_on:
+      festival-postgres:
+        condition: service_healthy
+      kafka:
+        condition: service_healthy
+
+  fileservice:
+    <<: *service
+    build:
+      <<: *service-build
+      args:
+        SERVICE: fileservice
+    container_name: festivalmanager-fileservice
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://file-postgres:5432/file_db
+      MINIO_URL: http://minio:9000
+      SERVICES_EVENT_URL: http://eventservice:8084/internal/access/events/
+      SERVICES_FESTIVAL_URL: http://festivalservice:8085/internal/access/festivals/
+    ports:
+      - "8086:8086"
+    depends_on:
+      file-postgres:
+        condition: service_healthy
+      minio:
+        condition: service_healthy
+
+  locationservice:
+    <<: *service
+    build:
+      <<: *service-build
+      args:
+        SERVICE: locationservice
+    container_name: festivalmanager-locationservice
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://location-postgres:5432/location_db
+    ports:
+      - "8087:8087"
+    depends_on:
+      location-postgres:
+        condition: service_healthy
+
+  notificationservice:
+    <<: *service
+    build:
+      <<: *service-build
+      args:
+        SERVICE: notificationservice
+    container_name: festivalmanager-notificationservice
+    environment:
+      <<: *kafka-env
+      SPRING_DATASOURCE_URL: jdbc:postgresql://notification-postgres:5432/notification_db
+    ports:
+      - "8088:8088"
+    depends_on:
+      notification-postgres:
+        condition: service_healthy
+      kafka:
+        condition: service_healthy
+
+  userservice:
+    <<: *service
+    build:
+      <<: *service-build
+      args:
+        SERVICE: userservice
+    container_name: festivalmanager-userservice
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://user-postgres:5432/user_db
+      SERVICES_FESTIVAL_URL: http://festivalservice:8085
+      SERVICES_LOCATION_URL: http://locationservice:8087/location
+    ports:
+      - "8089:8089"
+    depends_on:
+      user-postgres:
+        condition: service_healthy
+
+  # ----------------------------------------------------------------- frontend
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: festivalmanager-frontend
+    restart: unless-stopped
+    ports:
+      # 3000 on the host: the OAuth success handler redirects to localhost:3000.
+      - "3000:80"
+    depends_on:
+      - applicationservice
+      - authservice
+      - companyservice
+      - eventservice
+      - festivalservice
+      - fileservice
+      - locationservice
+      - notificationservice
+      - userservice
+    networks: [festivalmanager]
+
+networks:
+  festivalmanager:
+    driver: bridge
 
 volumes:
   auth_postgres_data:

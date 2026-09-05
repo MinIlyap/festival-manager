@@ -46,3 +46,7 @@ frontend/coverage/
 
 # Claude Code
 .claude/
+
+# TypeScript incremental build info
+frontend/*.tsbuildinfo
+

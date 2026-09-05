@@ -1,0 +1,26 @@
+# Git / IDE
+.git
+.gitignore
+.gitattributes
+.idea
+.claude
+*.iml
+
+# Gradle build output and caches
+**/.gradle
+**/build
+!gradle/wrapper/gradle-wrapper.jar
+
+# Frontend (built by frontend/Dockerfile with its own context)
+frontend
+
+# Docs and compose files
+*.md
+docker-compose*.yaml
+docker-compose*.yml
+.dockerignore
+Dockerfile
+
+# Local secrets
+.env
+**/application-local.yaml
