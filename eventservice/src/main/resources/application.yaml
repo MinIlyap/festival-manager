@@ -19,11 +19,11 @@ spring:
       value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
 jwt:
   secret:
-    access: "my_super_secret_access_key_that_must_be_long_enough_for_hs256"
+    access: "${JWT_ACCESS_SECRET:my_super_secret_access_key_that_must_be_long_enough_for_hs256}"
 internal:
-  system-token: "my_super_secret_system_token_123"
+  system-token: "${INTERNAL_SYSTEM_TOKEN:my_super_secret_system_token_123}"
 crypto:
-  secret-key: "MySuperSecretKey1234567890123456"
+  secret-key: "${CRYPTO_SECRET_KEY:MySuperSecretKey1234567890123456}"
 server:
   port: 8084
 services:

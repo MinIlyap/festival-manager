@@ -27,8 +27,8 @@ spring:
       client:
         registration:
           yandex:
-            client-id: "36fc60f4796b476aa4893f175516d6b6"
-            client-secret: "0f57670778e74b66b75daa62fbe75df0"
+            client-id: "${YANDEX_CLIENT_ID:not-configured}"
+            client-secret: "${YANDEX_CLIENT_SECRET:not-configured}"
             authorization-grant-type: authorization_code
             redirect-uri: "http://localhost:8082/login/oauth2/code/yandex"
             scope:
@@ -44,14 +44,14 @@ spring:
 
 jwt:
   secret:
-    access: "my_super_secret_access_key_that_must_be_long_enough_for_hs256"
+    access: "${JWT_ACCESS_SECRET:my_super_secret_access_key_that_must_be_long_enough_for_hs256}"
 internal:
-  system-token: "my_super_secret_system_token_123"
+  system-token: "${INTERNAL_SYSTEM_TOKEN:my_super_secret_system_token_123}"
 app:
   security:
     public-endpoints: "/auth/register/**, /auth/login, /auth/refresh"
 crypto:
-  secret-key: "MySuperSecretKey1234567890123456"
+  secret-key: "${CRYPTO_SECRET_KEY:MySuperSecretKey1234567890123456}"
 server:
   port: 8082
 services:

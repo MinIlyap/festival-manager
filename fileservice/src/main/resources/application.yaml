@@ -15,8 +15,8 @@ spring:
 
 minio:
   url: http://localhost:9000
-  access-key: minioadmin
-  secret-key: minioadmin
+  access-key: ${MINIO_ACCESS_KEY:minioadmin}
+  secret-key: ${MINIO_SECRET_KEY:minioadmin}
 
 app:
   security:
@@ -24,12 +24,12 @@ app:
 
 jwt:
   secret:
-    access: "my_super_secret_access_key_that_must_be_long_enough_for_hs256"
+    access: "${JWT_ACCESS_SECRET:my_super_secret_access_key_that_must_be_long_enough_for_hs256}"
 
 internal:
-  system-token: "my_super_secret_system_token_123"
+  system-token: "${INTERNAL_SYSTEM_TOKEN:my_super_secret_system_token_123}"
 crypto:
-  secret-key: "MySuperSecretKey1234567890123456"
+  secret-key: "${CRYPTO_SECRET_KEY:MySuperSecretKey1234567890123456}"
 server:
   port: 8086
 services:
