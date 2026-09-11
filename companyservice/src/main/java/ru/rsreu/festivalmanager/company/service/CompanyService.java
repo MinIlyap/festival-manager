@@ -9,6 +9,7 @@ import ru.rsreu.festivalmanager.company.dto.CompanyCreateRequest;
 import ru.rsreu.festivalmanager.company.dto.CompanyResponse;
 import ru.rsreu.festivalmanager.company.dto.CompanyUpdateRequest;
 import ru.rsreu.festivalmanager.company.entity.Company;
+import ru.rsreu.festivalmanager.company.mapper.CompanyMapper;
 import ru.rsreu.festivalmanager.company.event.CompanyEvents;
 import ru.rsreu.festivalmanager.company.repository.CompanyRepository;
 
@@ -20,6 +21,7 @@ import java.util.Optional;
 @Slf4j
 public class CompanyService {
     private final CompanyRepository companyRepository;
+    private final CompanyMapper companyMapper;
     private final ApplicationEventPublisher eventPublisher;
 
     @Transactional
@@ -79,7 +81,7 @@ public class CompanyService {
         Company company = companyRepository.findByTin(tin)
                 .orElseThrow(() -> new IllegalArgumentException("Компания с ИНН " + tin + " не найдена"));
 
-        return mapToResponse(company);
+        return companyMapper.toCompanyResponse(company);
     }
 
     @Transactional
@@ -96,7 +98,7 @@ public class CompanyService {
         Company company = companyRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Компания не найдена"));
 
-        return mapToResponse(company);
+        return companyMapper.toCompanyResponse(company);
     }
 
     @Transactional
@@ -108,18 +110,7 @@ public class CompanyService {
         company.setBrandName(request.getBrandName());
         company.setWebsite(request.getWebsite());
 
-        return mapToResponse(companyRepository.save(company));
+        return companyMapper.toCompanyResponse(companyRepository.save(company));
     }
 
-    private CompanyResponse mapToResponse(Company company) {
-        return CompanyResponse.builder()
-                .id(company.getId())
-                .tin(company.getTin())
-                .fullName(company.getFullName())
-                .brandName(company.getBrandName())
-                .email(company.getEmail())
-                .website(company.getWebsite())
-                .isActive(company.isActive())
-                .build();
-    }
 }

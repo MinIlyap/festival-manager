@@ -17,6 +17,7 @@ import ru.rsreu.festivalmanager.event.entity.event.EventInstance;
 import ru.rsreu.festivalmanager.event.entity.event.EventType;
 import ru.rsreu.festivalmanager.event.entity.event.FestivalEvent;
 import ru.rsreu.festivalmanager.event.repository.EventInstanceRepository;
+import ru.rsreu.festivalmanager.event.mapper.EventMapper;
 import ru.rsreu.festivalmanager.event.repository.EventRepository;
 import ru.rsreu.festivalmanager.event.repository.FestivalEventRepository;
 
@@ -28,6 +29,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class FestivalEventService {
     private final FestivalEventRepository festivalEventRepository;
+    private final EventMapper eventMapper;
     private final FestivalServiceClient festivalServiceClient;
     private final EventRepository eventRepository;
     private final EventInstanceRepository eventInstanceRepository;
@@ -56,7 +58,7 @@ public class FestivalEventService {
         }
 
         return festivalEventRepository.searchWithFilters(name, startDate, endDate, festivalLocationIds, type, pageable)
-                .map(this::mapToResponse);
+                .map(eventMapper::toFestivalEventResponse);
     }
 
     @Transactional
@@ -185,7 +187,7 @@ public class FestivalEventService {
     public FestivalEventResponse getEventById(Long festivalEventId) {
         FestivalEvent festivalEvent = festivalEventRepository.findById(festivalEventId)
                 .orElseThrow(() -> new IllegalArgumentException("Мероприятие не найдено"));
-        FestivalEventResponse response = mapToResponse(festivalEvent);
+        FestivalEventResponse response = eventMapper.toFestivalEventResponse(festivalEvent);
         if (festivalEvent.getEventInstance().getCompanyId() != null) {
             try {
                 CompanyBriefDto company =
@@ -205,28 +207,8 @@ public class FestivalEventService {
     public List<FestivalEventResponse> getEventsByCompany(Long companyId) {
         return festivalEventRepository.findAllByEventInstance_CompanyId(companyId)
                 .stream()
-                .map(this::mapToResponse)
+                .map(eventMapper::toFestivalEventResponse)
                 .toList();
     }
 
-    private FestivalEventResponse mapToResponse(FestivalEvent fe) {
-        EventInstance ei = fe.getEventInstance();
-        Event e = ei.getEvent();
-
-        return FestivalEventResponse.builder()
-                .festivalEventId(fe.getId())
-                .festivalLocationId(fe.getFestivalLocationId())
-                .eventName(e.getName())
-                .type(ei.getEventType())
-                .description(ei.getDescription())
-                .dateStart(ei.getDateStart())
-                .timeStart(ei.getTimeStart())
-                .approximateDuration(ei.getApproximateDuration())
-                .isCommand(ei.getIsCommand())
-                .maxNumberPeople(ei.getMaxNumberPeople())
-                .maxPeopleCommand(ei.getMaxPeopleCommand())
-                .organizerCompanyId(ei.getCompanyId())
-                .createdAt(fe.getCreatedAt())
-                .build();
-    }
 }

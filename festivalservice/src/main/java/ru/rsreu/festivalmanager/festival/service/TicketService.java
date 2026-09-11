@@ -18,6 +18,7 @@ import ru.rsreu.festivalmanager.festival.entity.ticket.Ticket;
 import ru.rsreu.festivalmanager.festival.entity.ticket.TicketTypeInstance;
 import ru.rsreu.festivalmanager.festival.entity.festival.FestivalCurator;
 import ru.rsreu.festivalmanager.festival.repository.*;
+import ru.rsreu.festivalmanager.festival.mapper.TicketMapper;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -33,6 +34,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class TicketService {
     private final TicketRepository ticketRepository;
+    private final TicketMapper ticketMapper;
     private final TicketTypeRepository ticketTypeRepository;
     private final TicketTypeInstanceRepository ticketTypeInstanceRepository;
     private final FestivalCompanyRepository festivalCompanyRepository;
@@ -208,16 +210,10 @@ public class TicketService {
         FestivalInstance festivalInstance = instances.getFirst().getFestivalLocation().getFestivalInstance();
         int maxPeople = festivalInstance.getMaxPeopleNumber() != null ? festivalInstance.getMaxPeopleNumber() : 0;
         int soldTickets = ticketRepository.sumSoldTicketsByFestivalInstanceId(festivalInstance.getId());
-        int remaining = Math.max(0, maxPeople - soldTickets);
+        final int remainingTickets = Math.max(0, maxPeople - soldTickets);
 
         return instances.stream()
-                .map(tti -> TicketTypeInstanceResponse.builder()
-                        .id(tti.getId())
-                        .name(tti.getTicketType().getName())
-                        .description(tti.getDescription())
-                        .price(tti.getPrice())
-                        .remaining(remaining)
-                        .build())
+                .map(tti -> ticketMapper.toTicketTypeInstanceResponse(tti, remainingTickets))
                 .collect(Collectors.toList());
     }
 
@@ -238,16 +234,7 @@ public class TicketService {
         List<TicketResponse> expiredTickets = new ArrayList<>();
 
         for (Ticket t : allTickets) {
-            TicketResponse tr = TicketResponse.builder()
-                    .ticketId(t.getId())
-                    .festivalLocationId(t.getTicketTypeInstance().getFestivalLocation().getId())
-                    .festivalName(t.getTicketTypeInstance().getFestivalLocation().getFestivalInstance().getFestival().getName())
-                    .ticketType(t.getTicketTypeInstance().getTicketType().getName())
-                    .quantity(t.getQuantity())
-                    .finalPrice(t.getFinalPrice())
-                    .startDate(t.getStartDate())
-                    .expiryDate(t.getExpiryDate())
-                    .build();
+            TicketResponse tr = ticketMapper.toTicketResponse(t);
 
             if (t.getExpiryDate().isBefore(now)) {
                 expiredTickets.add(tr);

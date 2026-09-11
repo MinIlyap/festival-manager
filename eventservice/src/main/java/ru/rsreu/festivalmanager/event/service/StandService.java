@@ -15,6 +15,7 @@ import ru.rsreu.festivalmanager.event.dto.stand.ProductAddRequest;
 import ru.rsreu.festivalmanager.event.dto.stand.StandProductResponse;
 import ru.rsreu.festivalmanager.event.entity.stand.*;
 import ru.rsreu.festivalmanager.event.repository.*;
+import ru.rsreu.festivalmanager.event.mapper.StandMapper;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -26,6 +27,7 @@ import java.util.stream.Collectors;
 public class StandService {
     private final FestivalStandRepository festivalStandRepository;
     private final StandProductRepository standProductRepository;
+    private final StandMapper standMapper;
     private final ProductInstanceRepository productInstanceRepository;
     private final FestivalServiceClient festivalServiceClient;
     private final ProductRepository productRepository;
@@ -116,17 +118,7 @@ public class StandService {
     public List<StandProductResponse> getProductsByStand(Long festivalStandId) {
         return standProductRepository.findAllByStandProductId_FestivalStand_Id(festivalStandId)
                 .stream()
-                .map(sp -> {
-                    ProductInstance pi = sp.getStandProductId().getProductInstance();
-                    return StandProductResponse.builder()
-                            .productInstanceId(pi.getId())
-                            .productId(pi.getProduct().getId())
-                            .productName(pi.getProduct().getName())
-                            .description(pi.getDescription())
-                            .quantity(pi.getQuantity())
-                            .price(pi.getPrice())
-                            .build();
-                })
+                .map(standMapper::toStandProductResponse)
                 .collect(Collectors.toList());
     }
 
@@ -189,32 +181,14 @@ public class StandService {
         }
 
         return festivalStandRepository.searchStands(name, locationIds, type, dateStart, pageable)
-                .map(fs -> FestivalStandResponse.builder()
-                        .id(fs.getId())
-                        .festivalLocationId(fs.getFestivalLocationId())
-                        .name(fs.getStandInstance().getStand().getName())
-                        .type(fs.getStandInstance().getStandType())
-                        .description(fs.getStandInstance().getDescription())
-                        .companyId(fs.getStandInstance().getCompanyId())
-                        .organizerCompanyId(fs.getStandInstance().getCompanyId())
-                        .dateStart(fs.getStandInstance().getDateStart())
-                        .build());
+                .map(standMapper::toFestivalStandResponse);
     }
 
     @Transactional(readOnly = true)
     public List<FestivalStandResponse> getStandsByFestival(Long festivalLocationId) {
         return festivalStandRepository.findAllByFestivalLocationId(festivalLocationId)
                 .stream()
-                .map(fs -> FestivalStandResponse.builder()
-                        .id(fs.getId())
-                        .festivalLocationId(fs.getFestivalLocationId())
-                        .name(fs.getStandInstance().getStand().getName())
-                        .type(fs.getStandInstance().getStandType())
-                        .description(fs.getStandInstance().getDescription())
-                        .companyId(fs.getStandInstance().getCompanyId())
-                        .organizerCompanyId(fs.getStandInstance().getCompanyId())
-                        .dateStart(fs.getStandInstance().getDateStart())
-                        .build())
+                .map(standMapper::toFestivalStandResponse)
                 .collect(Collectors.toList());
     }
 

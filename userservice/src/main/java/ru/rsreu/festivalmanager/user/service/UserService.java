@@ -10,6 +10,7 @@ import ru.rsreu.festivalmanager.user.dto.*;
 import ru.rsreu.festivalmanager.user.entity.AppUser;
 import ru.rsreu.festivalmanager.user.entity.BlackList;
 import ru.rsreu.festivalmanager.user.entity.BlackListId;
+import ru.rsreu.festivalmanager.user.mapper.UserMapper;
 import ru.rsreu.festivalmanager.user.repository.AppUserRepository;
 import ru.rsreu.festivalmanager.user.repository.BlackListRepository;
 import ru.rsreu.festivalmanager.common.util.CryptoUtil;
@@ -22,6 +23,7 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class UserService {
     private final AppUserRepository userRepository;
+    private final UserMapper userMapper;
     private final BlackListRepository blackListRepository;
     private final LocationServiceClient locationClient;
     private final FestivalServiceClient festivalClient;
@@ -60,19 +62,11 @@ public class UserService {
             } catch (Exception ignored) {}
         }
 
-        return UserResponse.builder()
-                .id(user.getId())
-                .birthDate(user.getBirthDate())
-                .nickname(user.getNickname())
-                .cityId(user.getCity_id())
-                .cityName(cityName)
-                .phoneNumber(user.getPhoneNumber())
-                .firstName(user.getFirstName())
-                .lastName(user.getLastName())
-                .middleName(user.getMiddleName())
-                .passportSeries(cryptoUtil.decrypt(user.getPassportSeriaHash()))
-                .passportNumber(cryptoUtil.decrypt(user.getPassportNumberHash()))
-                .build();
+        return userMapper.toUserResponse(
+                user,
+                cityName,
+                cryptoUtil.decrypt(user.getPassportSeriaHash()),
+                cryptoUtil.decrypt(user.getPassportNumberHash()));
     }
 
     @Transactional(readOnly = true)
@@ -80,13 +74,7 @@ public class UserService {
         AppUser user = userRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Пользователь не найден"));
 
-        return UserProfileDto.builder()
-                .id(user.getId())
-                .nickname(user.getNickname())
-                .phone(user.getPhoneNumber())
-                .passportData(user.getPassportNumberHash())
-                .dateOfBirth(user.getBirthDate())
-                .build();
+        return userMapper.toUserProfileDto(user);
     }
 
     @Transactional
@@ -209,11 +197,7 @@ public class UserService {
             return BlacklistStatusResponse.builder().inBlacklist(false).build();
         }
         BlackList entry = entries.getFirst();
-        return BlacklistStatusResponse.builder()
-                .inBlacklist(true)
-                .reason(entry.getReason())
-                .until(entry.getExpiryDate())
-                .build();
+        return userMapper.toBlacklistStatusResponse(entry);
     }
 
     @Transactional(readOnly = true)

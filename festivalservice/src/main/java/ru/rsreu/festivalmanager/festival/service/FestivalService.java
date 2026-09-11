@@ -17,6 +17,7 @@ import ru.rsreu.festivalmanager.festival.entity.ticket.TicketType;
 import ru.rsreu.festivalmanager.festival.entity.ticket.TicketTypeInstance;
 import ru.rsreu.festivalmanager.festival.event.FestivalEvents;
 import ru.rsreu.festivalmanager.festival.repository.*;
+import ru.rsreu.festivalmanager.festival.mapper.FestivalMapper;
 
 import java.time.LocalDate;
 import java.time.OffsetDateTime;
@@ -33,6 +34,7 @@ public class FestivalService {
     private final FestivalRepository festivalRepository;
     private final FestivalInstanceRepository instanceRepository;
     private final FestivalLocationRepository locationRepository;
+    private final FestivalMapper festivalMapper;
     private final TicketTypeInstanceRepository ticketTypeInstanceRepository;
     private final AgeLimitRepository ageLimitRepository;
     private final TicketTypeRepository ticketTypeRepository;
@@ -378,13 +380,7 @@ public class FestivalService {
                     Long companyId = fc.getFestivalCompanyId().getCompanyId();
                     try {
                         CompanyDto company = companyClient.getCompanyById(getSystemToken(), companyId);
-                        return FestivalOrganizerDto.builder()
-                                .companyId(companyId)
-                                .tin(company.getTin())
-                                .brandName(company.getBrandName())
-                                .fullName(company.getFullName())
-                                .email(company.getEmail())
-                                .build();
+                        return festivalMapper.toFestivalOrganizerDto(companyId, company);
                     } catch (Exception e) {
                         return FestivalOrganizerDto.builder().companyId(companyId).build();
                     }
@@ -418,13 +414,7 @@ public class FestivalService {
         FestivalCompanyId fcId = new FestivalCompanyId(location, company.getId());
         festivalCompanyRepository.save(new FestivalCompany(fcId));
 
-        return FestivalOrganizerDto.builder()
-                .companyId(company.getId())
-                .tin(company.getTin())
-                .brandName(company.getBrandName())
-                .fullName(company.getFullName())
-                .email(company.getEmail())
-                .build();
+        return festivalMapper.toFestivalOrganizerDto(company.getId(), company);
     }
 
     @Transactional

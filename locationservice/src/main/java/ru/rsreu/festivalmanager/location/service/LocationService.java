@@ -9,6 +9,7 @@ import ru.rsreu.festivalmanager.location.dto.*;
 import ru.rsreu.festivalmanager.location.entity.City;
 import ru.rsreu.festivalmanager.location.entity.Platform;
 import ru.rsreu.festivalmanager.location.entity.PlatformInstance;
+import ru.rsreu.festivalmanager.location.mapper.LocationMapper;
 import ru.rsreu.festivalmanager.location.repository.CityRepository;
 import ru.rsreu.festivalmanager.location.repository.PlatformInstanceRepository;
 import ru.rsreu.festivalmanager.location.repository.PlatformRepository;
@@ -21,6 +22,7 @@ public class LocationService {
     private final CityRepository cityRepository;
     private final PlatformRepository platformRepository;
     private final PlatformInstanceRepository instanceRepository;
+    private final LocationMapper locationMapper;
 
     @Transactional
     public CityResponse addCity(CityCreateRequest request) {
@@ -32,13 +34,13 @@ public class LocationService {
         city.setName(request.getName());
         city = cityRepository.save(city);
 
-        return mapToCityResponse(city);
+        return locationMapper.toCityResponse(city);
     }
 
     @Transactional(readOnly = true)
     public Page<CityResponse> searchCities(String namePart, Pageable pageable) {
         return cityRepository.findByNameContainingIgnoreCase(namePart, pageable)
-                .map(this::mapToCityResponse);
+                .map(locationMapper::toCityResponse);
     }
 
     @Transactional(readOnly = true)
@@ -51,7 +53,7 @@ public class LocationService {
         City city = cityRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Город не найден: " + id));
 
-        return mapToCityResponse(city);
+        return locationMapper.toCityResponse(city);
     }
 
     @Transactional
@@ -68,7 +70,7 @@ public class LocationService {
                 });
 
         return instanceRepository.findByPlatform_IdAndCity_IdAndStreetAndHouse(platform.getId(), city.getId(), request.getStreet(), request.getHouse())
-                .map(this::mapToInstanceResponse)
+                .map(locationMapper::toPlatformInstanceResponse)
                 .orElseGet(() -> {
                     PlatformInstance newInstance = new PlatformInstance();
                     newInstance.setPlatform(platform);
@@ -76,7 +78,7 @@ public class LocationService {
                     newInstance.setStreet(request.getStreet());
                     newInstance.setHouse(request.getHouse());
 
-                    return mapToInstanceResponse(instanceRepository.save(newInstance));
+                    return locationMapper.toPlatformInstanceResponse(instanceRepository.save(newInstance));
                 });
     }
 
@@ -84,10 +86,10 @@ public class LocationService {
     public Page<PlatformInstanceResponse> searchPlatformInstances(Long cityId, String platformNamePart, Pageable pageable) {
         if (cityId == null) {
             return instanceRepository.findByPlatform_NameContainingIgnoreCase(platformNamePart, pageable)
-                    .map(this::mapToInstanceResponse);
+                    .map(locationMapper::toPlatformInstanceResponse);
         }
         return instanceRepository.findByCity_IdAndPlatform_NameContainingIgnoreCase(cityId, platformNamePart, pageable)
-                .map(this::mapToInstanceResponse);
+                .map(locationMapper::toPlatformInstanceResponse);
     }
 
     @Transactional
@@ -98,7 +100,7 @@ public class LocationService {
         instance.setStreet(request.getStreet());
         instance.setHouse(request.getHouse());
 
-        return mapToInstanceResponse(instanceRepository.save(instance));
+        return locationMapper.toPlatformInstanceResponse(instanceRepository.save(instance));
     }
 
     @Transactional(readOnly = true)
@@ -110,28 +112,11 @@ public class LocationService {
     public PlatformInstanceResponse getPlatformInstanceById(Long id) {
         PlatformInstance instance = instanceRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Площадка не найдена: " + id));
-        return mapToInstanceResponse(instance);
+        return locationMapper.toPlatformInstanceResponse(instance);
     }
 
     @Transactional(readOnly = true)
     public List<Long> getPlatformIdsByCity(Long cityId) {
         return instanceRepository.findPlatformInstanceIdsByCityId(cityId);
-    }
-
-    private CityResponse mapToCityResponse(City city) {
-        return CityResponse.builder()
-                .id(city.getId())
-                .name(city.getName())
-                .build();
-    }
-
-    private PlatformInstanceResponse mapToInstanceResponse(PlatformInstance instance) {
-        return PlatformInstanceResponse.builder()
-                .id(instance.getId())
-                .platformName(instance.getPlatform().getName())
-                .city(mapToCityResponse(instance.getCity()))
-                .street(instance.getStreet())
-                .house(instance.getHouse())
-                .build();
     }
 }

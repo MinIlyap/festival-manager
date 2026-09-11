@@ -10,6 +10,7 @@ import ru.rsreu.festivalmanager.event.entity.registration.CommandMember;
 import ru.rsreu.festivalmanager.event.entity.registration.UserEventRegistrationId;
 import ru.rsreu.festivalmanager.event.entity.reward.*;
 import ru.rsreu.festivalmanager.event.repository.*;
+import ru.rsreu.festivalmanager.event.mapper.RewardMapper;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -19,6 +20,7 @@ import java.util.stream.Collectors;
 public class RewardService {
     private final FestivalEventRepository festivalEventRepository;
     private final RewardRepository rewardRepository;
+    private final RewardMapper rewardMapper;
     private final RewardInstanceRepository rewardInstanceRepository;
     private final EventRewardRepository eventRewardRepository;
     private final RewardDistributionRepository rewardDistributionRepository;
@@ -29,14 +31,7 @@ public class RewardService {
     public List<EventRewardResponse> getRewardsByEvent(Long festivalEventId) {
         return eventRewardRepository.findAllByFestivalEvent_Id(festivalEventId)
                 .stream()
-                .map(er -> EventRewardResponse.builder()
-                        .eventRewardId(er.getId())
-                        .rewardId(er.getRewardInstance().getReward().getId())
-                        .rewardName(er.getRewardInstance().getReward().getName())
-                        .description(er.getRewardInstance().getDescription())
-                        .place(er.getRewardInstance().getPlace())
-                        .pointNumber(er.getRewardInstance().getPointNumber())
-                        .build())
+                .map(rewardMapper::toEventRewardResponse)
                 .collect(Collectors.toList());
     }
 

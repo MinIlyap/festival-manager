@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.rsreu.festivalmanager.notification.dto.*;
 import ru.rsreu.festivalmanager.notification.entity.*;
+import ru.rsreu.festivalmanager.notification.mapper.NotificationMapper;
 import ru.rsreu.festivalmanager.notification.repository.NotificationRepository;
 import ru.rsreu.festivalmanager.common.util.CryptoUtil;
 
@@ -20,6 +21,7 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class NotificationService {
     private final NotificationRepository notificationRepository;
+    private final NotificationMapper notificationMapper;
     private final EmailService emailService;
     private final CryptoUtil cryptoUtil;
 
@@ -132,7 +134,7 @@ public class NotificationService {
             notifications = notificationRepository.findAllByTargetUserIdAndIsReadAndNotificationTypeIn(userId, isRead, types, pageable);
         }
 
-        return notifications.map(this::mapToResponse);
+        return notifications.map(notificationMapper::toNotificationResponse);
     }
 
     @Transactional(readOnly = true)
@@ -144,7 +146,7 @@ public class NotificationService {
             throw new IllegalArgumentException("У вас нет прав на просмотр этого уведомления");
         }
 
-        return mapToResponse(notification);
+        return notificationMapper.toNotificationResponse(notification);
     }
 
     @Transactional
@@ -173,32 +175,4 @@ public class NotificationService {
         }
     }
 
-    private NotificationResponse mapToResponse(Notification entity) {
-        NotificationData data = entity.getData();
-
-        NotificationDataDto dataDto = null;
-        if (data != null) {
-            dataDto = NotificationDataDto.builder()
-                    .companyId(data.getCompanyId())
-                    .companyEmail(data.getCompanyEmail())
-                    .festivalLocationId(data.getFestivalLocationId())
-                    .applicationId(data.getApplicationId())
-                    .comment(data.getComment())
-                    .eventId(data.getEventId())
-                    .eventName(data.getEventName())
-                    .commandId(data.getCommandId())
-                    .commandName(data.getCommandName())
-                    .relatedUserId(data.getRelatedUserId())
-                    .build();
-        }
-
-        return NotificationResponse.builder()
-                .notificationId(entity.getId())
-                .notificationType(entity.getNotificationType().name())
-                .targetUserId(entity.getTargetUserId())
-                .isRead(entity.isRead())
-                .createdAt(entity.getCreatedAt())
-                .data(dataDto)
-                .build();
-    }
 }

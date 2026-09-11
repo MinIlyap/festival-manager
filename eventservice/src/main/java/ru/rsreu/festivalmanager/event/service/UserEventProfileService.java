@@ -16,6 +16,8 @@ import ru.rsreu.festivalmanager.event.entity.reward.EventReward;
 import ru.rsreu.festivalmanager.event.entity.reward.RewardDistribution;
 import ru.rsreu.festivalmanager.event.entity.reward.RewardInstance;
 import ru.rsreu.festivalmanager.event.repository.*;
+import ru.rsreu.festivalmanager.event.mapper.EventMapper;
+import ru.rsreu.festivalmanager.event.mapper.RewardMapper;
 
 import java.util.List;
 import java.util.Map;
@@ -25,6 +27,8 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class UserEventProfileService {
     private final FestivalEventRepository festivalEventRepository;
+    private final EventMapper eventMapper;
+    private final RewardMapper rewardMapper;
     private final UserEventRegistrationRepository registrationRepository;
     private final RewardDistributionRepository rewardDistributionRepository;
 
@@ -32,7 +36,7 @@ public class UserEventProfileService {
     public List<FestivalEventResponse> getEventsForFestival(Long festivalLocationId, EventType type) {
         return festivalEventRepository.findByLocationAndType(festivalLocationId, type)
                 .stream()
-                .map(this::mapToEventResponse)
+                .map(eventMapper::toFestivalEventResponse)
                 .collect(Collectors.toList());
     }
 
@@ -47,7 +51,7 @@ public class UserEventProfileService {
         return groupedEvents.entrySet().stream()
                 .map(entry -> new UserFestivalEventsResponse(
                         entry.getKey(),
-                        entry.getValue().stream().map(this::mapToEventResponse).collect(Collectors.toList())
+                        entry.getValue().stream().map(eventMapper::toFestivalEventResponse).collect(Collectors.toList())
                 ))
                 .collect(Collectors.toList());
     }
@@ -65,7 +69,7 @@ public class UserEventProfileService {
                 .map(entry -> {
                     Long festivalId = entry.getKey();
                     List<UserRewardResponse> rewards = entry.getValue().stream()
-                            .map(dist -> mapToRewardResponse(dist.getRewardDistributionId().getEventReward()))
+                            .map(dist -> rewardMapper.toUserRewardResponse(dist.getRewardDistributionId().getEventReward()))
                             .collect(Collectors.toList());
 
                     return new UserFestivalRewardsResponse(festivalId, rewards);
@@ -73,37 +77,5 @@ public class UserEventProfileService {
                 .collect(Collectors.toList());
     }
 
-    private FestivalEventResponse mapToEventResponse(FestivalEvent fe) {
-        EventInstance ei = fe.getEventInstance();
-        Event e = ei.getEvent();
 
-        return FestivalEventResponse.builder()
-                .festivalEventId(fe.getId())
-                .festivalLocationId(fe.getFestivalLocationId())
-                .eventName(e.getName())
-                .type(ei.getEventType())
-                .description(ei.getDescription())
-                .dateStart(ei.getDateStart())
-                .timeStart(ei.getTimeStart())
-                .approximateDuration(ei.getApproximateDuration())
-                .isCommand(ei.getIsCommand())
-                .maxNumberPeople(ei.getMaxNumberPeople())
-                .maxPeopleCommand(ei.getMaxPeopleCommand())
-                .organizerCompanyId(ei.getCompanyId())
-                .createdAt(fe.getCreatedAt())
-                .build();
-    }
-
-    private UserRewardResponse mapToRewardResponse(EventReward eventReward) {
-        RewardInstance ri = eventReward.getRewardInstance();
-
-        return UserRewardResponse.builder()
-                .eventRewardId(eventReward.getId())
-                .eventName(eventReward.getFestivalEvent().getEventInstance().getEvent().getName())
-                .rewardName(ri.getReward().getName())
-                .description(ri.getDescription())
-                .place(ri.getPlace())
-                .pointNumber(ri.getPointNumber())
-                .build();
-    }
 }

@@ -7,6 +7,7 @@ import ru.rsreu.festivalmanager.event.dto.event.CommandWithMembersResponse;
 import ru.rsreu.festivalmanager.event.entity.event.FestivalEvent;
 import ru.rsreu.festivalmanager.event.entity.registration.Command;
 import ru.rsreu.festivalmanager.event.repository.CommandRepository;
+import ru.rsreu.festivalmanager.event.mapper.EventMapper;
 import ru.rsreu.festivalmanager.event.repository.FestivalEventRepository;
 import ru.rsreu.festivalmanager.event.repository.UserEventRegistrationRepository;
 
@@ -19,6 +20,7 @@ import java.util.stream.Collectors;
 public class EventInfoService {
     private final UserEventRegistrationRepository registrationRepository;
     private final CommandRepository commandRepository;
+    private final EventMapper eventMapper;
     private final FestivalEventRepository festivalEventRepository;
 
     @Transactional(readOnly = true)
@@ -33,18 +35,9 @@ public class EventInfoService {
     public List<CommandWithMembersResponse> getCommandsWithMembers(Long festivalEventId) {
         List<Command> commands = commandRepository.findAllByFestivalEvent_Id(festivalEventId);
 
-        return commands.stream().map(cmd -> {
-            List<Long> memberIds = cmd.getMembers().stream()
-                    .map(member -> member.getCommandMemberId().getUserId())
-                    .collect(Collectors.toList());
-
-            return CommandWithMembersResponse.builder()
-                    .commandId(cmd.getId())
-                    .commandName(cmd.getName())
-                    .creatorId(cmd.getCreatorId())
-                    .memberUserIds(memberIds)
-                    .build();
-        }).collect(Collectors.toList());
+        return commands.stream()
+                .map(eventMapper::toCommandWithMembersResponse)
+                .collect(Collectors.toList());
     }
 
     @Transactional(readOnly = true)
