@@ -7,6 +7,11 @@ plugins {
 group = 'ru.rsreu.festivalmanager'
 version = '0.0.1-SNAPSHOT'
 
+ext {
+    mapstructVersion = '1.6.3'
+    lombokMapstructBindingVersion = '0.2.0'
+}
+
 java {
     toolchain {
         languageVersion = JavaLanguageVersion.of(21)
@@ -32,8 +37,19 @@ subprojects {
 
     dependencies {
         compileOnly 'org.projectlombok:lombok'
+        // Processor order matters: lombok generates the accessors that mapstruct
+        // reads, and the binding makes lombok's output visible to it.
         annotationProcessor 'org.projectlombok:lombok'
+        annotationProcessor "org.projectlombok:lombok-mapstruct-binding:${lombokMapstructBindingVersion}"
+        implementation "org.mapstruct:mapstruct:${mapstructVersion}"
+        annotationProcessor "org.mapstruct:mapstruct-processor:${mapstructVersion}"
         testImplementation 'org.springframework.boot:spring-boot-starter-test'
+    }
+
+    tasks.withType(JavaCompile).configureEach {
+        // Fail the build if a mapper leaves a target field unset: silently
+        // dropping a field is the main risk when replacing hand-written mapping.
+        options.compilerArgs << '-Amapstruct.unmappedTargetPolicy=ERROR'
     }
 
     test {
