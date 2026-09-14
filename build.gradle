@@ -46,7 +46,9 @@ subprojects {
         testImplementation 'org.springframework.boot:spring-boot-starter-test'
     }
 
-    tasks.withType(JavaCompile).configureEach {
+    // Mappers live in main only, so the policy is scoped to compileJava;
+    // adding it to test compilation only produces an unused-option warning.
+    tasks.named('compileJava') {
         // Fail the build if a mapper leaves a target field unset: silently
         // dropping a field is the main risk when replacing hand-written mapping.
         options.compilerArgs << '-Amapstruct.unmappedTargetPolicy=ERROR'
