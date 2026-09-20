@@ -12,6 +12,7 @@ import static org.hamcrest.Matchers.*;
 import static org.junit.jupiter.api.Assertions.*;
 
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
+@Tag("e2e")
 public class SecurityIntegrationTest {
 
     private static final String AUTH_BASE     = "http://localhost:8082";
@@ -45,7 +46,7 @@ public class SecurityIntegrationTest {
                 .post("/auth/login")
             .then()
                 .statusCode(200)
-                .extract().jsonPath().getString("accessToken");
+                .extract().jsonPath().getString("access_token");
     }
 
     @Test

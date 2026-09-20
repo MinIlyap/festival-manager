@@ -55,6 +55,20 @@ subprojects {
     }
 
     test {
-        useJUnitPlatform()
+        useJUnitPlatform {
+            // e2e-тесты обращаются к живым сервисам на localhost и рассчитывают
+            // на подготовленные данные в БД, поэтому в обычную сборку не входят.
+            excludeTags 'e2e'
+        }
+    }
+
+    tasks.register('e2eTest', Test) {
+        group = 'verification'
+        description = 'Прогоняет e2e-тесты против поднятой системы (docker compose up -d).'
+        testClassesDirs = sourceSets.test.output.classesDirs
+        classpath = sourceSets.test.runtimeClasspath
+        useJUnitPlatform {
+            includeTags 'e2e'
+        }
     }
 }

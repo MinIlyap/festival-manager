@@ -15,6 +15,7 @@ import static org.hamcrest.Matchers.*;
 import static org.junit.jupiter.api.Assertions.*;
 
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
+@Tag("e2e")
 public class BoundaryIntegrationTest {
     private static final String AUTH_BASE = "http://localhost:8082";
     private static final String FESTIVAL_BASE = "http://localhost:8085";
@@ -49,7 +50,7 @@ public class BoundaryIntegrationTest {
                 .post("/auth/login")
             .then()
                 .statusCode(200)
-                .extract().jsonPath().getString("accessToken");
+                .extract().jsonPath().getString("access_token");
     }
 
     @Test
