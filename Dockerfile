@@ -1,20 +1,10 @@
 # syntax=docker/dockerfile:1.7
-#
-# Single Dockerfile shared by all nine Spring Boot services.
-#
-# The `builder` stage is byte-for-byte identical for every service, so BuildKit
-# builds the Gradle project once and the remaining services reuse the cached
-# layer. Only the `runtime` stage differs, via the SERVICE build argument.
-#
-#   docker build --build-arg SERVICE=authservice -t festivalmanager/authservice .
 
 FROM eclipse-temurin:21-jdk AS builder
 
 WORKDIR /workspace
 COPY . .
 
-# The root project has no main class, so bootJar is requested per module
-# instead of running the aggregate task.
 RUN --mount=type=cache,target=/root/.gradle \
     sh ./gradlew --no-daemon \
         :applicationservice:bootJar \
@@ -26,7 +16,6 @@ RUN --mount=type=cache,target=/root/.gradle \
         :locationservice:bootJar \
         :notificationservice:bootJar \
         :userservice:bootJar
-
 
 FROM eclipse-temurin:21-jre-alpine AS runtime
 
