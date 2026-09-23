@@ -88,7 +88,6 @@ class AuthServiceTest {
                 .build();
     }
 
-    /** Makes save() behave like JPA: return what it was given. */
     private void echoSavedCredential() {
         when(credentialRepository.save(any(AuthCredential.class)))
                 .thenAnswer(invocation -> invocation.getArgument(0));
@@ -157,7 +156,6 @@ class AuthServiceTest {
                     .isInstanceOf(IllegalArgumentException.class)
                     .hasMessageContaining("Email");
 
-            // иначе в userservice остался бы профиль без учётной записи
             verifyNoInteractions(userServiceClient);
             verify(credentialRepository, never()).save(any());
         }
@@ -331,7 +329,6 @@ class AuthServiceTest {
 
             assertThat(credential.getPasswordHash()).isEqualTo("new-hash");
             verify(credentialRepository).save(credential);
-            // иначе старые refresh-токены продолжили бы работать
             verify(sessionRepository).deleteAllByUser(credential);
         }
     }

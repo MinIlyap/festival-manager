@@ -135,7 +135,6 @@ class UserServiceTest {
             service.patchUser(42L, request);
 
             assertThat(existing.getFirstName()).isEqualTo("Пётр");
-            // всё остальное должно остаться как было
             assertThat(existing.getLastName()).isEqualTo("Иванов");
             assertThat(existing.getMiddleName()).isEqualTo("Иванович");
             assertThat(existing.getPhoneNumber()).isEqualTo("+79990000000");
@@ -160,7 +159,6 @@ class UserServiceTest {
 
             assertThat(existing.getPassportSeriaHash()).isEqualTo("enc-4600");
             assertThat(existing.getPassportNumberHash()).isEqualTo("enc-123456");
-            // открытые значения в сущность попасть не должны
             assertThat(existing.getPassportSeriaHash()).isNotEqualTo("4600");
             assertThat(existing.getPassportNumberHash()).isNotEqualTo("123456");
         }

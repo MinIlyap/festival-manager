@@ -71,7 +71,6 @@ class CommandServiceTest {
                 .build();
     }
 
-    /** Регистрация участника на мероприятие. */
     private void registered(long userId, boolean value) {
         when(registrationRepository.existsById(
                 argThatMatchesUser(userId))).thenReturn(value);

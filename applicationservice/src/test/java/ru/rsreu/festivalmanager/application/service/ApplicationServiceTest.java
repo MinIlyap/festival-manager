@@ -88,7 +88,6 @@ class ApplicationServiceTest {
 
             applicationService.processCompanyApplication(5L, EVENT_TIME);
 
-            // иначе одобренную компанию можно было бы отправить на повторную модерацию
             verify(applicationRepository, never()).save(any());
             verifyNoInteractions(eventPublisher);
         }
@@ -111,7 +110,6 @@ class ApplicationServiceTest {
             assertThat(event.getValue().applicationId()).isEqualTo(1L);
             assertThat(event.getValue().agentId()).isEqualTo(9L);
             assertThat(event.getValue().type()).isEqualTo("COMPANY_APPLICATION");
-            // для заявки компании в событие уезжает companyId
             assertThat(event.getValue().entityId()).isEqualTo(5L);
         }
 

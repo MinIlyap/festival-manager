@@ -252,7 +252,6 @@ class NotificationServiceTest {
 
             verify(notificationRepository).countByTargetUserIdAndIsReadAndNotificationTypeIn(
                     42L, false, java.util.List.of(NotificationType.INVITING_TEAM));
-            // для неизвестной роли список типов пустой, то есть ничего не видно
             verify(notificationRepository).countByTargetUserIdAndIsReadAndNotificationTypeIn(
                     42L, false, java.util.List.of());
         }

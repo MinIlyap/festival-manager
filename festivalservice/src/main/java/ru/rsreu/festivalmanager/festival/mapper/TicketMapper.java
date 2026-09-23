@@ -11,14 +11,9 @@ import ru.rsreu.festivalmanager.festival.entity.ticket.TicketTypeInstance;
 @Mapper(componentModel = MappingConstants.ComponentModel.SPRING)
 public interface TicketMapper {
 
-    /**
-     * The remaining count is derived once per festival from the sold ticket
-     * total, so it is passed in rather than read off the instance.
-     */
     @Mapping(target = "name", source = "instance.ticketType.name")
     @Mapping(target = "remaining", source = "remaining")
     TicketTypeInstanceResponse toTicketTypeInstanceResponse(TicketTypeInstance instance, int remaining);
-
     @Mapping(target = "ticketId", source = "id")
     @Mapping(target = "festivalLocationId", source = "ticketTypeInstance.festivalLocation.id")
     @Mapping(target = "festivalName", source = "ticketTypeInstance.festivalLocation.festivalInstance.festival.name")

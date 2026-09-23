@@ -33,7 +33,6 @@ class CompanyServiceTest {
     @Mock private CompanyRepository companyRepository;
     @Mock private ApplicationEventPublisher eventPublisher;
 
-    // настоящий маппер: тесты заодно проверяют преобразование в dto
     private final CompanyMapper companyMapper = new CompanyMapperImpl();
 
     private CompanyService service() {
@@ -62,7 +61,6 @@ class CompanyServiceTest {
         return request;
     }
 
-    /** Makes save() behave like JPA: return what it was given. */
     private void echoSave() {
         when(companyRepository.save(any(Company.class)))
                 .thenAnswer(invocation -> invocation.getArgument(0));
@@ -205,7 +203,6 @@ class CompanyServiceTest {
 
             assertThat(response.getFullName()).isEqualTo("ООО Новая Ромашка");
             assertThat(response.getBrandName()).isEqualTo("Новый бренд");
-            // ИНН и email меняются отдельными сценариями, здесь должны остаться прежними
             assertThat(response.getTin()).isEqualTo("1234567890");
             assertThat(response.getEmail()).isEqualTo("info@romashka.example");
         }

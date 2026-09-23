@@ -47,7 +47,6 @@ public class RewardController {
         return ResponseEntity.ok(rewardService.addRewardToEvent(festivalEventId, companyId, request));
     }
 
-
     @PostMapping("/{eventRewardId}/distribute/users")
     @PreAuthorize("hasRole('COMPANY')")
     public ResponseEntity<String> distributeRewardToUsers(
@@ -58,7 +57,6 @@ public class RewardController {
         rewardService.distributeRewardToUsers(eventRewardId, companyId, request.getUserIds());
         return ResponseEntity.ok("Награды успешно распределены участникам");
     }
-
 
     @PostMapping("/{eventRewardId}/distribute/commands/{commandId}")
     @PreAuthorize("hasRole('COMPANY')")

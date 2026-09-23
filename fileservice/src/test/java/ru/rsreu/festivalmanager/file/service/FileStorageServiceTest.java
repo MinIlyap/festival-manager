@@ -55,7 +55,6 @@ class FileStorageServiceTest {
         ReflectionTestUtils.setField(service, "systemToken", "system-token");
     }
 
-    /** Реальные байты PNG: сервис определяет тип через Tika, подменять её нечем. */
     private static byte[] pngBytes() {
         byte[] png = new byte[64];
         byte[] signature = {(byte) 0x89, 'P', 'N', 'G', 0x0D, 0x0A, 0x1A, 0x0A};

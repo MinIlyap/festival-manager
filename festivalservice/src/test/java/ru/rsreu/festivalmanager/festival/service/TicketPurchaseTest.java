@@ -121,7 +121,6 @@ class TicketPurchaseTest {
         return request;
     }
 
-    /** Общая обвязка: не в чёрном списке, тип билета и фестиваль найдены. */
     private FestivalInstance arrange(String ageLimit, boolean visible, int maxPeople,
                                      BigDecimal price, UserProfileDto userProfile, int soldTickets) {
         FestivalInstance festivalInstance = instance(ageLimit, visible, maxPeople);

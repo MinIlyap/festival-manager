@@ -77,5 +77,4 @@ public class UserEventProfileService {
                 .collect(Collectors.toList());
     }
 
-
 }

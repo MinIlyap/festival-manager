@@ -43,7 +43,6 @@ class LocationServiceTest {
     @Mock private PlatformRepository platformRepository;
     @Mock private PlatformInstanceRepository instanceRepository;
 
-    // настоящий маппер, а не мок: так тесты заодно покрывают преобразование в dto
     private final LocationMapper locationMapper = new LocationMapperImpl();
 
     private LocationService service() {
@@ -160,7 +159,6 @@ class LocationServiceTest {
             assertThat(response.getId()).isEqualTo(11L);
             assertThat(response.getPlatformName()).isEqualTo("Экспоцентр");
             assertThat(response.getCity().getName()).isEqualTo("Рязань");
-            // главное: дубликат адреса не записан
             verify(instanceRepository, never()).save(any());
         }
 

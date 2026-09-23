@@ -23,7 +23,6 @@ public interface EventMapper {
     @Mapping(target = "maxNumberPeople", source = "eventInstance.maxNumberPeople")
     @Mapping(target = "maxPeopleCommand", source = "eventInstance.maxPeopleCommand")
     @Mapping(target = "organizerCompanyId", source = "eventInstance.companyId")
-    // Resolved from companyservice and set on the response after mapping.
     @Mapping(target = "companyBrandName", ignore = true)
     FestivalEventResponse toFestivalEventResponse(FestivalEvent festivalEvent);
 
