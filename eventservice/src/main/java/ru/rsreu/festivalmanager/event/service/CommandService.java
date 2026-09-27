@@ -11,7 +11,6 @@ import ru.rsreu.festivalmanager.event.entity.registration.Command;
 import ru.rsreu.festivalmanager.event.entity.registration.CommandMember;
 import ru.rsreu.festivalmanager.event.entity.registration.CommandMemberId;
 import ru.rsreu.festivalmanager.event.entity.registration.UserEventRegistrationId;
-import ru.rsreu.festivalmanager.event.kafka.CommandKafkaProducer;
 import ru.rsreu.festivalmanager.event.repository.*;
 
 import java.time.OffsetDateTime;

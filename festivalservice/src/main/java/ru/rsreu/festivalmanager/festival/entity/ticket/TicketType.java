@@ -2,9 +2,7 @@ package ru.rsreu.festivalmanager.festival.entity.ticket;
 
 import jakarta.persistence.*;
 import lombok.*;
-import ru.rsreu.festivalmanager.festival.entity.festival.FestivalLocation;
 
-import java.math.BigDecimal;
 
 @Entity
 @Table(name = "ticket_types")

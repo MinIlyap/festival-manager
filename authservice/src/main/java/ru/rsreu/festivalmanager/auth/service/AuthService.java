@@ -72,11 +72,7 @@ public class AuthService {
             throw new IllegalArgumentException("Email уже используется");
         }
 
-        CompanyRegistrationRequest companyDto = new CompanyRegistrationRequest(
-                request.getTin(), request.getFullName(), request.getBrandName(), request.getWebSite(), request.getEmail()
-        );
-
-        Long companyId = companyServiceClient.createInactiveCompany(getBearerSystemToken(), companyDto);
+        companyServiceClient.createInactiveCompany(getBearerSystemToken(), request);
     }
 
     @Transactional

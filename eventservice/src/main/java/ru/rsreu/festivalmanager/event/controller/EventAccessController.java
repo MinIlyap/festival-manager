@@ -6,7 +6,6 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import ru.rsreu.festivalmanager.event.client.FestivalServiceClient;
 import ru.rsreu.festivalmanager.event.repository.*;
-import ru.rsreu.festivalmanager.event.entity.stand.StandProduct;
 
 @RestController
 @RequestMapping("/internal/access/events")
