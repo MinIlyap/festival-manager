@@ -1,19 +1,8 @@
-plugins {
-    id 'java'
-    id 'io.spring.dependency-management'
-}
-
 dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-web'
-    implementation 'org.springframework.boot:spring-boot-starter-validation'
     implementation 'org.springframework.cloud:spring-cloud-starter-openfeign'
     implementation 'com.fasterxml.jackson.datatype:jackson-datatype-jsr310'
-    compileOnly 'org.projectlombok:lombok'
-    annotationProcessor 'org.projectlombok:lombok'
-    implementation 'jakarta.servlet:jakarta.servlet-api'
     implementation 'org.springframework.boot:spring-boot-starter-security'
-    implementation 'org.springframework:spring-tx'
-    implementation 'io.swagger.core.v3:swagger-annotations-jakarta:2.2.45'
 }
 
 tasks.register('prepareKotlinBuildScriptModel') {
