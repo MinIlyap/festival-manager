@@ -12,13 +12,13 @@ import java.time.OffsetDateTime;
 @Data
 @Builder
 public class AppResubmittedMsg {
-    @JsonProperty("agentId")
+    @JsonProperty("agent_id")
     private Long agentId;
 
     @JsonProperty("type")
     private String type;
 
-    @JsonProperty("entityId")
+    @JsonProperty("entity_id")
     private Long entityId;
 
     @JsonProperty("application_id")

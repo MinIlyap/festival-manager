@@ -5,15 +5,15 @@ import lombok.Data;
 
 @Data
 public class AuthCredentialDto {
-    @JsonProperty("userId")
+    @JsonProperty("user_id")
     private Long userId;
 
-    @JsonProperty("companyId")
+    @JsonProperty("company_id")
     private Long companyId;
 
     @JsonProperty("email")
     private String email;
 
-    @JsonProperty("accessType")
+    @JsonProperty("access_type")
     private String accessType;
 }

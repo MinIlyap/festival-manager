@@ -66,6 +66,6 @@ export const authApi = {
       .then(r => r.data),
 
   getMe: () =>
-    api.get<{ email: string; accessType: string; userId: number | null; companyId: number | null }>('/auth/me')
+    api.get<{ email: string; access_type: string; user_id: number | null; company_id: number | null }>('/auth/me')
       .then(r => r.data),
 };
