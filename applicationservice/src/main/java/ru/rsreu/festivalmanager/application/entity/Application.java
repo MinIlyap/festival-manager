@@ -1,6 +1,7 @@
 package ru.rsreu.festivalmanager.application.entity;
 
 import jakarta.persistence.*;
+import lombok.Builder;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -10,6 +11,7 @@ import java.time.OffsetDateTime;
 @Entity
 @Table(name = "applications")
 @Data
+@Builder
 @NoArgsConstructor
 @AllArgsConstructor
 public class Application {

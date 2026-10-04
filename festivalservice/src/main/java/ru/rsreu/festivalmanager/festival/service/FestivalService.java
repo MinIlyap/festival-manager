@@ -77,11 +77,11 @@ public class FestivalService {
 
         instance = instanceRepository.save(instance);
 
-        FestivalLocation location = new FestivalLocation();
-        location.setFestivalInstance(instance);
-        location.setPlatformInstanceId(request.getPlatformInstanceId());
-        location.setCreatedAt(OffsetDateTime.now());
-        location = locationRepository.save(location);
+        FestivalLocation location = locationRepository.save(FestivalLocation.builder()
+                .festivalInstance(instance)
+                .platformInstanceId(request.getPlatformInstanceId())
+                .createdAt(OffsetDateTime.now())
+                .build());
 
         List<Long> companyIds = new ArrayList<>();
         companyIds.add(senderCompanyId);
@@ -144,18 +144,17 @@ public class FestivalService {
     }
 
     private FestivalInstance getFestivalInstance(FestivalCreateRequest request, Festival festival, AgeLimit ageLimit) {
-        FestivalInstance instance = new FestivalInstance();
-        instance.setFestival(festival);
-        instance.setAgeLimit(ageLimit);
-        instance.setDescription(request.getDescription());
-        instance.setDateStart(request.getDateStart());
-        instance.setTimeStart(request.getTimeStart());
-        instance.setDateEnd(request.getDateEnd());
-        instance.setTimeEnd(request.getTimeEnd());
-        instance.setMaxPeopleNumber(request.getMaxPeopleNumber());
-        instance.setVisible(false);
-
-        return instance;
+        return FestivalInstance.builder()
+                .festival(festival)
+                .ageLimit(ageLimit)
+                .description(request.getDescription())
+                .dateStart(request.getDateStart())
+                .timeStart(request.getTimeStart())
+                .dateEnd(request.getDateEnd())
+                .timeEnd(request.getTimeEnd())
+                .maxPeopleNumber(request.getMaxPeopleNumber())
+                .isVisible(false)
+                .build();
     }
 
     @Transactional

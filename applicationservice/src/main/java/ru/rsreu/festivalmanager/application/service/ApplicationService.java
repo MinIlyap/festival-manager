@@ -39,21 +39,19 @@ public class ApplicationService {
     }
 
     private Application createNewApplication(ApplicationType type, Long senderId, Long companyId, Long festivalLocationId, OffsetDateTime eventTimestamp) {
-        Application app = new Application();
-        app.setApplicationType(type);
-        app.setApplicationStatus(ApplicationStatus.PENDING);
-        app.setSenderId(senderId);
-
         OffsetDateTime now = eventTimestamp != null ? eventTimestamp : OffsetDateTime.now();
-        app.setCreatedAt(now);
-        app.setUpdatedAt(now);
 
-        ApplicationData data = new ApplicationData();
-        data.setCompanyId(companyId);
-        data.setFestivalLocationId(festivalLocationId);
-        app.setData(data);
-
-        return app;
+        return Application.builder()
+                .applicationType(type)
+                .applicationStatus(ApplicationStatus.PENDING)
+                .senderId(senderId)
+                .createdAt(now)
+                .updatedAt(now)
+                .data(ApplicationData.builder()
+                        .companyId(companyId)
+                        .festivalLocationId(festivalLocationId)
+                        .build())
+                .build();
     }
 
     private void handleIncomingApplication(Application application, OffsetDateTime eventTimestamp) {

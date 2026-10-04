@@ -1,6 +1,7 @@
 package ru.rsreu.festivalmanager.festival.entity.festival;
 
 import jakarta.persistence.*;
+import lombok.Builder;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -11,6 +12,7 @@ import java.time.LocalTime;
 @Entity
 @Table(name = "festival_instances")
 @Data
+@Builder
 @NoArgsConstructor
 @AllArgsConstructor
 public class FestivalInstance {

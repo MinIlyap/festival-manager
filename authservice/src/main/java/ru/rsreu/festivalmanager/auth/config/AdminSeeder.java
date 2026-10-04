@@ -46,11 +46,12 @@ public class AdminSeeder implements CommandLineRunner {
 
                 Long userId = userServiceClient.createUser("Bearer " + systemToken, userDto);
 
-                AuthCredential credential = new AuthCredential();
-                credential.setUserId(userId);
-                credential.setEmail(email);
-                credential.setAccessType(AccessType.ADMIN);
-                credential.setPasswordHash(passwordEncoder.encode(password));
+                AuthCredential credential = AuthCredential.builder()
+                        .userId(userId)
+                        .email(email)
+                        .accessType(AccessType.ADMIN)
+                        .passwordHash(passwordEncoder.encode(password))
+                        .build();
 
                 credentialRepository.save(credential);
                 log.info("Админ создан: {}", email);

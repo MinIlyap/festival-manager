@@ -1,6 +1,7 @@
 package ru.rsreu.festivalmanager.festival.entity.ticket;
 
 import jakarta.persistence.*;
+import lombok.Builder;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -11,6 +12,7 @@ import java.math.BigDecimal;
 @Entity
 @Table(name = "ticket_type_instances")
 @Data
+@Builder
 @NoArgsConstructor
 @AllArgsConstructor
 public class TicketTypeInstance {

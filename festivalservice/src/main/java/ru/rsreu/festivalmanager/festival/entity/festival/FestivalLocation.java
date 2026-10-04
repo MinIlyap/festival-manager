@@ -8,6 +8,7 @@ import java.time.OffsetDateTime;
 @Entity
 @Table(name = "festival_locations")
 @Data
+@Builder
 @NoArgsConstructor
 @AllArgsConstructor
 public class FestivalLocation {

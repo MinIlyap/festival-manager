@@ -73,35 +73,35 @@ public class NotificationService {
         NotificationType type = "APPROVED".equals(msg.getStatus()) ?
                 NotificationType.APPROVING_FESTIVAL : NotificationType.REJECTING_FESTIVAL;
 
-        Notification notification = new Notification();
-        notification.setNotificationType(type);
-        notification.setTargetUserId(msg.getTargetUserId());
-        notification.setCreatedAt(msg.getUpdatedAt());
-        notification.setRead(false);
+        Notification notification = Notification.builder()
+                .notificationType(type)
+                .targetUserId(msg.getTargetUserId())
+                .createdAt(msg.getUpdatedAt())
+                .isRead(false)
+                .data(NotificationData.builder()
+                        .festivalLocationId(msg.getFestivalLocationId())
+                        .comment(msg.getComment())
+                        .build())
+                .build();
 
-        NotificationData data = new NotificationData();
-        data.setFestivalLocationId(msg.getFestivalLocationId());
-        data.setComment(msg.getComment());
-
-        notification.setData(data);
         notificationRepository.save(notification);
     }
 
     @Transactional
     public void processCommandInvite(CommandInviteMsg msg) {
-        Notification notification = new Notification();
-        notification.setNotificationType(NotificationType.INVITING_TEAM);
-        notification.setTargetUserId(msg.getRelatedUserId());
-        notification.setRead(false);
-        notification.setCreatedAt(msg.getCreatedAt() != null ? msg.getCreatedAt() : OffsetDateTime.now());
+        Notification notification = Notification.builder()
+                .notificationType(NotificationType.INVITING_TEAM)
+                .targetUserId(msg.getRelatedUserId())
+                .isRead(false)
+                .createdAt(msg.getCreatedAt() != null ? msg.getCreatedAt() : OffsetDateTime.now())
+                .data(NotificationData.builder()
+                        .eventId(msg.getEventId())
+                        .eventName(msg.getEventName())
+                        .commandId(msg.getCommandId())
+                        .commandName(msg.getCommandName())
+                        .build())
+                .build();
 
-        NotificationData data = new NotificationData();
-        data.setEventId(msg.getEventId());
-        data.setEventName(msg.getEventName());
-        data.setCommandId(msg.getCommandId());
-        data.setCommandName(msg.getCommandName());
-
-        notification.setData(data);
         notificationRepository.save(notification);
     }
 

@@ -29,5 +29,6 @@ public class Command {
     private Long creatorId;
 
     @OneToMany(mappedBy = "commandMemberId.command", cascade = CascadeType.ALL, orphanRemoval = true)
+    @Builder.Default
     private List<CommandMember> members = new ArrayList<>();
 }

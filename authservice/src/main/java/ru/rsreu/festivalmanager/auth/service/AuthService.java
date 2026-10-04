@@ -55,11 +55,12 @@ public class AuthService {
         UserCreationDto userDto = new UserCreationDto(request.getNickname(), request.getBirthDate(), request.getCityId());
         Long userId = userServiceClient.createUser(getBearerSystemToken(), userDto);
 
-        AuthCredential credential = new AuthCredential();
-        credential.setUserId(userId);
-        credential.setEmail(request.getEmail());
-        credential.setPasswordHash(passwordEncoder.encode(request.getPassword()));
-        credential.setAccessType(AccessType.USER);
+        AuthCredential credential = AuthCredential.builder()
+                .userId(userId)
+                .email(request.getEmail())
+                .passwordHash(passwordEncoder.encode(request.getPassword()))
+                .accessType(AccessType.USER)
+                .build();
 
         AuthCredential savedCredential = credentialRepository.save(credential);
 
@@ -85,13 +86,12 @@ public class AuthService {
 
             String rawPassword = RandomStringUtils.random(8, true, true);
 
-            AuthCredential credential = new AuthCredential();
-            credential.setCompanyId(companyId);
-            credential.setEmail(email);
-            credential.setAccessType(AccessType.COMPANY);
-
-            String encodedPassword = passwordEncoder.encode(rawPassword);
-            credential.setPasswordHash(encodedPassword);
+            AuthCredential credential = AuthCredential.builder()
+                    .companyId(companyId)
+                    .email(email)
+                    .accessType(AccessType.COMPANY)
+                    .passwordHash(passwordEncoder.encode(rawPassword))
+                    .build();
 
             credentialRepository.save(credential);
 
@@ -207,10 +207,11 @@ public class AuthService {
         UserCreationDto userDto = new UserCreationDto(displayName, null, null);
         Long userId = userServiceClient.createUser(getBearerSystemToken(), userDto);
 
-        AuthCredential credential = new AuthCredential();
-        credential.setUserId(userId);
-        credential.setEmail(email);
-        credential.setAccessType(AccessType.USER);
+        AuthCredential credential = AuthCredential.builder()
+                .userId(userId)
+                .email(email)
+                .accessType(AccessType.USER)
+                .build();
 
         credentialRepository.save(credential);
         return userId;
@@ -264,10 +265,11 @@ public class AuthService {
         String accessToken = jwtProvider.generateAccessToken(subjectId, credential.getEmail(), role);
         String refreshToken = UUID.randomUUID().toString();
 
-        UserSession session = new UserSession();
-        session.setRefreshToken(refreshToken);
-        session.setUser(credential);
-        session.setExpiryDate(LocalDateTime.now().plusDays(30));
+        UserSession session = UserSession.builder()
+                .refreshToken(refreshToken)
+                .user(credential)
+                .expiryDate(LocalDateTime.now().plusDays(30))
+                .build();
         sessionRepository.save(session);
 
         return new AuthResponse(accessToken, refreshToken);

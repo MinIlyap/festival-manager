@@ -12,6 +12,7 @@ import java.time.LocalDateTime;
 @Table(name = "black_lists")
 @Data
 @AllArgsConstructor
+@Builder
 @NoArgsConstructor
 public class BlackList {
     @EmbeddedId

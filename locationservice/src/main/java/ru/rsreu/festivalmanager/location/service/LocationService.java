@@ -72,11 +72,12 @@ public class LocationService {
         return instanceRepository.findByPlatform_IdAndCity_IdAndStreetAndHouse(platform.getId(), city.getId(), request.getStreet(), request.getHouse())
                 .map(locationMapper::toPlatformInstanceResponse)
                 .orElseGet(() -> {
-                    PlatformInstance newInstance = new PlatformInstance();
-                    newInstance.setPlatform(platform);
-                    newInstance.setCity(city);
-                    newInstance.setStreet(request.getStreet());
-                    newInstance.setHouse(request.getHouse());
+                    PlatformInstance newInstance = PlatformInstance.builder()
+                            .platform(platform)
+                            .city(city)
+                            .street(request.getStreet())
+                            .house(request.getHouse())
+                            .build();
 
                     return locationMapper.toPlatformInstanceResponse(instanceRepository.save(newInstance));
                 });

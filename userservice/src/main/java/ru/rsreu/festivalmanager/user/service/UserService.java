@@ -42,10 +42,11 @@ public class UserService {
             throw new IllegalArgumentException("Указанный город не существует");
         }
 
-        AppUser user = new AppUser();
-        user.setNickname(dto.getNickname());
-        user.setBirthDate(dto.getBirthDate());
-        user.setCity_id(dto.getCityId());
+        AppUser user = AppUser.builder()
+                .nickname(dto.getNickname())
+                .birthDate(dto.getBirthDate())
+                .city_id(dto.getCityId())
+                .build();
 
         return userRepository.save(user).getId();
     }
@@ -171,15 +172,17 @@ public class UserService {
         AppUser curator = userRepository.findById(curatorId)
                 .orElseThrow(() -> new IllegalArgumentException("Куратор не найден"));
 
-        BlackListId id = new BlackListId();
-        id.setUser(user);
-        id.setCurator(curator);
-        id.setCreatedAt(OffsetDateTime.now());
+        BlackListId id = BlackListId.builder()
+                .user(user)
+                .curator(curator)
+                .createdAt(OffsetDateTime.now())
+                .build();
 
-        BlackList blackList = new BlackList();
-        blackList.setBlackListId(id);
-        blackList.setReason(request.getReason());
-        blackList.setExpiryDate(LocalDateTime.now().plusDays(request.getDays()));
+        BlackList blackList = BlackList.builder()
+                .blackListId(id)
+                .reason(request.getReason())
+                .expiryDate(LocalDateTime.now().plusDays(request.getDays()))
+                .build();
 
         blackListRepository.save(blackList);
     }

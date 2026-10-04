@@ -1,6 +1,7 @@
 package ru.rsreu.festivalmanager.notification.entity;
 
 import jakarta.persistence.*;
+import lombok.Builder;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -8,6 +9,7 @@ import lombok.NoArgsConstructor;
 @Entity
 @Table(name = "notification_data")
 @Data
+@Builder
 @NoArgsConstructor
 @AllArgsConstructor
 public class NotificationData {
