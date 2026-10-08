@@ -3,7 +3,6 @@
 .gitignore
 .gitattributes
 .idea
-.claude
 *.iml
 
 # Gradle build output and caches
