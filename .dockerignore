@@ -10,7 +10,7 @@
 **/build
 !gradle/wrapper/gradle-wrapper.jar
 
-# Frontend (built by frontend/Dockerfile with its own context)
+# Frontend
 frontend
 
 # Docs and compose files
