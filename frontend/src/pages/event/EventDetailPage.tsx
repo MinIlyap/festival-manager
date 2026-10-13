@@ -99,7 +99,6 @@ export default function EventDetailPage() {
   const myReg = (myRegs ?? []).find(r => r.eventId === id);
   const myUserId = me?.id;
 
-  // participants (only when registered and event is loaded)
   const { data: soloParticipants } = useQuery({
     queryKey: ['event-participants', id],
     queryFn: () => eventApi.getEventParticipants(id!),

@@ -37,8 +37,6 @@ subprojects {
 
     dependencies {
         compileOnly 'org.projectlombok:lombok'
-        // Processor order matters: lombok generates the accessors that mapstruct
-        // reads, and the binding makes lombok's output visible to it.
         annotationProcessor 'org.projectlombok:lombok'
         annotationProcessor "org.projectlombok:lombok-mapstruct-binding:${lombokMapstructBindingVersion}"
         implementation "org.mapstruct:mapstruct:${mapstructVersion}"
@@ -46,18 +44,12 @@ subprojects {
         testImplementation 'org.springframework.boot:spring-boot-starter-test'
     }
 
-    // Mappers live in main only, so the policy is scoped to compileJava;
-    // adding it to test compilation only produces an unused-option warning.
     tasks.named('compileJava') {
-        // Fail the build if a mapper leaves a target field unset: silently
-        // dropping a field is the main risk when replacing hand-written mapping.
         options.compilerArgs << '-Amapstruct.unmappedTargetPolicy=ERROR'
     }
 
     test {
         useJUnitPlatform {
-            // e2e-тесты обращаются к живым сервисам на localhost и рассчитывают
-            // на подготовленные данные в БД, поэтому в обычную сборку не входят.
             excludeTags 'e2e'
         }
     }
